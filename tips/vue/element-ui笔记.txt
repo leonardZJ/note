@@ -109,3 +109,11 @@ poi搜索配合自定义模板特别好用
 2.用F12找到组件的样式名（一般看最外面那层）
 
 3.修改样式时前面带上外包样式名
+
+4.input框和按钮同时使用时，出现input和button对不齐的问题，这是因为input加了个外包限制宽度，但是该外包会为input预留出空间，导致input其实是浮在这个外包顶端的，解决办法是让input在外包div中垂直居中
+<style>
+aaa {
+	display: flex;
+	align-items: center;
+}
+</style>

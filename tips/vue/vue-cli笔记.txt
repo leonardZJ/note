@@ -90,3 +90,6 @@ eslint
 	  return ['vue-style-loader'].concat(loaders)
 	}
 </script>
+
+cli3禁用eslint
+在vue.config.js加上一行：lintOnSave: false 就可以了
