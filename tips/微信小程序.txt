@@ -1,0 +1,230 @@
+模块化：一个大的js文件，按照一定的规范，拆分成多个小的js文件，每个文件即模块，模块中的数据是私有的，并且可以复用
+组件化：组件指的是具有特定功能效果的代码集合，即不单止js文件，还有html，css等加在一起，并且可以复用
+
+注1：小程序没有DOM
+注2：小程序四个重要文件：*.js，*.wxml，*.wxss，*.json
+
+移动端适配
+物理像素：设备能控制的最小像素，屏幕上的像素点，也叫分辨率
+设备独立像素/css像素：一般称为css像素，在安卓开发中叫设备独立像素，代表计算机坐标系中的一个像素点（单位像素）
+
+设备像素比（dpr）：物理像素和虚拟像素的比值，表示多少份设备独立像素刚好代表一份物理像素
+dpr计算公式：物理像素/设备独立像素 = dpr
+Iphone6的dpr为：(750*1334)/(375*667) = 2
+一般以此作为参考：将设备调成Iphone6（375*667），界面上的像素*2，就是要写的css像素
+
+PPI：每英寸显示屏上的像素点个数，iphone6是326 1000500 250125
+DPI：最早指的是打印机在单位面积上打印的墨点数，点越多越清晰
+
+小程序适配方案
+布局视口：编程时页面的大小
+视觉视口：用户看到的实际页面大小
+
+小程序像素单位：rpx
+1rpx = 0.5px物理像素
+rpx底层已经处理好了屏幕适配问题，所以在编程时可以直接使用
+<style>
+	.class {
+		width: 100rpx;
+		height: 100rpx;
+	}
+</style>
+
+开发步骤：
+0.通过模板新建项目，即勾选使用模板创建选项
+会自动创建:
+page 页面文件夹
+utils 工具类文件夹
+app.js 可以在这注册小程序
+app.json 全局配置（通过App({})注册） 
+app.wxss 全局样式
+project.config.json 项目配置文件（一般不需要改）
+
+1.手动新建项目，即不勾选使用模板创建选项
+进入后会自带一个project.config.json文件，该文件一般不需要改
+
+	创建app.js，注册小程序，app.js使用App({})对象管理全局逻辑，文档中可以在框架的框架接口的小程序App部分查看详细，在其他组件中可以通过getApp()方法获取该对象
+	<script>
+		App({
+			//在这里注册小程序
+		});
+	</script>
+	创建app.json，app.json使用一个对象管理全局配置，如全局页面路径、顶部窗口背景色等，文档中可以在框架的全局配置部分查看详细
+	<script>
+		//内容必须添加，否则报错
+		{
+			"pages": [
+				//该项会自动添加
+			],
+		}
+	</script>
+	app.wxss为全局样式，非必须
+
+2.创建pages文件夹，并创建index文件夹，代表index页面，可以右键pages新建Page选项，会一次创建.js，.json，.wxml，.wxss文件，这种创建会自动将页面路径添加到app.json的pages中
+
+	文件说明：
+	.wxml文件管理的是小程序的结构，因为小程序是组件化开发，所以结构文件.wxml里都是组件标签，可以在文档的组件部分查看详细
+	常用组件标签：
+	<audio></audio> 音频
+	<image></image> 图片
+	<icon></icon>  图标
+	<text></text> 文字
+	<view></view> 视图容器
+	<button></button> 按钮
+	<form></form> 表单
+	<label></label> 标签
+	<input></input> 输入框
+	<radio></radio> 单项选择器
+	<checkbox></checkbox> 多项选择器
+	<scroll-view></scroll-view> 可滚动视图容器
+	<swiper></swiper> 可滑动的视图容器
+	<progress></progress> 进度条
+	<picker></picker> 列表选择器
+	<slider></slider> 滑动选择器
+	<switch></switch> 开关选择器
+	<action-sheet></action-sheet> 上拉菜单
+	<modal></modal> 模态弹窗
+	<progress></progress> 进度条
+	<toast></toast> 短通知
+	<navigator></navigator> 应用内跳转
+	<video></video> 视频
+	<map></map> 地图
+	<canvas></canvas> 画布
+
+	.wxss文件
+	说明：跟css写法一致
+
+	.js文件通过Page({})对象管理当前页面的逻辑，可以通过框架的框架接口的页面的Page部分查看详细
+	<script>
+		//获取应用实例
+		const app = getApp()
+
+		Page({
+			data: {
+				...
+			},
+			...
+		})
+	</script>
+
+	.json文件通过一个对象对本页面的窗口表现进行配置，页面中配置项会覆盖app.json的window中相同的配置项，可通过框架中的页面配置查看详细
+	<script>
+		{
+			"usingComponents": {}, //页面自定义组件配置
+		}
+	</script>
+
+3.进行全局配置
+在app.json中配置全局窗口配置
+<script>
+	{
+	  "pages":[
+	    "pages/index/index",
+	    "pages/logs/logs"
+	  ],
+	  "window":{
+	    "backgroundTextStyle":"dark", //下拉 loading 的样式，仅支持 dark / light
+	    "navigationBarBackgroundColor": "#2fcc3f", //导航栏背景颜色，仅支持16进制格式
+	    "navigationBarTitleText": "电子周刊", //	导航栏标题文字内容
+	    "navigationBarTextStyle":"black" //导航栏标题颜色，仅支持 black / white
+	  }
+	}
+
+</script>
+4.在index.wxml中写入视图容器<view></view>，视图容器没有任何语义，仅代表布局中的某一块，类似于div的作用，页面中可以有多个view
+<view class="indexContainer">
+	<!-- 小程序中可以用绝对路径取找资源，即从根目录"/..."开始 -->
+	<image class="avatar" src="头像路径"></image>
+	<text class="userName">hello xxx</text>
+	<view>
+		<text class="goStudy">开启小程序之旅</text>
+	</view>
+</view>
+
+5.在index.wxss中写入样式
+<style>
+	/* 页面渲染后，会在最外面包一层page标签，类似于body */
+	/* 页面显示100px，样式里写200rpx */
+	page {
+		height: 100%;
+		background-color: #2fcc3f;
+	}
+	.indexContainer {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		
+	}
+
+	.avatar {
+		width: 200rpx;
+		height: 200rpx;
+		border-radius: 100rpx;
+		margin: 100rpx 0;
+	}
+	/* font-weigth从100-900，默认为400 */
+	.userName {
+		font-size: 32rpx;
+		font-weight: 900;
+		margin: 100rpx 0;
+	}
+
+	.goStudy {
+		display: block;
+		width: 220rpx;
+		height: 80rpx;
+		font-size: 28rpx;
+		border: 1px solid #999;
+		border-radius: 10rpx;
+		text-align: center;
+		line-height: 80rpx;
+	}
+</style>
+
+6.在index.wxml中处理数据
+<view>
+	<text class="userName">hello {{ msg }}</text>
+</view>
+<script>
+	Page({
+		//页面的初始化数据
+		data: {
+			msg: '落在东南的雨',
+		}
+	})
+</script>
+
+7.小程序中事件分为冒泡事件和非冒泡事件
+事件分为三个阶段：捕获，处理，冒泡
+事件委托优点：1防止重复定义事件，2新添加的元素自动拥有事件，无需添加
+绑定冒泡事件：bind+事件名="xxx",不会阻止事件冒泡
+绑定非冒泡事件：catch+事件名="xxx",会阻止事件冒泡
+<!-- Tap代表点击事件 -->
+<view bindTap="handleParent">
+	<text bindTap="handleChild"></text>
+</view>
+<script>
+	data: {
+		...
+	},
+	handleParent() {
+		console.log('冒泡')
+	}
+</script>
+
+8.生命周期函数
+小程序的进程分别由视图线程和js线程同步执行
+onLoad：js下载完
+onShow：js收到视图层发来的数据进行初始化后发回给视图，发完后执行该函数，即当前页面首次显示时被调用
+onReady：视图渲染完毕后发送通知给js线程，js线程执行onReady函数
+
+注：onLoad和onReady阶段可以做一些发送请求，开启定时器什么的
+
+onHide：当前页面隐藏时被调用
+onShow：当前页面显示时被调用
+onUnload：当前页面被卸载时被调用
+
+
+
+
+

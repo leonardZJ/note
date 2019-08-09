@@ -1,0 +1,18 @@
+写入数据库时忘记.sava()
+混淆中英文标点
+
+1.预期：当用户在文本框中输入空值时弹出警告信息
+  结果：返回错误页面
+
+NoReverseMatch at /todo/reset/62
+Reverse for '重写' with arguments '('',)' not found. 1 pattern(s) tried: ['todo/reset/(?P<d>[^/]+)$']
+错误位置：<form method="POST" action="{% url 'todolist:重写' d %}">
+
+原因：后台重新返回当前HTML页面时，忘记给HTML页面中的d变量传参。
+解决：在传给前台的字典中添加缺少的参数
+
+2.预期：当用户点击删除按钮时弹出提示确认窗，弹窗里显示当前行信息
+  结果：弹出的提示信息永久为第一行信息
+
+原因：由于页面表格每一行是用for循环生成的，而弹窗定位属性data-target未添加动态索引(如{{ i.id }})，导致弹窗所有定位属性都相同，触发弹窗时检索到第一个符合项时便停止了检索
+解决：在弹窗相关属性data-target，aria-labelledby，id中添加动态索引(data-target="#exampleModal{{ i.id }})

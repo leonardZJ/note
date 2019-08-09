@@ -1,0 +1,92 @@
+
+项目创建
+1.初始化项目：
+vue init webpack projectname
+
+2.选项解释：
+Project name (vuetest)：项目名称，可以自己指定，也可直接回车，按照括号中默认名字（注意这里的名字不能有大写字母，如果有会报错Sorry, name can no longer contain capital letters）
+
+Project description (A Vue.js project)：项目描述，也可直接点击回车，使用默认名字
+
+Author (...)：作者
+
+Runtime + Compiler: recommended for most users：运行加编译(推荐)
+Runtime-only: about 6KB lighter min+gzip, but templates (or any Vue-specificHTML) are ONLY allowed in .vue files - render functions are required elsewhere：仅运行时(推荐)
+
+Install vue-router? (Y/n)：是否安装vue-router(官方路由)，大多数情况下都使用
+
+Use ESLint to lint your code? (Y/n)：是否使用ESLint管理代码，ESLint是个代码风格管理工具，一般项目中都会使用
+
+Pick an ESLint preset (Use arrow keys)：选择一个ESLint预设，编写vue项目时的代码风格
+
+Setup unit tests with Karma + Mocha? (Y/n)：是否安装单元测试
+
+Setup e2e tests with Nightwatch(Y/n)?：是否安装e2e测试
+
+3.最后如果进行手动安装则进入项目文件命令行npm install会自动下载依赖文件(或者淘宝镜像会更快cnpm install)
+
+4.进入项目文件夹打开命令行：
+npm run dev启动服务
+
+项目打包
+1.项目文件夹命令行下执行(生成dist文件夹)
+npm run build
+
+项目发布1(测试时使用静态服务器)
+2.项目文件夹命令行下执行(下载静态服务器(下过就不用下了))
+npm install -g serve
+
+3.项目文件夹命令行下执行(运行dist)
+serve dist
+
+项目发布2(后台工程师使用动态服务器(tomcat))
+1.修改配置文件webpack.prod.conf.js：
+在output中添加publicPath:'/x(自定义打包文件夹名)/'
+
+2.重新打包
+npm run build
+
+3.将生成的dist文件夹复制出来并改名为x
+
+4.将项目文件夹放到服务器的webapps文件夹里
+
+eslint
+会帮你检查写法规范中的错误(不会影响项目运行)，如果不想改，在package.json中注释掉module中的rules项中的：
+...(config.dev.useEslint ? [createLintingRule()] : [])即可
+
+打包部署问题
+说明：打包后部署到tomcat上会出现路径问题，需要在config下的index.js中修改生产配置项
+<script>
+	build: {
+	  // Template for index.html
+	  index: path.resolve(__dirname, '../dist/index.html'),
+
+	  // Paths
+	  assetsRoot: path.resolve(__dirname, '../dist'),
+	  assetsSubDirectory: 'static',
+	  assetsPublicPath: './', //这里前面要加一个点
+	}
+</script>
+
+打包后图片找不到
+解决：如果配置了"assetsPublicPath: './'"还是找不到，先查看其他图片是否能够显示，如果部分图片能够显示，可能因为图片的路径前面有url()等字段，会被webpack识别为字符串，正常情况下，assetsPublicPath: './' 会在所有的资源路径前面加上根目录，但是如果不能识别为路径，就不会自动加路径，所以会有一部分显示，一部分不显示的问题
+解决方法：将'url(../../static/img.png)'类的字符串路径修改为另一种形式
+<script>
+	aaa.img = 'url()'
+	//改变为
+	let src = require('../../static/img.png')
+	aaa.img = 'url(' + src + ')'
+</script>
+打包后， css 会抽离出来为一个单独的 css 文件，而 css 和 图片 之间的一个相对路径关系就改变了
+解决：在 build/utils.js 中，增加一个 pablicPath 的配置
+<script>
+	if (options.extract) {
+	  return ExtractTextPlugin.extract({
+	    use: loaders,
+	    fallback: 'vue-style-loader',
+	    publicPath: '../../' // 添加这一行，作用是设置打包过程中提取css的方法
+	  })
+	} else {
+	  return ['vue-style-loader'].concat(loaders)
+	}
+</script>

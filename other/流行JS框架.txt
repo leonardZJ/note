@@ -1,0 +1,43 @@
+1）Angular
+这是另一个JavaScript框架，也在我的2018年学习清单中。它提供了一个完全的客户端解决方案。你可以使用AngularJS在客户端创建动态网页。它提供了声明性模板，依赖注入，端到端工具，以及集成的最佳实践，以解决客户端的常见开发难题。
+由于它是一个JavaScript库，因此你可以使用<script>标签将其包含在HTML页面中。它使用指令（Directives）扩展HTML属性，并使用表达式将数据绑定到HTML。
+因为Google支持Angular，所以在性能和定期更新方面你可以放心。我坚信AngularJS绝对不会短命，绝对值得你投入时间和精力。
+2）Node.js
+毫无疑问，JavaScript是排名第一的编程语言，而Node.js对此发挥了重要作用。传统上，JavaScript被用作客户端脚本语言，与HTML一起使用来提供客户端上的动态行为。它运行在Web浏览器上，但是Node.js允许你在服务器端运行JavaScript。
+Tye Node.js是一个开源和跨平台的JavaScript运行时环境，用于执行服务器端JavaScript代码。你可以使用Node.js在服务器端创建动态网页，然后将其发送到客户端。
+这意味着你可以用JavaScript开发一个从前端到后端的客户端-服务器端应用程序。
+3）Spring Boot
+我已经使用Spring框架许多年了，所以当我第一次被介绍到Spring Boot时，我完全被它相对匮乏的配置震惊到了。使用Spring Boot编写基于Spring的Java应用程序就像使用main()方法编写核心Java应用程序一样简单。
+尽管我已经尝试过Spring Boot，但我还没有掌握它，这就是为什么我需要在2018年学习Spring Boot的原因。
+4）React
+React是用于构建用户界面的另一个JavaScript库或框架。它就像AngularJS，但由Facebook、Instagram、以及一个由个人开发人员和企业组成的社区维护。它允许Web开发人员创建大型网页应用程序，允许随时改变而无需重新加载页面。
+web开发世界被分成了Angular和React两个阵营，具体在哪个阵营取决于你选择的方面。大多数情况下，这是由情况决定的。例如，如果你工作于一个基于React的项目，那么显然，你需要学习React。
+5）Bootstrap
+这是用于设计网站和Web应用程序的另一个流行的开源前端Web框架。最初由Twitter带给我们的Bootstrap，提供了基于HTML和CSS的设计模板，用于排印，表单，按钮，导航和其他界面组件以及可选的JavaScript扩展。
+Bootstrap支持响应式Web设计，这意味着web页面布局可以根据浏览器的屏幕大小动态地调整。在移动领域中，BootStrap以其移动优先的设计理念引领潮流，着重于默认情况下的响应式设计。
+如果你是Web开发人员，却还不曾涉足Bootstrap，那么是时候在2018年学习了。
+6）jQuery
+这是另一个统治世界的JavaScript框架。jQuery一直是我的最爱，我建议每个开发者学习jQuery。它使得客户端脚本变得so easy。
+你可以做动画，发送HTTP请求，重新加载页面，以及通过写几行代码来执行客户端验证。
+7）Spring Security 5
+安全是无可替代的，2018年将更为重要。由于Spring Security已经成为Java世界中Web安全的代名词，因此更新到2018年最新版本的Spring Security非常有意义。
+Spring Security的新版本5.0包含许多bug修复和一个全新的OAuth 2.0模块。即使你不了解Spring Security，那么你也应该考虑在2018年学习它。
+8）Apache Hadoop
+大数据和自动化是2018年许多公司关注的重点，这就是为什么学习Hadoop和Spark等大数据技术变得至关重要。Apache Hadoop是一个允许使用简单编程模型在计算机集群中分布式处理大型数据集的框架。
+它旨在从单台服务器扩展到数千台机器，每台机器提供本地计算和存储。它基于流行的Map Reduce模式，是开发可靠、可扩展和分布式软件计算应用程序的关键。
+9）Apache Spark
+这是另一个日益普及的大数据框架。Apache Spark是一个快速的内存数据处理引擎，具有优雅和善于表达的开发API，使数据工作者能够高效地执行流、机器学习或需要快速迭代访问数据集的SQL工作负载。
+你可以将Spark用于ETL，机器学习和数据科学工作负载到Hadoop的内存计算。
+10）Cordova
+Apache Cordova是最初由Nitobi创建的另一个移动应用程序开发框架。Adobe Systems在2011年收购了Nitobi，将其重新命名为PhoneGap，后来又发布了一个名为Apache Cordova的开源软件。
+它允许你使用标准的web技术——HTML5，CSS3和JavaScript——进行跨平台开发。
+11）Firebase
+Firebase是Google的移动平台，可帮助你快速开发高品质的移动app并拓展业务。你可以选择Firebase作为Android或iOS应用程序的后端。
+如果你打算在2018年进入业务利润丰厚的移动应用程序开发，那么学习Firebase是一个非常棒的主意。
+12）Xamarin
+Xamarin是一种通过单一和共享C#代码库为所有平台快速制作移动应用程序，为每个平台构建自定义本地用户界面，或者使用Xamarin.Forms跨平台编写单个共享用户界面的方法。
+Xamarin由微软所有，并且很快成为为C、C ++和C＃开发人员创建移动应用程序的热门之选。
+如果你已经掌握C语言中的一种，并且正想涉足移动app开发的领域，那么我强烈建议你在2018年学习Xamarin。
+这就是2018年要学的东西。这些框架需求量很大，尤其是Spring，Node.js和AngularJS。学习这些框架不仅可以提高你找工作的机会，还可以打开众多的机会大门。
+即使你暂时不打算换工作，保持更新到最新和最伟大的技术也是职业成长的关键。
+所以，我建议你在2018年选择一些这样的框架并学习它们。如果你是Java开发者，那么Apache Spark是一个不错的选择，但是如果你对编程语言而不是框架或者库感兴趣的话，那么Kotlin看上去很赞

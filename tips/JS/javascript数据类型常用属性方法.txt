@@ -1,0 +1,1201 @@
+Tips
+1方法基本都有返回值，调用时赋值给变量即可获取，返回值可能会因为函数执行方式不同而产生变化
+例如：var b = array.pop()，这时b就储存了删除的元素
+2.NaN与所有值都不相等，包括它自己，typeof（NaN）的值是number
+
+Object
+JS所有其他对象都继承自Object对象，即那些对象都是Object的实例，万物皆对象
+Object对象原生方法有两类：Object静态方法（定义在本身上）与Object的实例方法（定义在prototype上）
+
+作为工具函数和构造函数使用
+Object(x)
+说明：将x转化为对象，
+new Object()
+说明：生成新对象，等价于var obj = {}
+<script>
+	var obj = Object();
+	// 等同于
+	var obj = Object(undefined); //参数为undefined和null时返回空对象
+	var obj = Object(null);      //参数为undefined和null时返回空对象
+
+	//instanceof运算符用于验证，一个对象是否为指定的构造函数的实例
+	obj instanceof Object // true
+
+	var o1 = {a: 1};
+	//等同于
+	var o2 = new Object(o1);
+	o1 === o2 // true
+
+	var obj = new Object(123);
+	//instanceof运算符用于验证，一个对象是否为指定的构造函数的实例
+	obj instanceof Number // true，表示obj对象是Object的实例
+</script>
+
+静态方法（定义在自身上的方法）
+Object.keys(x)
+说明：遍历一个对象x，返回一个数组，包含该对象自身的（而不是继承的）所有属性名（key）
+<script>
+	var obj = {
+	  p1: 123,
+	  p2: 456
+	};
+
+	Object.keys(obj) // ["p1", "p2"]
+</script>
+Object.getOwnPropertyNames
+说明：与Object.keys类似，涉及不可枚举属性时，才会有不同
+Object.keys只返回可枚举的属性名
+Object.getOwnPropertyNames方法还返回不可枚举的属性名
+<script>
+	var a = ['Hello', 'World'];
+
+	Object.keys(a) // ["0", "1"]
+	//getOwnPropertyNames还返回不可枚举的属性名
+	Object.getOwnPropertyNames(a) // ["0", "1", "length"]
+</script>
+JS没有计算对象属性个数（长度）的方法，所以用这两个方法的返回值.length代替
+<script>
+	var obj = {
+	  p1: 123,
+	  p2: 456
+	};
+
+	Object.keys(obj).length // 2
+	Object.getOwnPropertyNames(obj).length // 2
+</script>
+原型链相关方法
+Object.create()：该方法可以指定原型对象和属性，返回一个新的对象
+Object.getPrototypeOf()：获取对象的Prototype对象
+
+实例方法（定义在prototype上的方法）
+Object.prototype.valueOf()：返回当前对象对应的值，默认情况下返回对象本身
+说明：主要用途在于JS进行隐式类型转换时会默认调用这个方法
+<script>
+	var obj = new Object();
+	obj.valueOf() === obj // true，obj.valueOf()默认返回它自己
+
+	var obj = new Object();
+	//不同类型相加会隐式转换，隐式调用valueOf()求出obj的值再与1相加
+	1 + obj // "1[object Object]"
+</script>
+Object.prototype.toString()：返回当前对象对应的字符串形式
+说明：主要用于判断一个值的类型
+<script>
+	//使用call可以让任何值调用toString()方法
+	Object.prototype.toString.call(2) // "[object Number]"
+	Object.prototype.toString.call('') // "[object String]"
+	Object.prototype.toString.call(true) // "[object Boolean]"
+	Object.prototype.toString.call(undefined) // "[object Undefined]"
+	Object.prototype.toString.call(null) // "[object Null]"
+	Object.prototype.toString.call(Math) // "[object Math]"
+	Object.prototype.toString.call({}) // "[object Object]"
+	Object.prototype.toString.call([]) // "[object Array]"
+</script>
+Object.prototype.hasOwnProperty()：判断某个属性是否为当前对象自身的属性，返回布尔值
+<script>
+	var obj = {
+	  p: 123
+	};
+
+	obj.hasOwnProperty('p') // true
+	obj.hasOwnProperty('toString') // false，toString是原型上继承过来的，所以非自身
+</script>
+
+
+Array
+作为构造函数使用
+注：Array作为构造函数，不同的参数，会导致它的行为不一致，因此，不建议使用它生成新数组，直接使用数组字面量会更好
+<script>
+	var arr = new Array(1, 2);
+	// 等同于
+	var arr = [1, 2]; //字面量方法更好
+</script>
+
+静态方法
+Array.isArray()
+说明：返回一个布尔值，表示参数是否为数组，它可以弥补typeof运算符的不足
+<script>
+	var arr = [1, 2, 3];
+
+	typeof arr // "object"
+	Array.isArray(arr) // true
+</script>
+
+实例方法
+valueOf()，toString()
+这两个方法是所有对象都拥有的方法，不同对象的valueOf，toString()方法不尽一致，数组valueOf方法返回数组本身，toString()返回数组的字符串形式
+<script>
+	var arr = [1, 2, 3];
+	arr.valueOf() // [1, 2, 3]，返回数组本身
+
+	arr.toString() // "1,2,3"，返回数组的字符串形式
+	var arr = [1, 2, 3, [4, 5, 6]];
+	arr.toString() // "1,2,3,4,5,6"，返回数组的字符串形式
+</script>
+
+push()
+说明：用于在数组末端添加一个或多个元素，并返回添加新元素后的数组长度
+注：该方法会改变原数组
+pop()
+说明：用于删除数组的最后一个元素，并返回该元素
+注：该方法会改变原数组
+<script>
+	var arr = [];
+
+	arr.push(1) // 1，返回新长度length
+	arr.push('a') // 2，返回新长度length
+	arr.push(true, {}) // 4，返回新长度length
+
+	arr // [1, 'a', true, {}]
+
+	var arr = ['a', 'b', 'c'];
+
+	arr.pop() // 'c'，返回删除的元素
+	arr // ['a', 'b']
+</script>
+shift()
+说明：用于删除数组的第一个元素，并返回该元素
+注：该方法会改变原数组
+unshift()：用于在数组的第一个位置添加元素，并返回添加新元素后的数组长度
+注：该方法会改变原数组。
+<script>
+	var a = ['a', 'b', 'c'];
+
+	a.shift() // 'a'，返回删除的元素
+	a // ['b', 'c']
+/*------------------------------------------------------------*/
+	var a = ['a', 'b', 'c'];
+
+	a.unshift('x'); // 4，返回新长度length
+	a // ['x', 'a', 'b', 'c']
+
+	var arr = [ 'c', 'd' ];
+	arr.unshift('a', 'b') // 4，返回新长度length
+	arr // [ 'a', 'b', 'c', 'd' ]
+</script>
+push和pop结合使用，可以构成“后进先出”的栈结构（stack）
+push()和shift()结合使用，就构成了“先进先出”的队列结构（queue）
+<script>
+	//栈结构
+	var arr = [];
+	arr.push(1, 2);
+	arr.push(3);
+	arr.pop();
+	arr // [1, 2]，3最后进入数组，但最早离开数组
+/*-----------------------------------------------------------*/
+	//队列结构
+	var arr = [];
+	arr.push(1, 2);
+	arr.push(3);
+	arr.shift();
+	arr // [2, 3]，1最早进入数组，也最早离开数组
+</script>
+sort()：对数组成员进行排序，默认是按照字典顺序排序，不是按照大小排序，数值会被先转成字符串，再按照字典顺序进行比较
+注：该方法会改变原数组
+sort(function (a,b) {})
+sort方法可以传入函数作为参数，该函数接受两个参数，表示进行比较的两个数组成员，该函数的返回值大于0，表示第一个成员排在第二个成员后面，其他情况下，都是第一个元素排在第二个元素前面
+<script>
+	[
+	  { name: "张三", age: 30 },
+	  { name: "李四", age: 24 },
+	  { name: "王五", age: 28  }
+	].sort(function (o1, o2) {
+	  return o1.age - o2.age; //分别将数组中每个元素代入o1,o2，减出来小的在前大的在后
+	})
+	// [
+	//   { name: "李四", age: 24 },
+	//   { name: "王五", age: 28  },
+	//   { name: "张三", age: 30 }
+	// ]
+</script>
+reverse()
+reverse方法用于颠倒排列数组元素，返回改变后的数组
+注：该方法会改变原数组
+<script>
+	var a = ['a', 'b', 'c'];
+
+	a.reverse() // ["c", "b", "a"]
+	a // ["c", "b", "a"]
+</script>
+
+[].concat()：用于多个数组的合并，将新数组的成员，添加到原数组成员的后部，最后返回一个新数组，原数组不变
+注1：如果传入的参数不是数组，则将该参数作为元素添加到第一个数组末尾
+注2：如果数组成员包含对象，concat方法返回的是当前数组的一个浅拷贝（引用原数组的地址）
+<script>
+	['hello'].concat(['world'])
+	// ["hello", "world"]，本质是将后一个数组的元素提娜佳到
+
+	['hello'].concat(['world'], ['!'])
+	// ["hello", "world", "!"]
+
+	[].concat({a: 1}, {b: 2})
+	// [{ a: 1 }, { b: 2 }]，传入的参数不是数组，将该参数作为元素添加到数组末尾
+
+	[2].concat({a: 1})
+	// [2, {a: 1}]，传入的参数不是数组，将该参数作为元素添加到数组末尾
+</script>
+splice：用于删除原数组的一部分成员，并可在删除的位置添加新的数组成员，返回被删除的元素
+注：该方法会改变原数组
+<script>
+	var a = ['a', 'b', 'c', 'd', 'e', 'f'];
+	a.splice(4, 2) // ["e", "f"]，删掉下标为4的位置开始删除(4也删掉)，删除2位
+	a // ["a", "b", "c", "d"]
+/*--------------------------------------------------------*/
+	var a = ['a', 'b', 'c', 'd', 'e', 'f'];
+	a.splice(4, 2, 1, 2) // ["e", "f"]，删除并添加1和2
+	a // ["a", "b", "c", "d", 1, 2]
+/*--------------------------------------------------------*/
+	var a = [1, 1, 1];
+	a.splice(1, 0, 2) // []，在下标1位置删除0个，插入一个2
+	a // [1, 2, 1, 1]
+</script>
+slice()：用于截取数组的一部分，返回一个新数组，原数组不变
+<script>
+	var a = ['a', 'b', 'c'];
+
+	a.slice(0) // ["a", "b", "c"]
+	a.slice(1) // ["b", "c"]
+	a.slice(1, 2) // ["b"]，前一个包括，后一个不包括
+	a.slice(2, 6) // ["c"]
+	a.slice() // ["a", "b", "c"]
+</script>
+
+join()
+说明：指定分隔符，将所有数组成员连接为一个字符串返回，不提供参数默认用逗号分隔,不改变原数组
+tip：字符串和伪数组可通过call调用该方法
+<script>
+	var a = [1, 2, 3, 4];
+
+	a.join() // "1,2,3,4"
+	a.join(' ') // '1 2 3 4'
+	a.join(' | ') // "1 | 2 | 3 | 4"
+
+	Array.prototype.join.call('hello', '-')
+	// "h-e-l-l-o"，字符串调用相当于给每个字符中间添加分隔符
+
+	var obj = { 0: 'a', 1: 'b', length: 2 };
+	Array.prototype.join.call(obj, '-')
+	// 'a-b'，伪数组调用，效果和数组一样
+</script>
+
+map()：对数组的所有成员依次执行参数函数，然后把每一次执行的结果组成一个新数组返回，即映射，原数组不变
+map(fn,xxx)：map除了接收第一个回调函数参数，还可接收第二个参数，用于绑定回调函数内部的this变量
+<script>
+	var numbers = [1, 2, 3];
+
+	numbers.map((n) => {
+	  return n + 1;
+	}); // [2, 3, 4]，返回一个新数组
+	numbers; // [1, 2, 3]，原数组不变
+/*------------------------------------------------*/
+	//还可以传入index值和数组本身
+	[1, 2, 3].map((elem, index, arr) => { //arr为原数组[1,2,3]
+	  return elem * index;
+	})
+	// [0, 2, 6]
+/*------------------------------------------------*/
+	var arr = ['a', 'b', 'c'];
+
+	[1, 2].map(function (e) {
+	  return this[e];
+	}, arr) //如果有第二个参数，第一个参数fn里的this会指向第二个参数
+	// ['b', 'c']
+</script>
+forEach()：与map方法类似，也是对数组的所有成员依次执行参数函数，区别是forEach方法不返回值，只操作数据，相当于for循环
+forEach(fn,xxx：forEach也可接收第二个参数，用于绑定回调函数内部的this变量
+注：forEach方法无法中断执行，总会将所有成员遍历完，如果希望符合某种条件时，就中断遍历，要使用for循环
+tip：如果数组遍历是为了得到返回值，那么使用map，否则使用forEach
+<script>
+	//forEach接收的参数跟map一样
+	function log(element, index, array) {
+	  console.log('[' + index + '] = ' + element);
+	}
+
+	[2, 5, 9].forEach(log);
+	// [0] = 2
+	// [1] = 5
+	// [2] = 9
+
+	var out = [];
+
+	[1, 2, 3].forEach(function(elem) {
+	  this.push(elem * elem);
+	}, out); //如果有第二个参数，第一个参数fn里的this会指向第二个参数
+
+	out // [1, 4, 9]
+</script>
+filter()：用于过滤数组成员，将满足条件的成员挑选出来组成一个新数组返回，原数组不变
+filter(fn,xxx)：filter也可接受第二个参数，用于绑定参数函数内部的this变量
+<script>
+	//filter的参数函数也接收三个参数，跟map一样
+	[1, 2, 3, 4, 5].filter(function (elem, index, arr) {
+	  return index % 2 === 0; //结果为true表示该元素符合条件
+	});
+	// [1, 3, 5]
+/*------------------------------------------------------*/
+	var obj = { MAX: 3 };
+	var myFilter = function (item) {
+	  if (item > this.MAX) return true;
+	};
+
+	var arr = [2, 8, 3, 4, 1, 3, 2, 9];
+	//如果filter中有第二个参数，第一个参数fn里的this会指向第二个参数
+	arr.filter(myFilter, obj) // [8, 4, 9]
+	</script>
+
+some()，every()：断言，返回一个布尔值，表示判断数组成员是否符合某种条件
+说明：它们接受一个函数作为参数，所有成员依次执行该函数，该函数接受三个参数：当前成员、当前位置和整个数组（跟map一样），执行完毕后返回一个布尔值
+some和every也可以接受第二个参数，用于绑定参数函数内部的this变量
+some()：只要一个成员的返回值是true，则整个some方法的返回值就是true，否则返回false，类似于或方法
+every()：所有成员的返回值都是true，整个every方法才返回true，否则返回false，类似于且方法
+注：对于空数组，some方法返回false，every方法返回true，回调函数都不会执行
+<script>
+	var arr = [1, 2, 3, 4, 5];
+	arr.some(function (elem, index, arr) {
+	  return elem >= 3;
+	});
+	// true，some其中一个元素符合条件则返回true
+
+	var arr = [1, 2, 3, 4, 5];
+	arr.every(function (elem, index, arr) {
+	  return elem >= 3;
+	});
+	// false，every其中任何一个元素不符合条件都会返回false，所有都符合才返回true
+
+</script>
+reduce()，reduceRight()：依次处理数组的每个成员，最终累计为一个值
+两者区别在于：reduce()从左到右处理（从第一个成员到最后一个成员），reduceRight从右到左处理
+reduce(fn(a1,a2,index,arr),a0)
+第一个参数为函数，接收4个参数
+a1：累积变量，默认为数组的第一个成员
+a2：当前变量，默认为数组的第二个成员
+index：当前位置（从0开始）
+arr：原数组
+第二个参数用于设定默认值
+tips：reduce处理空数组时，会因为取不到初始值而报错，这时加上第二个参数，就能保证总是会返回一个值
+<script>
+	[1, 2, 3, 4, 5].reduce(function (a, b) {
+	  console.log(a, b);
+	  return a + b;
+	})
+	// 1 2
+	// 3 3
+	// 6 4
+	// 10 5
+	//最后结果：15
+
+	//还可以用来做一些遍历相关的操作，例如找出字符长度最长的数组成员
+	function findLongest(entries) {
+	  return entries.reduce(function (longest, entry) {
+	  	//判断两个迭代元素的长度，返回长的那个，再跟下一个元素判断，最终返回最长的
+	    return entry.length > longest.length ? entry : longest;
+	  }, '');
+	}
+
+	findLongest(['aaa', 'bb', 'c']) // "aaa"
+</script>
+indexOf()：返回给定元素在数组中第一次出现的位置，如果没有出现则返回-1
+lastIndexOf()：返回给定元素在数组中第一次出现的位置，如果没有出现则返回-1
+注：这两个方法不能用来搜索NaN的位置，即它们无法确定数组成员是否包含NaN，因为这两个方法的本质，是使用严格相等运算符（===）进行比较，而NaN是唯一一个不等于自身的值
+这两个方法还可以接受第二个参数，表示搜索的开始位置
+<script>
+	var a = ['a', 'b', 'c'];
+
+	a.indexOf('b') // 1
+	a.indexOf('y') // -1，数组中不存在'y'，返回-1
+
+	['a', 'b', 'c'].indexOf('a', 1) // -1，第二个参数表示从下标为一的地方开始搜索
+</script>
+上面的所有方法中，如果返回的值还是数组，可以用链式调用的方式继续调用数组的其他方法
+
+Number(),String(),Boolean()包装对象
+原始类型的数据是不能添加属性和方法的，为了让它们拥有属性和方法，会先将它包装成对象，这些对象的实例或者原型上就可以添加属性和方法了（默认已经有了），而因此而生的对象，就被称为"包装对象"，而包装对象可以生成包装对象实例，分别有Number(),String(),Boolean()三种类型
+一般情况下，原始类型的值都可以直接调用包装对象的属性和方法，这是因为JS引擎会在它们调用方法的时候，自动将原始类型的值转为一个临时的包装对象实例，让它们可以直接调用包装对象的属性和方法，但这个临时包装对象实例是只读的，无法修改，例如像字符串虽然能调用添加的方法，但却无法真正添加新属性，临时包装对象实例在使用完后会被立刻销毁
+
+包装对象
+作为构造函数使用，可以生成包装对象实例
+<script>
+	//通过对应方法生成三个包装对象
+	var v1 = new Number(123);
+	var v2 = new String('abc');
+	var v3 = new Boolean(true);
+
+	typeof v1 // "object"，现在他们的类型都变成对象了
+	typeof v2 // "object"，现在他们的类型都变成对象了
+	typeof v3 // "object"，现在他们的类型都变成对象了
+
+	v1 === 123 // false
+	v2 === 'abc' // false
+	v3 === true // false
+
+	var str = 'abc';
+	str.length // 3，str虽然不是对象，但也能直接调用对象的length属性
+</script>
+作为工具函数使用（不带有new）：将任意类型的值，转为原始类型的值
+<script>
+	Number(123) // 123
+	String('abc') // "abc"
+	Boolean(true) // true
+</script>
+包装对象实例方法
+valueOf()：返回包装对象实例对应的原始类型的值
+<script>
+	new Number(123).valueOf()  // 123
+	new String('abc').valueOf() // "abc"
+	new Boolean(true).valueOf() // true
+</script>
+toString()：返回对应的字符串形式
+<script>
+	new Number(123).toString() // "123"
+	new String('abc').toString() // "abc"
+	new Boolean(true).toString() // "true"
+</script>
+
+Boolean包装对象
+作为构造函数时：生成值为布尔值的包装对象
+<script>
+	var b = new Boolean(true);
+
+	typeof b // "object"
+	b.valueOf() // true
+</script>
+作为工具函数时：将x转化成布尔值类型的值
+<script>
+	Boolean(undefined) // false
+	Boolean(null) // false
+	Boolean(0) // false
+	Boolean('') // false
+	Boolean(NaN) // false
+
+	Boolean(1) // true
+	Boolean('false') // true
+	Boolean([]) // true
+	Boolean({}) // true
+	Boolean(function () {}) // true
+	Boolean(/foo/) // true
+</script>
+
+Number包装对象
+作为构造函数时：用于生成值为数值的对象
+<script>
+	var n = new Number(1);
+	typeof n // "object"
+</script>
+作为工具函数时：可将任何类型的值转为数值
+<script>
+	Number(true) // 1
+</script>
+静态属性：直接定义在Number包装对象上的属性，并不是定义在实例上的属性
+Number.POSITIVE_INFINITY：正的无限，指向Infinity
+Number.NEGATIVE_INFINITY：负的无限，指向-Infinity
+Number.NaN：表示非数值，指向NaN
+<script>
+	Number.POSITIVE_INFINITY // Infinity
+	Number.NEGATIVE_INFINITY // -Infinity
+	Number.NaN // NaN
+</script>
+实例方法
+Number.prototype.toString()
+说明：用于将一个数值转为字符串形式
+<script>
+	(10).toString() // "10"
+
+	//接收参数表示进制
+	(10).toString(2) // "1010"
+	(10).toString(8) // "12"
+	(10).toString(16) // "a"
+</script>
+Number.prototype.toFixed()
+说明：先将一个数转为指定位数的小数，然后返回这个小数对应的字符串
+<script>
+	(10).toFixed(2) // "10.00"
+	10.005.toFixed(2) // "10.01"
+</script>
+Number.prototype.toExponential()
+说明：用于将一个数转为科学计数法形式
+<script>
+	(10).toExponential()  // "1e+1"
+	(10).toExponential(1) // "1.0e+1"
+	(10).toExponential(2) // "1.00e+1"
+
+	(1234).toExponential()  // "1.234e+3"
+	(1234).toExponential(1) // "1.2e+3"
+	(1234).toExponential(2) // "1.23e+3"
+</script>
+Number.prototype.toPrecision()
+说明：用于将一个数转为指定位数的有效数字
+<script>
+	(12.34).toPrecision(1) // "1e+1"
+	(12.34).toPrecision(2) // "12"
+	(12.34).toPrecision(3) // "12.3"
+	(12.34).toPrecision(4) // "12.34"
+	(12.34).toPrecision(5) // "12.340"
+</script>
+
+String包装对象
+作为构造函数时：用于生成值为字符串的包装对象
+<script>
+	var s1 = 'abc';
+	var s2 = new String('abc');
+
+	typeof s1 // "string"
+	typeof s2 // "object"
+
+	s2.valueOf() // "abc"
+</script>
+作为工具函数时：可将任何类型的值转为字符串
+<script>
+	String(true) // "true"
+	String(5) // "5"
+</script>
+静态方法
+String.fromCharCode()
+说明：该方法的参数是一个或多个数值，代表 Unicode 码点，返回值是这些码点组成的字符串
+<script>
+	String.fromCharCode() // ""
+	String.fromCharCode(97) // "a"
+	String.fromCharCode(104, 101, 108, 108, 111)
+	// "hello"
+</script>
+实例属性
+String.prototype.length：返回字符串的长度
+<script>
+	'abc'.length // 3
+</script>
+实例方法
+String.prototype.charAt()：返回指定位置的字符，
+<script>
+	var s = new String('abc');
+
+	s.charAt(1) // "b"
+	s.charAt(s.length - 1) // "c"
+
+	//可用[]方法代替，[]比charAt更好用，charAt如果参数为负数，或大于等于字符串的长度，会返回空字符串
+	'abc'.charAt(1) // "b"
+	'abc'[1] // "b"
+</script>
+String.prototype.charCodeAt()：返回字符串指定位置的Unicode码点（十进制表示）
+<script>
+	'abc'.charCodeAt(1) // 98
+</script>
+String.prototype.concat()：用于连接两个字符串，返回一个新字符串，不改变原字符串
+<script>
+	var s1 = 'abc';
+	var s2 = 'def';
+
+	s1.concat(s2) // "abcdef"
+	s1 // "abc"
+
+	//可以接收多个参数
+	'a'.concat('b', 'c') // "abc"
+</script>
+String.prototype.slice()：用于从原字符串取出子字符串并返回，不改变原字符串，第一个参数是子字符串的开始位置，第二个参数是子字符串的结束位置（不含该位置）
+<script>
+	'JavaScript'.slice(0, 4) // "Java"
+
+	//省略第二个参数，则表示子字符串一直到原字符串结束
+	'JavaScript'.slice(4) // "Script"
+
+	//如果参数是负值，表示从结尾开始倒数计算的位置，即该负值加上字符串长度
+	'JavaScript'.slice(-6) // "Script"
+	'JavaScript'.slice(0, -6) // "Java"
+	'JavaScript'.slice(-2, -1) // "p"
+
+	//如果第一个参数大于第二个参数，slice方法返回一个空字符串。
+	'JavaScript'.slice(2, 1) // ""
+</script>
+String.prototype.substring()：用于从原字符串取出子字符串并返回，不改变原字符串，第一个参数表示子字符串的开始位置，第二个位置表示结束位置（不含该位置）
+<script>
+	'JavaScript'.substring(0, 4) // "Java"
+
+	//如果省略第二个参数，则表示子字符串一直到原字符串的结束。
+	'JavaScript'.substring(4) // "Script"
+
+	//如果第一个参数大于第二个参数，substring方法会自动更换两个参数的位置。
+	'JavaScript'.substring(10, 4) // "Script"
+	// 等同于
+	'JavaScript'.substring(4, 10) // "Script"
+
+	//如果参数是负数，substring方法会自动将负数转为0
+	'JavaScript'.substring(-3) // "JavaScript"
+	'JavaScript'.substring(4, -3) // "Java"
+</script>
+结论：由于这些规则违反直觉，因此不建议使用substring方法，应该优先使用 slice 。
+String.prototype.substr()：用于从原字符串取出子字符串并返回，不改变原字符串，跟slice和substring方法的作用相同，第一个参数是子字符串的开始位置（从0开始计算），第二个参数是子字符串的长度。
+<script>
+	'JavaScript'.substr(4, 6) // "Script"
+
+	//如果省略第二个参数，则表示子字符串一直到原字符串的结束
+	'JavaScript'.substr(4) // "Script"
+
+	//如果第一个参数是负数，表示倒数计算的字符位置。如果第二个参数是负数，将被自动转为0，因此会返回空字符串
+	'JavaScript'.substr(-6) // "Script"
+	'JavaScript'.substr(4, -1) // ""
+</script>
+String.prototype.indexOf()，String.prototype.lastIndexOf()
+说明：用于确定一个字符串在另一个字符串中第一次出现的位置，返回结果是下标，如果返回-1，就表示不匹配
+lastIndexOf从尾部开始匹配，indexOf则是从头部开始匹配。
+<script>
+	'hello world'.indexOf('o') // 4
+	'JavaScript'.indexOf('script') // -1
+
+	//indexOf方法还可以接受第二个参数，表示从该位置开始向后匹配
+	'hello world'.indexOf('o', 6) // 7
+</script>
+String.prototype.trim()：用于去除字符串两端的空格，返回一个新字符串，不改变原字符串
+<script>
+	//去除的不仅是空格，还包括制表符（\t、\v）、换行符（\n）和回车符（\r）
+	'  hello world  '.trim()
+	// "hello world"
+</script>
+String.prototype.toLowerCase()，String.prototype.toUpperCase()
+说明：toLowerCase()用于将一个字符串全部转为小写，toUpperCase则是全部转为大写，它们都返回一个新字符串，不改变原字符串
+<script>
+	'Hello World'.toLowerCase()
+	// "hello world"
+
+	'Hello World'.toUpperCase()
+	// "HELLO WORLD"
+</script>
+String.prototype.match()：用于确定原字符串是否匹配某个子字符串，返回一个数组，成员为匹配的第一个字符串，如果没有找到匹配，则返回null
+<script>
+	//不带g只匹配一个
+	'cat, bat, sat, fat'.match('at') // ["at"]
+	'cat, bat, sat, fat'.match('xt') // null
+
+	//返回的数组还有index属性和input属性，分别表示匹配字符串开始的位置和原始字符串。
+	var matches = 'cat, bat, sat, fat'.match('at');
+	matches.index // 1
+	matches.input // "cat, bat, sat, fat"
+</script>
+String.prototype.search()：用法基本等同于match，但是返回值为匹配的第一个位置的下标，如果没有找到，则返回-1
+String.prototype.replace()：用于替换匹配的子字符串，一般情况下只替换第一个匹配（除非使用带有g修饰符的正则表达式）
+<script>
+	'cat, bat, sat, fat'.search('at') // 1
+	'aaa'.replace('a', 'b') // "baa"
+</script>
+String.prototype.split()：按照给定规则分割字符串，返回一个由分割出来的子字符串组成的数组
+<script>
+	'a|b|c'.split('|') // ["a", "b", "c"]
+	'a|b|c'.split('') // ["a", "|", "b", "|", "c"]
+	'a|b|c'.split() // ["a|b|c"]
+	'a||c'.split('|') // ['a', '', 'c']
+	'|b|c'.split('|') // ["", "b", "c"]
+	'a|b|'.split('|') // ["a", "b", ""]
+</script>
+String.prototype.localeCompare()：用于比较两个字符串，返回一个整数，如果小于0，表示第一个字符串小于第二个字符串，如果等于0，表示两者相等，如果大于0，表示第一个字符串大于第二个字符串
+<script>
+	'apple'.localeCompare('banana') // -1
+	'apple'.localeCompare('apple') // 0
+
+	//该方法的最大特点，就是会考虑自然语言的顺序。举例来说，正常情况下，大写的英文字母小于小写字母
+	// Unicode 码点中
+	'B' > 'a' // false
+	//但是localeCompare方法会考虑自然语言的排序情况，将B排在a的前面
+	'B'.localeCompare('a') // 1
+</script>
+
+Math对象
+该对象不是构造函数，不能生成实例，所有的属性和方法都必须在Math对象上调用
+静态属性：这些属性都是只读的，不能修改
+Math.E：常数e。
+Math.LN2：2 的自然对数。
+Math.LN10：10 的自然对数。
+Math.LOG2E：以 2 为底的e的对数。
+Math.LOG10E：以 10 为底的e的对数。
+Math.PI：常数π。
+Math.SQRT1_2：0.5 的平方根。
+Math.SQRT2：2 的平方根。
+静态方法
+普通类
+Math.abs()：绝对值
+<script>
+	Math.abs(1) // 1
+	Math.abs(-1) // 1
+</script>
+Math.ceil()：向上取整
+Math.floor()：向下取整
+<script>
+	Math.floor(3.2) // 3
+	Math.floor(-3.2) // -4
+
+	Math.ceil(3.2) // 4
+	Math.ceil(-3.2) // -3
+
+	//结合起来，可以实现一个总是返回数值的整数部分的函数
+	function ToInteger(x) {
+	  x = Number(x);
+	  return x < 0 ? Math.ceil(x) : Math.floor(x);
+	}
+
+	ToInteger(3.2) // 3
+	ToInteger(3.5) // 3
+	ToInteger(3.8) // 3
+	ToInteger(-3.2) // -3
+	ToInteger(-3.5) // -3
+	ToInteger(-3.8) // -3
+</script>
+Math.max()：最大值
+Math.min()：最小值
+<script>
+	Math.max(2, -1, 5) // 5
+	Math.min(2, -1, 5) // -1
+	Math.min() // Infinity
+	Math.max() // -Infinity
+</script>
+Math.pow()：指数运算
+<script>
+	// 等同于 2 ** 2
+	Math.pow(2, 2) // 4
+	// 等同于 2 ** 3
+	Math.pow(2, 3) // 8
+</script>
+Math.sqrt()：平方根
+<script>
+	Math.sqrt(4) // 2
+	Math.sqrt(-4) // NaN
+</script>
+Math.log()：自然对数
+<script>
+	Math.log(Math.E) // 1
+	Math.log(10) // 2.302585092994046
+</script>
+Math.exp()：e的指数
+<script>
+	Math.exp(1) // 2.718281828459045
+	Math.exp(3) // 20.085536923187668
+</script>
+Math.round()：四舍五入
+<script>
+	Math.round(0.1) // 0
+	Math.round(0.5) // 1
+	Math.round(0.6) // 1
+
+	// 等同于
+	Math.floor(x + 0.5)
+</script>
+Math.random()：随机数
+<script>
+	Math.random() // 0.7151307314634323
+
+	//任意范围的随机数生成函数
+	function getRandomArbitrary(min, max) {
+	  return Math.random() * (max - min) + min;
+	}
+
+	getRandomArbitrary(1.5, 6.5)
+	// 2.4942810038223864
+
+	//返回随机字符
+	function random_str(length) {
+	  var ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+	  ALPHABET += 'abcdefghijklmnopqrstuvwxyz';
+	  ALPHABET += '0123456789-_';
+	  var str = '';
+	  for (var i = 0; i < length; ++i) {
+	    var rand = Math.floor(Math.random() * ALPHABET.length);
+	    str += ALPHABET.substring(rand, rand + 1);
+	  }
+	  return str;
+	}
+
+	random_str(6) // "NdQKOr"
+</script>
+三角函数类
+Math.sin()：返回参数的正弦（参数为弧度值）
+Math.cos()：返回参数的余弦（参数为弧度值）
+Math.tan()：返回参数的正切（参数为弧度值）
+Math.asin()：返回参数的反正弦（返回值为弧度值）
+Math.acos()：返回参数的反余弦（返回值为弧度值）
+Math.atan()：返回参数的反正切（返回值为弧度值）
+<script>
+	Math.sin(0) // 0
+	Math.cos(0) // 1
+	Math.tan(0) // 0
+
+	Math.sin(Math.PI / 2) // 1
+
+	Math.asin(1) // 1.5707963267948966
+	Math.acos(1) // 0
+	Math.atan(1) // 0.7853981633974483
+</script>
+
+Date对象
+JS原生的时间库，以国际标准时间（UTC）1970年1月1日00:00:00作为时间零点，可以表示的时间范围是前后各1亿天（单位为毫秒）
+作为构造函数
+返回一个Date对象的实例，如果不加参数，实例代表的就是当前时间
+注：Date实例有一个独特的地方，其他对象求值时默认调用.valueOf()方法，但是Date实例求值的时候，默认调用的是toString()方法，因此对Date实例求值，返回的是一个字符串，代表该实例对应的时间
+<script>
+	// 参数为时间零点开始计算的毫秒数
+	new Date(1378218728000)
+	// Tue Sep 03 2013 22:32:08 GMT+0800 (CST)
+
+	// 参数为日期字符串
+	new Date('January 6, 2013');
+	// Sun Jan 06 2013 00:00:00 GMT+0800 (CST)
+
+	// 参数为多个整数，
+	// 代表年、月、日、小时、分钟、秒、毫秒
+	new Date(2013, 0, 1, 0, 0, 0, 0)
+	// Tue Jan 01 2013 00:00:00 GMT+0800 (CST)
+/*-----------------------------------------------------*/
+	var today = new Date();
+
+	today
+	// "Tue Dec 01 2015 09:34:43 GMT+0800 (CST)"
+
+	// 等同于
+	today.toString()
+	// "Tue Dec 01 2015 09:34:43 GMT+0800 (CST)"
+
+	//只要是能被Date.parse()方法解析的字符串，都可以当作参数
+	new Date('2013-2-15')
+	new Date('2013/2/15')
+	new Date('02/15/2013')
+	new Date('2013-FEB-15')
+	new Date('FEB, 15, 2013')
+	new Date('FEB 15, 2013')
+	new Date('February, 15, 2013')
+	new Date('February 15, 2013')
+	new Date('15 Feb 2013')
+	new Date('15, February, 2013')
+	// Fri Feb 15 2013 00:00:00 GMT+0800 (CST)
+
+	//年：使用四位数年份，如2000,如写成两位数或个位数，则加上1900，即10代表1910年，如果是负数，表示公元前
+	//月：0表示一月，依次类推，11表示12月。
+	//日：1到31。
+	//小时：0到23。
+	//分钟：0到59。
+	//秒：0到59
+	//毫秒：0到999
+	//如果超出了正常范围，会被自动折算，如月设为15，就折算为下一年的4月
+	//参数还可以使用负数，表示扣去的时间
+	new Date(2013, -1)
+	// Sat Dec 01 2012 00:00:00 GMT+0800 (CST)
+	new Date(2013, 0, -1)
+	// Sun Dec 30 2012 00:00:00 GMT+0800 (CST)
+</script>
+作为工具函数
+返回一个代表当前时间的字符串
+<script>
+	Date()
+	// "Tue Dec 01 2015 09:34:43 GMT+0800 (CST)"
+</script>
+静态方法
+Date.now()：返回当前时间距离时间零点（1970年1月1日 00:00:00 UTC）的毫秒数
+<script>
+	Date.now() // 1364026285194
+</script>
+Date.parse()：用于解析日期字符串，返回该时间距离时间零点（1970年1月1日 00:00:00）的毫秒数
+Date.UTC()：接受年、月、日等变量作为参数，返回该时间距离时间零点（1970年1月1日 00:00:00 UTC）的毫秒数
+注：UTC，世界标准时间，CST，当前时区
+实例方法
+Date的实例对象，有几十个自己的方法，除了valueOf和toString，可以分为以下三类
+to类：从Date对象返回一个字符串，表示指定的时间。
+get类：获取Date对象的日期和时间。
+set类：设置Date对象的日期和时间。
+Date.prototype.valueOf()
+说明：返回实例对象距离时间零点（1970年1月1日00:00:00 UTC）对应的毫秒数，该方法等同于getTime方法。
+Date.prototype.toString()
+说明：返回一个完整的日期字符串
+
+to类方法
+Date.prototype.toUTCString()：返回对应的 UTC 时间，也就是比北京时间晚8个小时。
+<script>
+	var d = new Date(2013, 0, 1);
+
+	d.toUTCString()
+	// "Mon, 31 Dec 2012 16:00:00 GMT"
+</script>
+Date.prototype.toLocaleString()：转化为完整的本地时间。
+Date.prototype.toLocaleDateString()：转化为本地日期（不含小时、分和秒）。
+Date.prototype.toLocaleTimeString()：转化为本地时间（不含年月日）。
+<script>
+	var d = new Date(2013, 0, 1);
+
+	d.toLocaleString()
+	// 中文版浏览器为"2013年1月1日 上午12:00:00"
+	// 英文版浏览器为"1/1/2013 12:00:00 AM"
+
+	d.toLocaleDateString()
+	// 中文版浏览器为"2013年1月1日"
+	// 英文版浏览器为"1/1/2013"
+
+	d.toLocaleTimeString()
+	// 中文版浏览器为"上午12:00:00"
+	// 英文版浏览器为"12:00:00 AM"
+</script>
+get类方法
+getTime()：返回实例距离1970年1月1日00:00:00的毫秒数，等同于valueOf方法。
+getDate()：返回实例对象对应每个月的几号（从1开始）。
+getDay()：返回星期几，星期日为0，星期一为1，以此类推。
+getFullYear()：返回四位的年份。
+getMonth()：返回月份（0表示1月，11表示12月）。
+getHours()：返回小时（0-23）。
+getMilliseconds()：返回毫秒（0-999）。
+getMinutes()：返回分钟（0-59）。
+getSeconds()：返回秒（0-59）。
+getTimezoneOffset()：返回当前时间与 UTC 的时区差异，以分钟表示，返回结果考虑到了夏令时因素。
+<script>
+	var d = new Date('January 6, 2013');
+
+	d.getDate() // 6
+	d.getMonth() // 0
+	d.getFullYear() // 2013
+	d.getTimezoneOffset() // -480
+	d.getHours();//得到小时
+	d.getMinutes();//得到分钟
+	d.getSeconds();//得到秒
+	d.getMilliseconds();//获取毫秒
+
+	//计算本年度还剩几天的函数
+	function leftDays() {
+	  var today = new Date();
+	  var endYear = new Date(today.getFullYear(), 11, 31, 23, 59, 59, 999);
+	  var msPerDay = 24 * 60 * 60 * 1000;
+	  return Math.round((endYear.getTime() - today.getTime()) / msPerDay);
+	}
+</script>
+set 类方法
+setDate(date)：设置实例对象对应的每个月的几号（1-31），返回改变后毫秒时间戳。
+setFullYear(year [, month, date])：设置四位年份。
+setHours(hour [, min, sec, ms])：设置小时（0-23）。
+setMilliseconds()：设置毫秒（0-999）。
+setMinutes(min [, sec, ms])：设置分钟（0-59）。
+setMonth(month [, date])：设置月份（0-11）。
+setSeconds(sec [, ms])：设置秒（0-59）。
+setTime(milliseconds)：设置毫秒时间戳。
+<script>
+	var d = new Date ('January 6, 2013');
+
+	d // Sun Jan 06 2013 00:00:00 GMT+0800 (CST)
+	d.setDate(9) // 1357660800000
+	d // Wed Jan 09 2013 00:00:00 GMT+0800 (CST)
+</script>
+
+JSON对象
+静态方法
+JSON.stringify()：用于将一个值转为 JSON 字符串。
+<script>
+	JSON.stringify('abc') // ""abc""
+	JSON.stringify(1) // "1"
+	JSON.stringify(false) // "false"
+	JSON.stringify([]) // "[]"
+	JSON.stringify({}) // "{}"
+
+	JSON.stringify([1, "false", false])
+	// '[1,"false",false]'
+
+	JSON.stringify({ name: "张三" })
+	// '{"name":"张三"}'
+</script>
+JSON.parse()：用于将 JSON 字符串转换成对应的值。
+<script>
+	JSON.parse('{}') // {}
+	JSON.parse('true') // true
+	JSON.parse('"foo"') // "foo"
+	JSON.parse('[1, 5, "false"]') // [1, 5, "false"]
+	JSON.parse('null') // null
+
+	var o = JSON.parse('{"name": "张三"}');
+	o.name // 张三
+</script>
+
+全局函数
+eval(string)
+说明：计算某个字符串，并执行其中的的 JavaScript 代码
+isNaN(x)
+说明：判断是否为数字,返回boolean值
+parseInt(对象)	
+说明：解析一个字符串并返回一个整数
+parseFloat(对象)
+说明：解析一个字符串并返回一个浮点数
+
+对象.方法.apply(function,array)/对象.方法.call(function,数据)
+说明：将对象的方法给交给指定函数使用，apply和call的区别在于前者传第二个参必须是数组，后者可以是任意类型，如果没有传入函数，则写成null，指上下文函数
+
+BOM
+window.close()
+说明：关闭当前窗口，返回值为undefined
+
+window.confirm()
+说明：让浏览器弹出确认框，括号里填填信息，确认返回true，取消返回false
+
+window.open()
+说明： 打开一个新窗口
+
+判断类型的运算符和方法
+typeof运算符
+instanceof运算符
+Object.prototype.toString方法
+
+ES6
+String
+includes()：返回布尔值，表示是否找到了参数字符串。
+startsWith()：返回布尔值，表示参数字符串是否在原字符串的头部。
+endsWith()：返回布尔值，表示参数字符串是否在原字符串的尾部。
+<script>
+	let s = 'Hello world!';
+
+	s.startsWith('Hello') // true
+	s.endsWith('!') // true
+	s.includes('o') // true
+</script>
+repeat：返回一个新字符串，表示将原字符串重复n次
+<script>
+	'x'.repeat(3) // "xxx"
+	'hello'.repeat(2) // "hellohello"
+	'na'.repeat(0) // ""
+</script>
+String.raw：简化转义
+<script>
+	String.raw`Hi\n${2+3}!`;
+	// 返回 "Hi\\n5!"
+
+	String.raw`Hi\u000A!`;
+	// 返回 "Hi\\u000A!"
+</script>
+Number
+Number.isFinite(), Number.isNaN()：检查一个数值是否为有限的（finite）/NaN，即不是Infinity
+<script>
+	Number.isFinite(15); // true
+	Number.isFinite(0.8); // true
+	Number.isFinite(NaN); // false
+	Number.isFinite(Infinity); // false
+	Number.isFinite(-Infinity); // false
+	Number.isFinite('foo'); // false
+	Number.isFinite('15'); // false
+	Number.isFinite(true); // false
+
+	Number.isNaN(NaN) // true
+	Number.isNaN(15) // false
+	Number.isNaN('15') // false
+	Number.isNaN(true) // false
+	Number.isNaN(9/NaN) // true
+	Number.isNaN('true' / 0) // true
+	Number.isNaN('true' / 'true') // true
+</script>
+Number.parseInt(), Number.parseFloat()：原本是全局方法，现在是Number对象的方法了
+<script>
+	// ES5的写法
+	parseInt('12.34') // 12
+	parseFloat('123.45#') // 123.45
+
+	// ES6的写法
+	Number.parseInt('12.34') // 12
+	Number.parseFloat('123.45#') // 123.45
+</script>
+Number.isInteger()：判断一个数是否为整数
+<script>
+	Number.isInteger(25) // true
+	Number.isInteger(25.1) // false
+</script>
+Array
+Array.from()：用于将两类对象转为真正的数组：类似数组的对象（array-like object）和可遍历（iterable）的对象（包括 ES6 新增的数据结构 Set 和 Map）
+<script>
+	let arrayLike = {
+	    '0': 'a',
+	    '1': 'b',
+	    '2': 'c',
+	    length: 3
+	};
+
+	// ES5的写法
+	var arr1 = [].slice.call(arrayLike); // ['a', 'b', 'c']
+
+	// ES6的写法
+	let arr2 = Array.from(arrayLike); // ['a', 'b', 'c']
+
+	// DOM 操作返回的 NodeList 集合
+	let ps = document.querySelectorAll('p');
+	Array.from(ps).filter(p => {
+	  return p.textContent.length > 100;
+	});
+
+	// 函数内部的arguments对象
+	function foo() {
+	  var args = Array.from(arguments);
+	  // ...
+	}
+</script>
+Array.of：用于将一组值，转换为数组
+<script>
+	Array.of(3, 11, 8) // [3,11,8]
+	Array.of(3) // [3]
+	Array.of(3).length // 1
+</script>
+实例方法
+find()：找到返回符合条件的元素，否则返回undefined。
+findIndex()：找到返回符合条件的元素的下标，否则返回-1。
+<script>
+	[1, 5, 10, 15].find(function(value, index, arr) {
+	  return value > 9;
+	}) // 10
+</script>
+fill：使用给定值，填充一个数组，一般用于初始化
+<script>
+	['a', 'b', 'c'].fill(7)
+	// [7, 7, 7]
+
+	new Array(3).fill(7)
+	// [7, 7, 7]
+</script>
+entries()，keys() 和 values()：用于遍历数组。它们都返回一个遍历器对象（详见《Iterator》一章），可以用for...of循环进行遍历，唯一的区别是keys()是对键名的遍历、values()是对键值的遍历，entries()是对键值对的遍历。
+<script>
+	for (let index of ['a', 'b'].keys()) {
+	  console.log(index);
+	}
+	// 0
+	// 1
+
+	for (let elem of ['a', 'b'].values()) {
+	  console.log(elem);
+	}
+	// 'a'
+	// 'b'
+
+	for (let [index, elem] of ['a', 'b'].entries()) {
+	  console.log(index, elem);
+	}
+	// 0 "a"
+	// 1 "b"
+</script>
+Array.prototype.includes：返回一个布尔值，表示某个数组是否包含给定的值，与字符串的includes方法类似。
+<script>
+	[1, 2, 3].includes(2)     // true
+	[1, 2, 3].includes(4)     // false
+	[1, 2, NaN].includes(NaN) // true
+</script>
+flat()，flatMap()：用于将嵌套的数组“拉平”，变成一维的数组。该方法返回一个新数组，对原数据没有影响。
+<script>
+	[1, 2, [3, 4]].flat()
+	// [1, 2, 3, 4]
+
+	[1, 2, [3, [4, 5]]].flat()
+	// [1, 2, 3, [4, 5]]
+
+	[1, 2, [3, [4, 5]]].flat(2)
+	// [1, 2, 3, 4, 5]
+
+	[1, [2, [3]]].flat(Infinity)
+	// [1, 2, 3]
+
+	// 相当于 [[2, 4], [3, 6], [4, 8]].flat()
+	[2, 3, 4].flatMap((x) => [x, x * 2])
+	// [2, 4, 3, 6, 4, 8]
+
+	//flatMap()只能展开一层数组。
+	// 相当于 [[[2]], [[4]], [[6]], [[8]]].flat()
+	[1, 2, 3, 4].flatMap(x => [[x * 2]])
+	// [[2], [4], [6], [8]]
+</script>
+
+ES7
+padStart()，padEnd()：头部或尾部补全
+<script>
+	'x'.padStart(5, 'ab') // 'ababx'
+	'x'.padStart(4, 'ab') // 'abax'
+
+	'x'.padEnd(5, 'ab') // 'xabab'
+	'x'.padEnd(4, 'ab') // 'xaba'
+</script>

@@ -1,0 +1,774 @@
+元素类型
+块元素：默认独占一行，宽为浏览器宽，高为内容高，可以自定义宽高，一般作为其他元素的容器
+内联元素：行内元素，没有自己的形状，在行内逐个显示，不能自定义宽高，其宽高由内容决定
+例：<a><span><i><em><strong><b>,行内元素也遵循盒模型基本规则,如padding.border,margin,background等
+可变元素：根据上下文关系确定该元素是块元素还是行内元素
+<html>
+	applet-java applet,
+	button-按钮,
+	del-删除文本,
+	iframe-inline frame,
+	ins-插入的文本,
+	map-图片区块(map),
+	object-object对象,
+	script-客户端脚本
+</html>
+
+<!DOCTYPE html>不是HTML标签，它为浏览器提供一项信息（声明），即该HTML是用什么版本编写的，
+<head></head>头部元素的容器，可包含脚本，指示浏览器在何处可以找到样式表，提供元信息等等
+<title>定义文档的标题，定义浏览器工具栏中的标题，提供页面被添加到收藏夹时显示的标题，显示在搜索引擎结果中的页面标题
+<base>为页面上的所有链接规定默认地址或默认目标（target）
+<head>
+	<base href="http://www.w3school.com.cn/images/" />
+	<!-- 所有标签都会默认打开新窗口 -->
+	<base target="_blank" />
+</head>
+<link>定义文档与外部资源之间的关系，最常用于连接外部样式表
+<style></style>style>用于为HTML文档定义样式信息
+<meta> 标签提供关于HTML文档的元数据，元数据不会显示在页面上，但是对于机器是可读的，用于规定页面的描述、关键词、文档的作者、最后修改时间以及其他元数据，一些搜索引擎会利用meta元素的name和content属性来索引页面，该标签可以存在多个
+定义页面关键词：
+<meta name="keywords" content="HTML, CSS, XML" />
+定义页面描述：
+<meta name="description" content="Free Web tutorials on HTML, CSS, XML" />
+
+标题：（由大到小）
+<h1></h1>
+<h2></h2>
+<h3></h3>
+<h4></h4>
+<h5></h5>
+<h6></h6>
+
+文字段落：
+<p></p>
+<span></span>
+
+换行和水平线：
+<br />
+<hr />
+
+链接：
+属性1：target="_blank"：表示被链接文档从新窗口打开
+<a href="..." target="_blank"></a>
+属性2：锚点链接，在页面内设置锚点，可实现在同一个页面内跳转，例如回到顶端以及简单轮播图
+<a name="tips">目标位置</a>
+<a href="#tips">点击跳转</a>
+注1：href="javascript:;"表示执行一段空白的javascript语句，返回空或者false值，可以防止链接跳转
+<a href="javascript:;"></a>
+注2：写法href="http://www.w3school.com.cn/html/"，比这样：href="http://www.w3school.com.cn/html"更好，因为最后没有斜杠，服务器就会添加正斜杠到这个地址，然后再创建一个新的请求，总共发送了两次HTTP请求
+
+图像：
+属性1：替换文本
+<img src="" alt="替换文本">
+属性2：图片尺寸
+<img src="" width="50" height="50">
+
+表格：表格是横向在页面中渲染出来的，tr是行，td是列
+<table>
+	<!-- 第一行 -->
+	<tr>
+		<td>第一格</td>
+		<td>第二格</td>
+	</tr>
+	<!-- 第二行 -->
+	<tr>
+		<td>第一格</td>
+		<td>第二格</td>
+	</tr>
+</table>
+属性1：边框宽，表格高，表格宽，边框色
+<table border="1" height="50" width="50" bordercolor="#fff">
+属性2：单元格间距，即边框和边框之间的距离，单位px
+<table cellspacing="10">
+	<!-- 第一行 -->
+	<tr>
+		<td>第一格</td>
+		<td>第二格</td>
+	</tr>
+	<!-- 第二行 -->
+	<tr>
+		<td>第一格</td>
+		<td>第二格</td>
+	</tr>
+</table>
+属性3：背景颜色，背景图像，可以添加在表格或单元格上
+<table bgcolor="red" background="/i/eg_bg_07.gif" bordercolor="">
+	<!-- 第一行 -->
+	<tr>
+		<td bgcolor="red">第一格</td>
+		<td background="/i/eg_bg_07.gif">第二格</td>
+	</tr>
+	<!-- 第二行 -->
+	<tr>
+		<td>第一格</td>
+		<td>第二格</td>
+	</tr>
+</table>
+属性4：表头
+<th>表格标题</th>
+属性5：空单元格，如果不添加会造成该单元格边框不显示
+<td>&nbsp;</td>
+属性6：表格跨列，即往右合并单元格
+<table border="1">
+	<!-- 第一行 -->
+	<tr>
+	  <th>第一格</th>
+	  <th colspan="2">第二格和第三格合并</th>
+	</tr>
+	<!-- 第二行 -->
+	<tr>
+	  <td>第一格</td>
+	  <td>第二格</td>
+	  <td>第三格</td>
+	</tr>
+</table>
+属性7：表格跨行，即往下合并单元格
+<table border="1">
+	<!-- 第一行 -->
+	<tr>
+	  <th>第一格</th>
+	  <td>第二格</td>
+	</tr>
+	<!-- 第二行 -->
+	<tr>
+	  <th rowspan="2">第一格</th>
+	  <td>第二格</td>
+	</tr>
+	<!-- 第三行 -->
+	<tr>
+	  <td>第二格</td>
+	</tr>
+</table>
+属性8：单元格边距，即文字到边框的距离，单位px
+<table cellpadding="10">
+	<!-- 第一行 -->
+	<tr>
+		<td>第一格</td>
+		<td>第二格</td>
+	</tr>
+	<!-- 第二行 -->
+	<tr>
+		<td>第一格</td>
+		<td>第二格</td>
+	</tr>
+</table>
+无序列表：
+<ul>
+	<li></li>
+	<li></li>
+	<li></li>
+</ul>
+属性1：列表前标识，disc：实心圆点，circle：空心圆圈，square：小方块
+<ul type="square">
+	<li>苹果</li>
+	<li>香蕉</li>
+	<li>柠檬</li>
+	<li>桔子</li>
+</ul>
+
+有序列表：			
+<ol>
+	<li></li>
+	<li></li>
+	<li></li>
+</ol>
+属性1：列表前标识，默认为数字，A：大写字母，a：小写字母，I：大写罗马字母，i：小写罗马字母
+<ol type="I">
+	<li>苹果</li>
+	<li>香蕉</li>
+	<li>柠檬</li>
+	<li>桔子</li>
+</ol>
+
+自定义列表：
+<dl>
+	<dt>段落标题1</dt>
+	<dd>正文</dd>
+
+	<dt>段落标题2</dt>
+	<dd>正文</dd>
+	<dd>正文</dd>
+</dl>
+
+全局属性：
+accesskey	设置快捷键
+contenteditable属性 是否可编辑
+data-*	用于存储页面或应用程序的私有定制数据
+dir	规定元素中内容的文本方向
+draggable	规定元素是否可拖动
+dropzone	规定在拖动被拖动数据时是否进行复制、移动或链接
+lang	规定元素内容的语言
+spellcheck	规定是否对元素进行拼写和语法检查
+style	规定元素的行内 CSS 样式
+tabindex	规定元素的 tab 键次序
+title	规定有关元素的额外信息，鼠标移入时显示
+
+字符实体
+<!-- 
+ 	空格					&nbsp
+<	小于号				&lt
+>	大于号				&gt
+&	和号					&amp	
+￠	分（cent）			&cent	
+£	镑（pound）			&pound	
+¥	元（yen）			&yen	
+€	欧元（euro）			&euro	
+§	小节	&sect			&#167
+©	版权（copyright）	&copy	
+®	注册商标				&reg	
+™	商标					&trade	
+×	乘号					&times	
+÷	除号					&divide -->
+
+HTML5 语义元素
+<header></header>	定义文档或节的页眉
+<nav></nav>	定义导航链接的容器
+<section></section>	定义文档中的小节
+<article></article>	定义独立的自包含文章
+<aside></aside>	定义内容之外的内容（比如侧栏）
+<footer></footer>	定义文档或节的页脚
+<details></details>	定义额外的细节
+<summary></summary>	定义 details 元素的标题
+
+表单控件：
+<form action="..." method="post/get">
+	<!-- 表单字段集，将表单用边框包裹为不同部分 -->
+	<fieldset>表单内容</fieldset>
+	<!-- 表单字段集标题，写在fieldset中，为每个fieldset创建标题 -->
+	<legend>标题</legend>
+	<!-- 输入框 -->
+	<input type="text" name="lastname" value="初始值" size="30" maxlength="50" placeholder="提示">
+	<br>
+	<!-- 密码框 -->
+	<input type="password"><br>
+	
+	<!-- 多选框，checked默认选择，disabled禁用选框 -->
+	<input type="checkbox" checked="checked" >
+	<input type="checkbox" checked="checked" ><br>
+	<!-- 单选框，相同的name只能选一个，checked默认选择，disabled禁用选框 -->
+	<input type="radio" checked="checked" name="1">
+	<input type="radio" checked="checked" name="1">
+	<!-- 绑定至某控件，相当于扩展控件范围 -->
+	<label for="male">男</label>
+	<input id="male" type="radio" name="sex" />
+	<br>
+	<!-- 提交按钮 -->
+	<input type="submit">
+	<!-- 重置按钮 -->
+	<input type="reset">
+	<!-- 普通按钮 -->
+	<input type="button" value="下一页">
+	<!-- 隐式文本域，用于传递不想让客户端显示出来的数据，如网购时的订单编号 -->
+	<input type="hidden">
+	<!-- 下拉框，selected表示默认选中 -->
+	<select>
+		<option>Apples
+		<option selected>Bananas
+		<option>Cherries
+	</select>
+	<!-- 多行文本框 -->
+	<textarea name="Comment" rows="60" cols="20"></textarea>
+
+H5新标签：老式web浏览器不支持的输入类型，会被视为text类型
+	<!-- 为<input type="text">元素规定预定义选项列表，id必须与input相同 -->
+	<input list="browsers">
+	<datalist id="browsers">
+	   <option value="Internet Explorer">
+	   <option value="Firefox">
+	   <option value="Chrome">
+	   <option value="Opera">
+	   <option value="Safari">
+	</datalist>
+	<!-- 数字框，只能输入数字,常数e,+,-和. -->
+	<input type="number" name="quantity" min="1" max="5">
+	<!-- 图片，可以把图像定义为提交按钮，并设置 height 和 width 属性 -->
+	<input type="image" src="img_submit.gif" alt="Submit" width="48" height="48">
+	<!-- 文件上传，multiple属性规定其接受多个值的文件上传字段 -->
+	<input type="file" name="img" multiple>
+	<!-- 包含日期的输入，太丑 -->
+	<input type="date" name="bday" max="1979-12-31"><br>
+	<input type="date" name="bday" min="2000-01-02"><br>
+	<!-- 包含颜色的输入 -->
+	<input type="color" name="favcolor">
+	<!-- 包含一定范围内的值的输入，滑块 -->
+	<input type="range" name="points" min="0" max="10">
+	<!-- 允许用户选择月份和年份 -->
+	<input type="month" name="bdaymonth">
+	<!-- 允许用户选择周和年 -->
+	<input type="week" name="week_year">
+	<!-- 允许用户选择时间（无时区） -->
+	<input type="time" name="usr_time">
+	<!-- 允许用户选择日期和时间（有时区） -->
+	<input type="datetime" name="bdaytime">
+	<!-- 允许用户选择日期和时间（无时区） -->
+	<input type="datetime-local" name="bdaytime">
+	<!-- 包含电子邮件地址的输入字段 -->
+	<input type="email" name="email">
+	<!-- 搜索字段，会有个 X 用于清楚输入 -->
+	<input type="search" name="googlesearch">
+	<!-- 包含电话号码的输入字段 -->
+	<input type="tel" name="usrtel">
+	<!-- 包含URL地址的输入字段 -->
+	<input type="url" name="homepage">
+</form>
+属性1：action=""表单提交URL，action会被设置为当前页面路径
+属性2：method=""请求类型，规定提交表单时所用的HTTP方法，GET或POST，默认为GET
+属性3：name=""，要正确地被提交，每个输入字段必须设置一个name属性
+
+输入限制属性
+value		规定输入字段的默认值
+disabled	规定输入字段被禁用
+required	规定输入字段是必填的
+step		规定输入字段的合法数字间隔，可以与max，min连用
+max			规定输入字段的最大值
+min			规定输入字段的最小值
+maxlength	规定输入字段的最大字符数
+readonly	规定输入字段为只读（无法修改）
+size		规定输入字段的宽度（以字符计）
+
+新属性
+autocomplete 基于用户之前的输入值自动填写值，设为on则自动填写，设为off不自动填写
+novalidate	提交表单时不对表单数据进行验证，写在form标签上
+autofocus 页面加载时当前<input>元素自动获得焦点
+placeholder 规定用以描述输入字段预期值的提示文本
+pattern 用于检查 <input> 元素值的正则表达式
+<input type="text" name="country_code" pattern="[A-Za-z]{3}" title="请输入三个英文字母">
+form 规定<input>元素所属的一个或多个表单，写在input标签上，与所属form标签id相同，引用一个以上的表单，可以使用空格分隔的表单 id 列表
+	<form action="action_page.php" id="form1">
+	   First name: <input type="text" name="fname"><br>
+	   <input type="submit" value="Submit">
+	</form>
+	<form action="action_page.php" id="form2">
+	   First name: <input type="text" name="fname"><br>
+	   <input type="submit" value="Submit">
+	</form>
+	<!-- 下面input同时属于两个表单 -->
+	Last name: <input type="text" name="lname" form="form1 form2">
+
+H5新元素
+内联SVG
+1.可通过文本编辑器来创建和修改
+2.可被搜索、索引、脚本化或压缩
+3.是可伸缩的
+4.可在任何的分辨率下被高质量地打印
+5.可在图像质量不下降的情况下被放大
+注：IE9、Firefox、Opera、Chrome、Safari支持SVG元素
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="190">
+  <polygon points="100,10 40,180 190,60 10,60 160,180"
+  style="fill:lime;stroke:purple;stroke-width:5;fill-rule:evenodd;" />
+</svg>
+
+H5新特性
+audio音频元素
+<audio controls="controls">
+  <source src="song.mp3" type="audio/mp3" />
+  <source src="song.ogg" type="audio/ogg" />
+  您的浏览器不支持该格式音频的播放
+</audio>
+video视频元素
+<video width="320" height="240" controls="controls">
+  <source src="movie.mp4" type="video/mp4" />
+  <source src="movie.ogg" type="video/ogg" />
+  <source src="movie.webm" type="video/webm" />
+  您的浏览器不支持该格式音频的播放
+</video>
+新的API
+navigator.geolocation对象，包含新的方法，如getCurrentPosition()，watchPosition()等
+getCurrentPosition(fn1,fn2)：用于获取用户的位置
+调用成功时，该接口会像传入的fn1函数参数返回position对象，该对象的coords属性包含经纬度信息
+调用失败时，该接口会像传入的fn2函数参数返回error对象，该对象包含错误信息
+错误代码：
+Permission denied - 用户不允许地理定位
+Position unavailable - 无法获取当前位置
+Timeout - 操作超时
+
+谷歌地图接口地址
+http://maps.googleapis.com/maps/api/staticmap?center="+latlon+"&zoom=14&size=400x300&sensor=false"
+
+注1：该特性可能侵犯用户的隐私，除非用户同意，否则用户位置信息是不可用的
+注2：IE9、Firefox、Chrome、Safari、Opera 支持地理定位
+<script>
+	var x=document.getElementById("demo");
+
+	function getLocation() {
+		//检测是否支持地理定位
+		if (navigator.geolocation) {
+			navigator.geolocation.getCurrentPosition(showPosition)
+		} else {
+			x.innerHTML="Geolocation is not supported by this browser."
+		}
+	}
+	function showPosition(position) {
+		x.innerHTML="Latitude: " + position.coords.latitude +
+		"<br />Longitude: " + position.coords.longitude
+	}
+</script>
+
+拖放，拖拽
+把元素的draggable属性设置为true，则该元素变为可拖放元素
+<img src="" alt="" draggable="true">
+把元素的ondragstart属性指向一个函数drag(ev)，并向该函数传入ev对象，通过ev.dataTransfer.setData('text',ev.target.id)，来规定被拖动的数据类型和值
+<script>
+	function drag(ev) {
+	    ev.dataTransfer.setData("text", ev.target.id);
+	}
+</script>
+在需要放置的div上设置ondrop属性指向一个函数drop(event)，当放开被拖数据时，会触发该事件，并调用drop函数
+ondragover属性规定被拖动的数据的放置位置，元素默认是不能被放置的，所以在此之前，需要先阻止默认行为
+<div id="div1" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+<script>
+	//允许放置，即阻止默认行为
+	function allowDrop(ev) {
+	    ev.preventDefault();
+	}
+	//drop事件回调函数
+	function drop(ev) {
+		//先阻止默认行为
+	    ev.preventDefault()
+	    //获取被拖动元素并插入到规定位置
+	    var data = ev.dataTransfer.getData("text");
+	    ev.target.appendChild(document.getElementById(data));
+	}
+</script>
+
+worker对象，分线程处理对象
+Worker对象，将复杂的计算工作交由另一个线程完成，并在计算完成后返回给主线程，因此不会阻塞主线程
+缺点：1.兼容性问题，2.慢（多了发送请求等操作），3.worker中不能访问DOM（因为看不到window）4.不能跨域加载js
+使用方法：
+<script>
+	//新建worker.js文件
+	//创建worker对象，并传入分线程模块的地址
+	var worker = new Worker('worker.js')
+	//向分线程发送主线程中获取的用于计算的数据，这里假设是number
+	Worker.postMessage(number)
+	//监听分线程的消息返回动作，当分线程返回消息时触发
+	Worker.onmessage = function(event) {
+		//event对象上包含data属性，该属性为分线程计算后返回的数据
+		console.log(event.data)
+	}
+	//
+	Worker.postMessage(x)
+</script>
+worker.js中：
+<script>
+	//分线程中的onmessage回调通过event.data获取从主线程传过来的数据
+	var onmessage = function(event) {
+		var a = event.data
+		//使用a进行计算...
+		var result = a++
+
+		//通过postMessage方法将结果传回主线程
+		//分线程模块中，全局对象是被特殊指定的一个全局对象DedicatedWorkerGlobalScope（好长哈哈）
+		//DedicatedWorkerGlobalScope对象上有postMessage方法，所以在分线程模块中可以直接调用
+		//而相对的，分线程模块中将无法调用window上的任何方法，因为在该模块中看不到window对象（更新界面）
+		postMessage(result)
+	}
+</script>
+
+表单属性问题
+html渲染时，会将所有属性的值渲染成字符串，即，不管属性的值填什么，其布尔值都会为true
+<html>
+	<input type="checkbox" checked="checked">
+	<input type="checkbox" checked=true>
+	<input type="checkbox" checked=false>
+	<input type="checkbox" checked=undefind>
+	<input type="checkbox" checked=null>
+	<input type="checkbox" checked="">
+	<input type="checkbox" checked>
+	<!-- 以上checkbox都会勾选，唯一不勾选的办法就是不写checkbox -->
+</html>
+断点调试
+debugger：断点，程序运行到debugger会停下，在F12的Source中也可打断点，不过当在空行打断点时，就只有debugger能打上
+<script>
+	debugger
+	var a = document.querySelector('input[type=checkbox]')
+	//当程序执行完第二行后，Source的Watch中会出现a这个变量，通过Watch中监听的数据，可以动态查看变量的变化
+	//可以修改Watch中的a变改成如a.checkbox，由此来监听a中的属性的变化
+</script>
+
+property属性和attribute属性
+property：是js原生对象的直接属性
+attribute：是html标签的预定义和自定义属性，也存在于property中，用于管理标签属性的property属性，但外部也会有对应标签属性
+<script>
+	//用querySelector获取到input(checkbox形式)DOM对象
+	//打印获取到的DOM对象会看到它具有很多property属性，其中就包含了attribute对象
+	//attribute中管理着标签的所有属性
+	//但在attribute外，property也管理着标签的所有属性
+</script>
+布尔值属性与非布尔值属性
+property属性的值为布尔类型的，称为布尔值属性，如checkbox=true
+property属性的值为非布尔类型的，称为非布尔值属性，如name='xxx'
+<script>
+	//property和attribute的同步问题
+	
+	//使用js去操作DOM，修改property和attribute任意一个中的非布尔值属性，另一个都会实时同步
+	//如果修改的是布尔值属性，分两种情况：
+	//修改property中的布尔值属性，不会同步修改attribute中的属性
+	//修改attribute中的布尔值属性，如果property还没被修改过，则会同步一次property，之后就不再同步
+
+	//手动去修改属性值时，修改的是property中的属性，浏览器渲染时也以property中的属性值为准
+</script>
+
+html5新增的property属性
+classList属性
+管理着类名的类数组集合（伪数组），可以方便的使用数组方法增加或删除其中的某个类
+方法：classList.add('class')，classList.remove('class')，classList.toggle('class')有就删除没有就增加
+
+data-*属性名，dataset属性
+以data-开头的属性名，都会被归入property的dataset属性中，可以方便的获取和修改，如果属性名中带有"-"，获取时需要写成驼峰形式
+<script>
+	//html中：<div data-test-name="aaa" id="test"></div>
+	var a = document.querySelector('#test')
+	//以data-开头的属性名，可以直接在property中获取到
+	console.log(a.dataset.testName) //'aaa'
+</script>
+
+contenteditable属性
+该属性设为true后，div中的内容将可以编辑
+<div contenteditable="true">
+	asfasdfasdf
+</div>
+
+canvas画布
+h5提供的新元素，可通过JS脚本来绘制图形
+注1：创建<canvas></canvas>标签且未调用时，画布背景色默认跟随body元素
+注2：canvas默认宽高为300*150，如需改变宽高，最好在行间修改或使用JS修改，如果直接在css中修改，会导致canvas中的内容缩放变形
+注3：IE8和IE8以下不支持画布元素
+
+使用流程：
+1.新建画布
+<canvas id="test" width: 300px;height: 150px;>
+	<!-- 不支持canvas时显示以下提示，支持时忽略以下提示 -->
+	<span>你的浏览器不支持画布元素，请您换成谷歌浏览器</span>
+</canvas>
+2.获取画布
+<script>
+	window.onload = function () {
+		//获取画布
+		var testNode = document.querySelector('#test')
+	}
+</script>
+3.获取画笔，先判断是否能使用画笔（判断getContext是否存在）
+<script>
+	window.onload = function () {
+		//获取画布
+		var testNode = document.querySelector('#test')
+		//获取画笔
+		if (testNode.getContext) {
+			//如果getContext特性存在，则获取2d画笔
+			var ctx = testNode.getContext('2d')
+		}
+	}
+</script>
+4.绘制矩形，在canvas中可以一次性生成的图形只有矩形，其他都需要使用路径绘制
+<script>
+	//方法1：填充矩形getContext.fillRect(x,y,width,height)
+	window.onload = function () {
+		//获取画布
+		var testNode = document.querySelector('#test')
+		//获取画笔
+		if (testNode.getContext) {
+			//如果getContext特性存在，则获取2d画笔
+			var ctx = testNode.getContext('2d')
+			//默认为黑色，单位为px
+			ctx.fillRect(0,0,100,100)
+		}
+	}
+	//方法2：边框矩形getContext.strokeRect(x,x,width,height)，边框默认为1px
+	window.onload = function () {
+		//获取画布
+		var testNode = document.querySelector('#test')
+		//获取画笔
+		if (testNode.getContext) {
+			//如果getContext特性存在，则获取2d画笔
+			var ctx = testNode.getContext('2d')
+			//单位为px，边框默认为1px，但会画出2px
+			//strokeRect会在偏移原点的位置往上画一半的边框，往下画一半的边框
+			//css中不支持小数，0.5px会变成1px
+			//所以边框最后变成2px
+			ctx.strokeRect(0,0,100,100)
+			//画出1px边框，偏移0.5才能画出1像素边框
+			ctx.strokeRect(100.5,100.5,100,100)
+		}
+	}
+	//方法3：背景色填充矩形getContex.clearRect(x,y,width,height)，生成一个背景色矩形叠在指定位置，不会造成重新渲染，所以canvas性能很高
+	window.onload = function () {
+		//获取画布
+		var testNode = document.querySelector('#test')
+		//获取画笔
+		if (testNode.getContext) {
+			//如果getContext特性存在，则获取2d画笔
+			var ctx = testNode.getContext('2d')
+			//单位为px，将背景色矩形填充到指定位置，相当于擦除
+			//该矩形填充只会遮住一半的边框，即如果一个有边框的矩形和一个clearRect矩形重叠，边框会暴露一半
+			ctx.clearRect(0,0,100,100)
+		}
+	}
+</script>
+5.为画笔填充颜色
+注1：这些属性必须写在图形绘制语句的前面，后写的属性必须重新绘制一遍，才会覆盖前者
+注2：canvas的渲染跟浏览器不同，浏览器的js执行和DOM渲染是分开的，js执行完，DOM还没渲染，而canvas是另一套渲染机制，js执行到那里，渲染就执行到哪里
+fillStyle：为填充设置颜色
+strokeStyle：为边框设置颜色
+lineWidth：为边框设置宽度，必须为整数，不用带单位
+lineJoin：设置线条和线条连接处的样式，有三个值：
+round：圆角
+bevel：斜角（切角）
+miter：直角（默认）
+<script>
+	window.onload = function () {
+		//获取画布
+		var testNode = document.querySelector('#test')
+		//获取画笔，判断getContext特性是否存在，然后选择2d或3d绘制模式
+		if (testNode.getContext) { 
+			var ctx = testNode.getContext('2d')
+			//为填充设置颜色
+			ctx.fillStyle = '#0f0'
+			//为边框设置颜色
+			ctx.strokeStyle = '#0f0'
+			//为边框设置宽度，单位px
+			ctx.lineWidth = '25'
+			//为线条连接处设置样式，这里选择圆角
+			ctx.lineJoin = 'round'
+
+			//填充矩形
+			ctx.fillRect(0,0,100,100)
+			//边框矩形
+			ctx.strokeRect(100.5,100.5,100,100)
+		}
+	}
+</script>
+6.绘制路径
+1.创建起始点：moveTo(x,y)，moveTo()会抬起画笔
+2.创建各个连接点：lineTo(x,y)
+3.闭合路径：closePath()
+4.选择填充或线连接：fill()或者stroke()
+注：fill()方法会自动闭合路径，stroke()不会
+注：因此调用stroke()时手动lineTo()回初始点，或者使用closePath()闭合路径
+<script>
+	window.onload = function () {
+		//获取画布
+		var testNode = document.querySelector('#test')
+		//获取画笔，判断getContext特性是否存在，然后选择2d或3d绘制模式
+		if (testNode.getContext) { 
+			var ctx = testNode.getContext('2d')
+			//设置起始点坐标
+			ctx.moveTo(50,50)
+			//设置连接点1坐标
+			ctx.lineTo(50,100)
+			//设置连接点2坐标
+			ctx.lineTo(100,100)
+			//设置连接点3坐标，相当于回到初始坐标，封闭图形，也可以使用closePath()
+			ctx.lineTo(50,50)
+			//
+			//选择绘制模式并开始绘制
+			//用线将各个点连接起来
+			ctx.stroke()
+			//在各个点围成的图形内部填充
+			ctx.fill()
+		}
+	}
+</script>
+7.路径容器
+说明：每次绘制路径，canvas都会将路径存入一个路径容器中，同一个canvas的所有路径共享同一个路径容器，所以当调用fill()或者stroke()时，canvas会根据路径容器中的所有路径绘制一遍，因此，在画新图形时，最好先清空路径容器
+清空路径容器：beginPath()
+<script>
+	window.onload = function () {
+		var testNode = document.querySelector('#test')
+		if (testNode.getContext) { 
+			var ctx = testNode.getContext('2d')
+
+			ctx.moveTo(0,0)
+			ctx.lineTo(0,50)
+			ctx.lineTo(50,50)
+			ctx.closePath()
+			ctx.fill()
+
+			//重新开始路径，即清空路径容器
+			ctx.beginPath()
+			ctx.moveTo(50,50)
+			ctx.lineTo(50,100)
+			ctx.lineTo(100,100)
+			ctx.closePath()
+			ctx.stroke()
+		}
+	}
+</script>
+8.为线的两端加上"帽子"：lineCap
+lineCap：设置线段两端的样式，有三个值：
+butt：方形（默认）
+round：圆形，会在线的两端加上两个半圆
+square：方形，会在线的两端加上两个方形
+9.通过样式栈保存样式：样式栈为栈结构，先进后出
+save()：保存一份样式到样式栈中
+restore()：从样式栈中提取一份样式出来，覆盖到样式容器，提取的样式为最后保存的那一份样式
+<script>
+	window.onload = function () {
+		var testNode = document.querySelector('#test')
+		if (testNode.getContext) { 
+			var ctx = testNode.getContext('2d')
+
+			//绘制一个图形时，先将初始化样式保存一份
+			ctx.save()
+			//开始写新的样式
+			ctx.fillStyle = '#0f0'
+			ctx.strokeStyle = '#0f0'
+			ctx.lineWidth = '25'
+			ctx.lineJoin = 'round'
+			//生成路径前，清除路径容器中的路径
+			ctx.beginPath()
+			//然后开始写新的路径
+			ctx.moveTo(0,0)
+			ctx.lineTo(0,50)
+			ctx.lineTo(50,50)
+			ctx.closePath()
+			ctx.fill()
+			//生成图形后将初始化样式还原出来，以便后续图形重新开始配置样式
+			ctx.restore()
+		}
+	}
+</script>
+10.绘制圆形
+生成一个圆的路径
+arc(x,y,radius,startAngle,endAngle,anticlockwise)
+(x,y)圆心坐标，radius半径，startAngle开始弧度，endAngle结束弧度，anticlockwise方向，默认false即逆时针
+注：JS角度弧度换算：弧度 = (Math.PI/180)*角度
+<script>
+	window.onload = function () {
+		var canvas = document.getElementById('#test')
+		if (canvas.getContext) {
+			var ctx = canvas.getContext('2d')
+
+			var circleRadian = 
+			ctx.arc(100,100,50,)
+
+		}
+	}
+</script>
+arcTo(x1,y1,x2,y2,radius)
+两个控制点加半径绘制圆弧，本质上还有一个控制点，就是moveTo(x,y)初始点，过程就是以三个点构成一个角，然后以指定半径画圆，最后将圆靠在角上，x1,x2之间的那段圆弧就被生成，该圆弧过x1，但不一定过x2，圆弧半径确定
+贝塞尔曲线
+二次贝塞尔曲线
+quadraticCurveTo(x1,y1,x2,y2)：加上moveTo(x,y)一共三个控制点，不指定半径，三个点构成一个角，圆弧过一定过x1,x2点，半径不确定
+bezierCurveTo(x1,y1,x2,y2,x3,y3)：加上moveTo(x,y)一共4个控制点，圆弧必过x1,x3并平滑过渡，moveTo(x,y)和x2为调整点
+
+
+表格显示不出来
+解决：要加上 border-collapse: collapse; 加在 style 里
+<table style="border:1px solid;border-collapse: collapse;" align="center" width="300px" height="100px">
+    <tr style="border:1px solid">
+        <th>学号</th>
+        <th>姓名</th>
+        <th>成绩</th>
+    </tr>
+    <tr align="center">
+        <td>1001</td>
+        <td>张三</td>
+        <td>120</td>
+    </tr>
+    <tr align="center">
+        <td>1002</td>
+        <td>李四</td>
+        <td>100</td>
+    </tr>
+</table>

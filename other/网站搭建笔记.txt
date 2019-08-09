@@ -1,0 +1,149 @@
+新建文件记得重启服务器
+导入某文件夹：#static文件
+	导入：{% load <文件夹名>%}
+	使用L：{% static '<文件路径>' %}
+模板继承：
+    父模板：{%block 模板名%}预留{%endblock 模板名%}
+    子模板：{% extends '父模板路径'%} #写在第一行
+	    {%block 模板名%}补充{%endblock 模板名%}
+查看端口占用情况：命令行：netstat -ano
+
+创建虚拟环境：#删除时只需要删除创建的文件夹就可以了
+    1.命令行下python -m venv <文件夹名>
+    2.cd到创建的文件夹下script里，使用activate激活虚拟环境
+    3.cd..返回上级
+    4.pip install django
+    5.pip install pillow
+
+关联数据库：
+    设计表结构：
+	1.表名
+	2.字段
+
+    启动数据库： #已经启动不需要启动
+	服务：右键启动
+
+    在__init__中添加：#先安装pymysql(python3不支持mysql)pip install pymysql
+import pymysql
+
+
+pymysql.install_as_MySQLdb()
+
+    在setting.py中修改：
+		'ENGINE': 'django.db.backends.mysql',
+        	'NAME': 'sunck',(数据库名)
+		'USER':'root',(用户名)
+		'PASSWORD':'*****',（密码）
+		'HOST':'localhost',(数据库服务器ip)
+		'PORT':'3306'，（端口，常用为3306）
+    }
+#复制用		
+		'ENGINE':'django.db.backends.mysql',
+		'NAME':'数据库名',
+		'USER':'root',
+		'PASSWORD':'root123',
+		'HOST':'localhost',
+		'PORT':'3306',
+
+创建git仓库：
+    1.创建远程库
+    2.克隆到本地：git clone+地址
+
+创建服务器框架：
+    1.创建配置文件：python manage.py startproject 项目名
+    2.启动服务器：python manage.py runserver(在项目文件夹下)
+    3.退出服务器：Ctrl+break
+    4.创建超级管理员：
+	命令行命令 python manage.py create superuser
+	可以只填写name和password
+
+创建基本页面：
+    1.新建templates（静态）文件夹，建立html页面：
+	标题：<h1>
+	表单：<form action = 'url'>
+	图片：<image src='url'>
+	调用变量：{{ 键值 }}
+	调用python语句：{% for i in list %}
+			{% endfor %}
+	调用类属性：{{ Gallery.image.url }}
+	CSS要写在<style>里面
+	
+    2.新建views.py,负责建立函数传递数据给浏览器页面：
+	from django.shortcuts import render
+	def home(request):
+		用变量传递模板的属性方法（记得先导入）
+		w = Gallery.object(传递所有)
+		return render(request,'home.html',{‘gallery’：w})
+
+    3.在url.py中添加url,调用views中的函数：
+	urlpatterns: #url实例列表，一个实例为一个对象，可接受参数
+	    from django.contrib import admin
+	    from django.urls import path,include
+	    import <app路径>.urls
+	    path('', include(<app路径>.urls)),
+
+	url反向解析：
+	    1.在urlpatterns前加入app_name='namespace(文件夹名)'
+	    2.在url后面添加name参数
+	    3.将{%url 'namespace:name' p1 p2%}写在<a>标签的href属性中
+	    4.p1,p2为两个可选参数
+
+    4.将templates文件夹添加到setting.py中的DIRS中
+
+    5.创建自己的app:
+	命令行命令 python manage.py startapp <app名>
+
+    6.在setting.py中添加apps路径，注册app：
+	文件夹名.apps.<类名>
+
+    7.在models.py（模板）中创建新的类：
+	调用models.CharField可以输入文字
+	调用models.ImageField可以输入图片
+	class Gallery(models.Model):
+		description = models.CharField(default='默认值'，max_length=50)
+		Image = models.ImageField(default='默认值'，upload_to='/image/')
+		title = models.CharField(default='默认值'，max_length=50)
+		
+    (管理界面标题)：def __str__(self):                  
+			return self.title
+	增：#先新建类，由类对象来创建表
+	    创建表格：<变量> = 类(列名=数据) #创建对象
+	    保存数据：<变量>.save()
+	    增加数据：<变量>.列名 = 数据     #调用属性赋值
+	    保存数据：<变量>.save()
+	删：
+	    <变量> = <类名>.objects.get(列名=值) #查出某行
+	    <变量>.delete()
+	改：
+	    <变量> = <类名>.objects.get(列名=值)  #先查出哪行
+	    <变量>.列名 = 值			#再查出哪列，再赋值
+	    <变量>.save()			#保存数据
+	查：
+	    查多行：<变量> = <类名>.objects.filter(列名=值)
+	    查单行：<变量> = <类名>.objects.get(列名=值)
+	    查单行某个字段(列)的值：<变量>.列名
+
+    8.在setting.py中添加网址和根目录:
+	MEDIA_URL = '/media/'
+	MEDIA_ROOT = os.path.join(BASE_DIR,'/media/')
+
+    9.在url.py中设置url和根目录:
+	from django.conf.urls.static import static
+	from django.conf import settings
+	urlpatterns = [] + 
+		static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)
+
+    10.在admin.py中导入并注册新建的model:
+	from .models import Gallery
+	admin.site.register(Gallery)
+
+    11.迁移数据到数据库：
+	命令行命令 python manage.py makemigration
+	命令行命令 python manage.py migrate
+
+    12.登陆管理员界面：
+	url+admin/
+	测试新建的模板
+
+    13.bootstrap网查找html模板：
+	复制html,css,js源码

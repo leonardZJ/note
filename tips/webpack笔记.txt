@@ -1,0 +1,307 @@
+node.js的模块化
+node.js的出现，使前端模块化编程成为可能
+a.js：
+<script>
+	var a = 'aaa'
+
+	//最后输出一个对象
+	module.exports = {
+		a: a
+	};
+</script>
+b.js：
+<script>
+	//引入模块，获取该模块对象中的数据
+	var a = require('./a.js').a
+
+	console.log(a)
+</script>
+
+ES6的模块化
+说明：让js的模块化变的更好用
+a.js：
+<script>
+		var a = 'aaa'
+
+		export {a}
+	</script>
+</script>
+b.js：
+<script>
+	import {a} form './a.js'
+
+	console.log(a)
+</script>
+
+webpack
+是现代JavaScript应用程序的模块打包器，可以把项目的各种依赖文件(js，ts，less，sass甚至是图片等)打包成一个或多个文件（.js，.css，.jpg，.png）
+
+使用方法
+初始化项目：npm init -y
+说明：npm的初始化会创建package.json文件，用于管理该项目的配置信息，如果项目移动，会根据该文件重新npm install下载相关依赖
+
+安装webpack
+全局安装：npm install webpack -g
+说明：会将webpack安装在全局，如果项目移动到别的地方，web版本不同会有版本不适应问题，不推荐使用
+
+局部安装：
+npm i webpack -D
+npm install webpack --save-dev
+说明：会将webpack安装在项目文件夹里，项目移动到别的地方也不会有版本不适应问题
+
+4.0之后需要单独安装webpack-cli
+npm install webpack-cli -D
+
+注：如果出现权限不够的报错，用管理员身份运行cmd，重新进行安装即可
+
+打包
+全局
+webpack 入口文件 -o 出口文件
+局部
+node_modules/.bin/webpack 入口文件名.js -o 输出文件名.js
+
+package.json配置
+说明：通过该文件可以配置简化一些操作
+<script>
+	{
+	  "name": "test",
+	  "version": "1.0.0",
+	  "main": "index.js",
+	  "scripts": { //配置默认命令
+	    "test": "echo \"Error: no test specified\" && exit 1",
+	    //简化局部打包命令，打包命令变为"npm run pack"
+	    "pack":"node_modules/.bin/webpack 入口文件名.js -o 输出文件名.js"
+	  },
+	  "keywords": [],
+	  "author": "",
+	  "license": "ISC",
+	  "description": "",
+	  "devDependencies": {
+	    "webpack": "^4.29.6"
+	  }
+	}
+
+</script>
+
+webpack配置
+说明：如果所有插件的配置都写在package.json中，将会难以管理，所以往往给每个插件创建一个独立的配置文件，webpack.config.js就是webpack的配置文件
+使用方法：
+1.在项目文件夹中新建webpack.config.js文件
+2.进行配置：
+<script>
+	var path = require('path');
+
+	module.exports = {
+	  mode: 'development', //打包模式，development不压缩代码，production压缩代码(默认)，none禁用所有默认选项
+	  entry: './main.js', //入口文件
+	  output: {
+	    path: path.resolve(__dirname, 'dist'),
+	    filename: 'bundle.js'
+	  }
+	};
+</script>
+配置了出口入口文件，package.js中就可以去掉pack命令的后面两项
+<script>
+	{
+	  "name": "test",
+	  "version": "1.0.0",
+	  "main": "index.js",
+	  "scripts": { //配置默认命令
+	    "test": "echo \"Error: no test specified\" && exit 1",
+	    //继续简化，去掉出口文件和入口文件名，打包命令为"npm run pack"
+	    "pack":"node_modules/.bin/webpack"
+	  },
+	  "keywords": [],
+	  "author": "",
+	  "license": "ISC",
+	  "description": "",
+	  "devDependencies": {
+	    "webpack": "^4.29.6"
+	  }
+	}
+</script>
+如果有多个入口文件（页面较多，使用不同的js）
+<script>
+	module.exports = { 
+		entry:{ //入口文件用对象管理
+			home: './home.js'
+			signup: './signup.js'
+		}, 
+		output:{ //出口文件
+			filename: '[name].bundle.js', //[name]会取出entry里的键
+			path: __dirname + '/dist' //会打包出一个dist文件夹
+		}, 
+		devSever:{}, //开发服务器
+		module:{}, //模块配置
+		plugins:[], //插件的配置
+		mode:'development', //打包模式，开发时用开发模式(development)，这样打包出来的代码就看得懂
+		resolve:{}, //配置解析
+		script:{ //创建常用指令别名
+
+		}, 
+
+	}
+</script>
+
+提升
+webpack四个核心概念
+入口，输出，loader，插件
+说明：webpack默认可以加载js和json文件，如需要加载其他文件，必须使用对应的loader，如babel-loader等
+
+下载指定版本的webpack
+npm install webpack@1 -D
+
+下载相关loader
+css：npm install css-loader style-loader --save-dev
+说明：css-loader用于加载，style-loader用于加载css到页面上
+图片：npm install file-loader url-loader --save-dev
+说明：url-loader是基于file-loader的语法糖，url-loader的好处是可以将8k以下的图片打包到js中，减少请求数
+注：大于8k的图片会被打包到bundle的同级目录，有可能导致页面找不到图片，将html文件放到图片同级文件夹内即可
+使用loader
+在webpack中配置loader，可以在文档的loader中找到配置
+<script>
+	module.exports = { 
+		entry:{ //入口文件用对象管理
+			home: './home.js'
+			signup: './signup.js'
+		}, 
+		output:{ //出口文件
+			filename: '[name].bundle.js', //[name]会取出entry里的键
+			path: __dirname + '/dist' //会打包出一个dist文件夹
+		}, 
+		devSever:{}, //开发服务器
+		module:{ //模块配置，即loader配置
+			rules: [
+			      {
+			        test: /\.css$/,
+			        use: [
+			          { loader: 'style-loader' },
+			          {
+			            loader: 'css-loader',
+			            options: {
+			              modules: true
+			            }
+			          },
+			          { loader: 'sass-loader' }
+			        ]
+			      }
+			    ]
+			  }
+		}, 
+		plugins:[], //插件的配置
+		mode:'development', //打包模式，开发时用开发模式(development)，这样打包出来的代码就看得懂
+		resolve:{}, //配置解析
+		script:{ //创建常用指令别名
+
+		}, 
+	}
+</script>
+在入口文件引入css文件
+<script>
+	import './index.css'
+</script>
+
+webpack-dev-server
+说明：用于热加载，修改文件后不需要重新打包，热加载生成的新文件存在于内存中，所以可以快速热更新
+下载：npm install --save-dev webpack-dev-server
+执行：webpack-dev-server
+说明：该命令会将文件放到一个临时服务器上打包，查看时直接访问临时服务器的地址就可以了，默认会访问根目录
+
+webpack-dev-server配置
+说明：
+<script>
+	module.exports = { 
+		entry:{ //入口文件用对象管理
+			home: './home.js'
+			signup: './signup.js'
+		}, 
+		output:{ //出口文件
+			filename: '[name].bundle.js', //[name]会取出entry里的键
+			path: __dirname + '/dist' //会打包出一个dist文件夹
+		}, 
+		devSever:{ //开发服务器，保存后自动更新页面
+			contentBase: 'dist/', //设置默认进入的文件夹，默认显示index.html页面
+		}, 
+		module:{ //模块配置，即loader配置
+			rules: [
+			      {
+			        test: /\.css$/,
+			        use: [
+			          { loader: 'style-loader' },
+			          {
+			            loader: 'css-loader',
+			            options: {
+			              modules: true
+			            }
+			          },
+			          { loader: 'sass-loader' }
+			        ]
+			      }
+			    ]
+			  }
+		}, 
+		plugins:[], //插件的配置
+		mode:'development', //打包模式，开发时用开发模式(development)，这样打包出来的代码就看得懂
+		resolve:{}, //配置解析
+		script:{ //创建常用指令别名
+
+		}, 
+	}
+</script>
+
+插件
+下载插件，可以在文档的插件部分查看
+npm install --save--dev html-webpack-plugin clean-webpack-plugin
+html-webpack-plugin插件：可以根据一个模板页面生成一个新的html页面，放到最终的dist中，并自动引入打包好的静态文件
+clean-webpack-plugin插件：用于清除指定目录下的所有静态资源，在重新打包之前，删除旧的文件
+使用插件，在webpack.config.js中配置插件
+<script>
+	//引入插件
+	const a = require('HtmlWebpackPlugin')
+	const a = require('CleanWbpackPlugin')
+
+	module.exports = { 
+		entry:{ //入口文件用对象管理
+			home: './home.js'
+			signup: './signup.js'
+		}, 
+		output:{ //出口文件
+			filename: '[name].bundle.js', //[name]会取出entry里的键
+			path: __dirname + '/dist' //会打包出一个dist文件夹
+		}, 
+		devSever:{ //开发服务器，保存后自动更新页面
+			contentBase: 'dist/', //设置默认进入的文件夹，默认显示index.html页面
+		}, 
+		module:{ //模块配置，即loader配置
+			rules: [
+			      {
+			        test: /\.css$/,
+			        use: [
+			          { loader: 'style-loader' },
+			          {
+			            loader: 'css-loader',
+			            options: {
+			              modules: true
+			            }
+			          },
+			          { loader: 'sass-loader' }
+			        ]
+			      }
+			    ]
+			  }
+		}, 
+		plugins:[ //配置插件
+
+		], 
+		mode:'development', //打包模式，开发时用开发模式(development)，这样打包出来的代码就看得懂
+		resolve:{}, //配置解析
+		script:{ //创建常用指令别名
+			new HtmlWebpackPlugin({template: './index.html'})
+			new CleanWbpackPlugin(['dist'])
+		}, 
+	}
+</script>
+
+devDependencies 节点下记录的是我们在开发时需要用到，在项目部署后不需要的模块，如 gulp（打包工具） ，css、js压缩工具的模块，使用 -save-dev 的形式安装会写入 devDependencies
+
+dependencies 节点下记录的是项目部署后任然需要的模块,像 express 这些模块是项目运行必备的，使用 -save 的形式安装会写入 dependencies

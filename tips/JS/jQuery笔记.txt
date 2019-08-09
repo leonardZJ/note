@@ -1,0 +1,364 @@
+安装
+npm install --save jquery
+
+引入
+import $ from "jquery"
+window.$ = $
+
+jQuery（Write Less,Do More）
+是一个优秀的函数库，封装了原生的JS，DOM，BOM等
+
+jQuery插件
+在jQuery之上再进行封装，出现了依赖于jQuery库的库，称为jQuery的插件
+
+jQuery特点
+操作DOM元素
+链式调用
+读写合一
+浏览器兼容
+易扩展插件
+ajax封装
+
+基本使用
+点击按钮，获取input内容，alert出来
+script标签写在body里面的最底部会更有效率，记得先引入
+<script>
+	//绑定文档加载完成的监听
+	$(function () {
+		$('#btn1').click(function () { //为btn1绑定点击监听
+			var username = $('#username').val() //获取input的value值
+			alert(username)
+		})
+	})
+</script>
+
+jQuery版本
+1.x：使用最多，兼容更多老版本，文件更大
+2.x：部分IE8以下不支持，文件更小
+3.x：完全不支持IE8，提供新的API
+开发时使用未压缩的版本，可以提供更多报错提示
+上线时使用压缩版本，体积更小，加载更快
+
+jQuery两把利器
+jQuery核心函数：命名为$/jQuery的函数，jQuery向外直接暴露的就是$/jQuery，其功能随传入参数的改变而改变，一个函数，多个功能
+jQuery核心对象：执行$/jQuery函数返回的实例对象，没有名字，包含了很多方法
+
+jQuery库向外暴露核心函数
+<script>
+	//这是一个匿名函数，(fn)(window)相当于立即执行改函数并传入window作为参数
+	(function (window) {
+		//内部创建一个名为jQuery的函数，该函数返回一个通过构造函数生成的jQuery对象
+		var jquery = function () {
+			return new xxx //所以，每次执行jQuery函数，永远返回一个jQuery对象
+			...
+		}
+
+		//最后将jquery添加到window对象中，使window可以调用该函数
+		window.$ = window.jQuery = jQuery
+	})(window)
+
+//引入jQuery库并运行后，会立即执行(fn)(window)匿名函数，核心函数被创建出来并被全局暴露，因此全局就可以直接用$/jQuery
+</script>
+
+$本质上就是一个函数，但是函数也是对象，于是$除了可以直接调用外，也可以有很多其他属性。
+
+jQuery核心函数用法
+1.作为一般函数使用：$()，可以不传或者传入不同的参数，会有不同的功能
+	a.传入一个回调函数：表示当DOM加载完后，执行此回调函数（相当于window.onload）
+	b.传入一个选择器字符串：查找所有匹配的便签，并将它们包装成jQuery对象返回，就能使用$的所有方法
+	c.传入一个DOM元素（事件回调函数中this即发生事件的DOM元素）：将该DOM元素包装成jQuery对象，就能使用$的所有方法
+	d.传入一个标签字符串：动态创建该标签对象，并包装成jQuery对象，就能使用$的所有方法（创建后.appendTo('div')插入）
+总结：想要使用$的方法，先将该对象传入$()中包装成jQuery对象，然后就可以调用$的所有方法
+<script>
+	//$()中传入fn，表示当DOM加载完后，执行此回调函数（相当于window.onload）
+	$(function () {
+		//传入一个选择器字符串：查找所有匹配的便签，将它们包装成jQuery对象返回，就能使用$的方法
+		$('#btn').click(function () {
+			//传入一个事件回调函数中的this即发生事件的DOM元素，包装成jQuery对象，就能使用$的方法
+			alert($(this).html()) //.html()传入参数代表写入，不传代表读取，即读写合一
+		})
+
+		//创建标签插入div中，.appendTo('div')默认插到队列末尾
+		$('<p>aaaaa</p>').appendTo('div')
+	})
+</script>
+2.直接作为对象使用：主要是为了调用$中的方法，例如$.each()，$.trim()等
+<script>
+	var arr = [1,2,3]
+	$.each(arr,function (index,item) {
+		console(index,item)
+	})
+</script>
+
+伪数组
+1.伪数组本质是一个对象
+2.伪数组拥有length值
+3.伪数组拥有下标
+4.不具有数组特有的方法（forEach，push，slice）
+
+选择器
+id选择器：$("#id") 相当于document.getElementById('id')
+元素选择器：$("div") 相当于document.getElementsByTagName('div')
+类选择器：$(".class") 相当于document.getElementsByClassName('.class') 
+复合选择器：$(".class,div")，选择.class和div
+通配符选择器：$("*"),匹配全部
+
+层次选择器
+后代选择器：$("ul li") <ul>下的所有<li>（往下搜索所有层级，所有<li>都选中）
+子级选择器：$("ul>li") <ul>下一级的所有<li> (往下搜索一级，所有<li>都选中)
+相邻选择器：$("div+img") 匹配<div>标记后的<img>标记（<div>和<img>为同级别）
+兄弟选择器：$("div~ul") 匹配<div>标记后的同级别所有<ul>标记 （<div>和<ul>为同级别）
+
+过滤器
+选择器：first 选择的元素中的第一个
+选择器：last 选择的元素中的最后一个
+选择器：even 选择的元素中的每偶数个
+选择器：odd 选择的元素中的每奇数个
+选择器：eq(2) 选择的元素中的下标等于2的元素(即第2个元素)
+选择器：gt(2) 选择的元素中的下标大于2的元素(即第2个元素之后的所有元素，不包括2)
+选择器：lt(2) 选择的元素中的下标小于2的元素(即第2个元素之前的所有元素，不包括2)
+选择器：header 选择的元素中的所有标题元素
+选择器：not("li") 选择的元素中的所有不是<li>的元素(即去掉<li>)
+
+
+内容过滤器：通过DOM元素里的文本内容和子元素进行匹配
+选择器：contains("leonard") 选择的元素中包含leonard文本的元素
+选择器：empty 选择的元素中不包含文本或不包含子元素的元素(即匹配空元素)
+选择器：parent 选择的元素中包含文本或包含子元素的元素(即匹配非空元素)
+选择器：has(.class) 选择的元素中含有.class的元素
+
+可见性过滤器
+选择器：hidden 选择的元素中隐藏的元素
+选择器：visible 选择的元素中显示的元素
+
+表单对象属性过滤器
+$("input")：checked 匹配input元素中为checked的元素
+$("input")：disabled 匹配input元素中为disabled(不可用)的元素
+$("select option")：selected 匹配option元素中为selected(选中)的元素
+
+子元素过滤器
+选择器:first-child 匹配选择的元素中的第一个子元素
+选择器:last-child 匹配选择的元素中的最后一个子元素
+选择器:only-child 匹配选择的元素中只有一个子元素的(如果只有一个则匹配，如果多于一个则不匹配)
+选择器:nth-child(2) 匹配选择的元素中下标为2的子元素
+
+#过滤器可以连起来写，写成链式结构
+
+属性选择器 通过元素的属性作为筛选条件
+选择器[name]：匹配所有带name属性的元素，$("input[name]")即input里所有带name属性的元素
+选择器[name="1"]：匹配所有带name="1"属性的元素，$("input[name="1"]")即input里所有带name="1"属性的元素
+选择器[name!="1"]：匹配所有不带name="1"属性的元素，$("input[name="1"]")即input里所有不带name="1"属性的元素
+选择器[name*="1"]：匹配所有name属性的值中带"1"的元素，$("input[name*="1"]")即input里所有name属性的值中带"1"的元素
+选择器[name^="1"]：匹配所有name属性的值中以"1"开头的元素，$("input[name^="1"]")即input里所有name属性的值中以"1"开头的元素
+选择器[name$="1"]：匹配所有name属性的值中以"1"结尾的元素，$("input[name$="1"]")即input里所有name属性的值中以"1"结尾的元素
+选择器[name="1"][value="2"]：复合属性选择器，选中同时符合所有[]里条件的选择器
+
+表单选择器，匹配的不一定在同一个表单里
+:input 匹配所有的input元素,例：$(":input"),如果要指定某表单则:$(".class :input")空格重要
+:button 匹配所有普通按钮
+:checkbox 匹配所有复选框
+:file 匹配所有文件域
+:hidden 匹配所有的隐藏域
+:image 匹配所有的图像域
+:password 匹配所有的密码域
+:radio 匹配所有单选按钮
+:reset 匹配所有重置按钮
+:submit 匹配所有的提交按钮
+:text 匹配所有的单行文本
+
+常用节点：元素节点，文本节点，属性节点
+
+API
+.addClass()：添加类样式
+.removeClass()：移除类样式
+.attr()：非布尔值属性使用，效率更高
+.prop()：布尔值属性使用，避免出现问题
+.on('事件',function(){}):绑定事件
+.css('属性名','属性值')：修改标签样式
+.text()：获取文本内容，括号中写东西表示传值，如果对象中有很多元素，则全部传值，如果设置的内容中有HTML内容，也会被当做文本，不会被浏览器解析
+.html()：相当于innerHTML,括号中写东西表示赋值,如果对象中有很多元素，则全部赋值，如果设置的内容中有HTML内容，会被浏览器解析成HTML内容
+表单方法
+.val()：表单获值和传值专用，括号中写东西表示传值，如果对象中有很多元素，则全部传值，可以用于checkbox,select,radio
+<script>
+	$('input').val([2]) //checkbox类：表示选中第二个
+	$('input').val(["选项1","选项2"]) //select类
+</script>
+
+.focus()：获得焦点事件
+.blur()：失去焦点事件
+.click()：点击事件
+.submit()：提交事件(注：表单提交事件触发时，会默认触发整页刷新，可以用event.preventDefault()禁用掉)
+.toggle()：点击隐藏/显示
+.load()：发送异步请求，括号里加url
+
+Ajax
+使用方法：一般写在事件执行函数中
+<script>
+	$.ajax({
+		url: '...',
+		method: 'post', //如果为get,data可以不填
+		data: {username: '...',password: '...'},
+		success: function(data) {...}, //请求成功时执行的回调
+		error: function() {...}, //请求失败时执行时执行的惠帝
+		...
+	})
+	.done(function(data) {
+		console.log(data)
+	})
+	//done为最终执行的函数，data为请求返回值
+	//可利用.html('拼串')方法插入到网页中
+</script>
+
+Ajax请求简化写法：
+<script>
+	//发送get请求
+	$.get('url').done(function (data) {
+		console.log(data)
+	})
+
+	//发送post请求
+	$.post('url',{
+		username: '...',
+		password: '...'
+	}).done(function (data) {
+		console.log(data)
+	})
+
+	//获取json数据
+	$.getJSON('url').done(function (data) {
+		console.log(data)
+	})
+
+	//获取代码
+	$.getScript('url').done(function (data) {
+		console.log(data)
+	})
+</script>
+
+jquery特效
+$('#id').hide()：隐藏元素
+$('#id').show()：显示元素
+$('#id').fadeOut(1000)：渐隐特效，单位毫秒
+$('#id').fadeIn(1000)：渐显特效，单位毫秒
+$('#id').slideup(1000)：向上隐藏，单位毫秒
+$('#id').slidedown(1000)：向下隐藏，单位毫秒
+
+创建元素节点
+var $a = $("<p></p>")
+
+创建文本节点  #加入文字
+var $a = $("<p>文字内容</p>")
+
+创建属性节点 #加入属性
+var $a = $("<p title="...">文字内容</p>")
+
+父节点方法  #如果对象中有很多元素，则全部插入
+1..append()在选中的元素中的最后插入节点
+	var $a = $("<p title="...">文字内容</p>")
+	var $b = $("div")
+	$b.append($a)
+2..appendTo()将节点插入在选中的元素的最后（即写法跟1反过来）
+	var $a = $("<p title="...">文字内容</p>")
+	var $b = $("div")
+	$a.appendTo($b)
+3..prepend()在选中的元素中的最前插入节点
+	var $a = $("<p title="...">文字内容</p>")
+	var $b = $("div")
+	$b.prepend($a)
+4..prependTo()将节点插入在选中的元素的最前（即写法跟1反过来）
+	var $a = $("<p title="...">文字内容</p>")
+	var $b = $("div")
+	$a.prependTo($b)
+
+子节点方法  #如果对象中有很多元素，则全部插入
+1..after()在选中的元素后插入
+	var $a = $("<p title="...">文字内容</p>")
+	var $b = $("div")
+	$a.after($b)
+2..insertAfter()将元素插入在选中的元素后（即写法跟1反过来）
+	var $a = $("<p title="...">文字内容</p>")
+	var $b = $("div")
+	$a.insertAfter($b)
+3..before()在选中的元素前插入
+	var $a = $("<p title="...">文字内容</p>")
+	var $b = $("div")
+	$a.before($b)
+4..insertBefore()将元素插入在选中的元素前（即写法跟1反过来）
+	var $a = $("<p title="...">文字内容</p>")
+	var $b = $("div")
+	$a.insertBefore($b)
+
+删除节点
+.remove() 删除所有匹配的节点
+.empty() 清空所有匹配的节点的内容，但标签还存在
+.detach() 删除所有匹配的节点，但已经声明的jQuery对象还存在
+
+复制节点
+.clone()：复制节点，括号里可以写"true"表示将事件处理程序一起复制
+
+替换节点
+.replaceAll(selector)：用集合的匹配元素替换每个目标元素。
+<script>
+	//<div class="container">
+	//  <div class="inner first">Hello</div>
+	//  <div class="inner second">And</div>
+	//  <div class="inner third">Goodbye</div>
+	//</div>
+
+	//创建一个元素然后用它替换其它元素
+	$('<h2>New heading</h2>').replaceAll('.inner');
+	
+	//<div class="container">
+	//  <h2>New heading</h2>
+	//  <h2>New heading</h2>
+	//  <h2>New heading</h2>
+	//</div>
+</script>
+.replaceWith(content)：用提供的内容替换集合中所有匹配的元素并且返回被删除元素的集合。
+<script>
+	//<div class="container">
+	//  <div class="inner first">Hello</div>
+	//  <div class="inner second">And</div>
+	//  <div class="inner third">Goodbye</div>
+	//</div>
+
+	//用指定的HTML替换第二个 inner <div> 
+	$('div.second').replaceWith('<h2>New heading</h2>');
+
+		
+	//<div class="container">
+	//  <div class="inner first">Hello</div>
+	//  <h2>New heading</h2>
+	//  <div class="inner third">Goodbye</div>
+	//</div>
+</script>
+
+遍历节点
+.each(function(index,el){})：遍历选择器中的标签
+
+编写jQuery插件
+给jQuery对象绑定一个新方法是通过扩展$.fn对象实现的
+<script>
+	$.fn.highlight1 = function () {
+	    // this已绑定为当前jQuery对象:
+	    this.css('backgroundColor', '#fffceb').css('color', '#d85030');
+	    return this;
+	}
+</script>
+
+1.给$.fn绑定函数，实现插件的代码逻辑；
+2.插件函数最后要return this;以支持链式调用；
+3.插件函数要有默认值，绑定在$.fn.<pluginName>.defaults上；
+4.用户在调用时可传入设定值以便覆盖默认值。
+
+Ajax跨域请求
+<script>
+	$.ajax({
+	    url: "http://api.douban.com/v2/movie/top250",//该请求为跨域请求
+	    type: "GET",
+	    dataType: "jsonp", //指定服务器返回的数据类型
+	    success: function (data) {
+	        console.log(data)
+	    }
+	});
+</script>

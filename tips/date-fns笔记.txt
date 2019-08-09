@@ -1,0 +1,18 @@
+安装（npm安装好像会报错）
+cnpm install --save date-fns
+
+使用
+<script>
+	import {format} from 'date-fns'  //引入整个库
+	import format from 'date-fns/format' //引入需要的部分
+</script>
+
+函数
+format(): 格式化日期函数
+<script>
+	console.log(   format(new Date(), 'HH:mm')                 ); // 17:05
+	console.log(   format(new Date(), 'YYYY-MM-DD HH:mm:ss')   ); //2019-01-03 17:26:33
+	console.log(   format(new Date(), 'YYYY-MM-DD')            ); //2019-01-03 
+	console.log(   format(new Date())                          );//2019-01-03T17:27:27.102+08:00
+</script>
+

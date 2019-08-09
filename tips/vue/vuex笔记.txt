@@ -1,0 +1,188 @@
+vuex
+vuex的出现是为了解决多组件共享状态的问题，在大型应用中，多个组件往往会共享某个数据，并基于该共享数据进行多种操作，普通方法是将某组件的共享数据往其他组件传递，而当组件群繁杂庞大时，数据的传递也会变的极其复杂，vuex将多个组件的共享数据集中起来进行管理，极大的优化了共享数据的传递方式
+
+下载vuex
+npm install --save vuex
+
+vuex主要配置(对象)：
+state：包含共享状态(数据)对象
+actions：包含多个事件回调函数对象
+mutations：包含多个能直接更新state的方法(回调函数)的对象
+getters：包含多个计算属性(get)的对象
+
+1.创建state.js，actions.js，mutations.js，getters.js等配置模块
+说明：真实项目中会分别创建state.js，actions.js，mutations.js，getters.js等模块，然后引入到store.js中注册
+<script>
+	// state.js模块：
+	export default {}
+	// mutations.js模块：
+	export default {}
+	// actions.js模块：
+	export default {}
+	// getters.js模块：
+	export default {}
+</script>
+
+
+2.创建核心管理对象模块index.js，引入配置模块进行注册
+<script>
+	import Vue from 'vue'
+	import Vuex from 'vuex'
+	//引入配置模块
+	import state from './state'
+	import actions from './actions'
+	import mutations from './mutations'
+	import mutations from './getters'
+	
+	Vue.use(Vuex)
+	//向外暴露store对象
+	export default new Vuex.Store ({  //注意是大写Store
+		state,      //包含多个共享状态(数据)，本质是一个对象
+		mutations,  //包含多个更新state的函数，本质是一个对象
+		actions,    //包含多个对应事件的回调函数，本质是一个对象
+		getters     //包含多个getter计算属性函数，本质是一个对象
+	})
+</script>
+
+3.在main.js中配置store
+<script>
+	import store from './store'
+
+	new Vue({
+		store
+	})
+</script>
+
+4.管理共享状态
+说明：在main.js中注册了store之后，所有组件都会默认添加$store对象(即对所有组件都可见)，其中包含注册的state和getters对象，以及dispatch(actionName,data)方法，所以可以通过$store对象直接调用共享状态
+1.将共享的状态(数据)放入state.js中管理
+说明：state对象可以用于管理普通数据，对应组件中的data
+<script>
+	//将共享属性放入state.js的state对象中
+	const state = {
+		count = 1
+	}
+	//在组件的template中直接取出共享状态(数据)，可以不用加this
+	$store.state.count
+	//在组件的script中取共享数据，从this中的$store中取
+	this.$store.state.count
+</script>
+	
+2.将关联的计算属性放入getters.js中管理
+说明：getters对象可以用于管理函数类型数据(需要通过计算获取值)，对应组件中的计算属性computed，因为数据都由vuex管理，所以state也对getters可见，可以直接传入其管理的函数中进行操作
+<script>
+	//将计算属性放入getters.js的getters对象中
+	const getters = {
+		evenOrOdd: function(state) {
+			return state.count%2===1 ? '奇数' : '偶数'
+		}
+	}
+	//在组件中读取共享计算属性值
+	computed: {
+		evenOrOdd: function() {
+			//通过$store访问共享的属性，直接调用名称就可以获得值
+			return this.$store.getters.evenOrOdd
+		}
+	}
+</script>
+
+3.管理事件和函数
+说明：actions对象可以用于管理事件函数(也负责跟后台交互)，mutations对象可以用于管理数据更新函数，对应组件中的事件回调函数methods，可以通过消息发布的方法($store.dispatch(...))触发actions中的函数执行，使其调用mutations，从而间接更新state，dispatch(actionName,data)中actionName为函数名，data为传递给actions的数据(没有可不传),传递多个参数需使用对象形式
+<script>
+	//在组件中发布消息(触发actions行为执行)
+	methods: {
+		//增加
+		increment: function() {
+			this.$store.dispatch('increment')
+		},
+		//减少
+		decrement: function() {
+			this.$store.dispatch('decrement')
+		},
+		//如果为奇数则增加
+		incrementIfOdd: function() {
+			this.$store.dipatch('incrementIfOdd')
+		},
+		//过1s后增加(异步)
+		incrementAsync: function() {
+			this.$store.dispatch('incrementAsync')
+		}
+	}
+</script>
+
+//在actions.js的actions对象中订阅消息(写入事件行为函数)，事件行为函数可以传入({commit,state},data)等参数，commit()方法用于调用mutations，state用于操作状态(没有可不传)，data可以用于消息发布层传递数据(没有可不传)，从而间接更新state
+<script>
+	const actions = {
+	//增加
+	increment: function({commit}) {
+		commit('INCREMENT')
+	},
+	//减少
+	decrement: function({commit}) {
+		commit('DECREMENT')
+	},
+	//如果为奇数则增加
+	incrementIfOdd: function({commit,state}) {
+		//如果条件成立则调用mutations
+		if(state.count%2===1) {
+			commit('INCREMENT')
+		}
+	},
+	//过1s后增加(异步)
+	incrementAsync: function({commit}) {
+		//1s后调用mutations
+		setTimeout(() => {
+			commit('INCREMENT')
+		},1000)
+	}
+}
+</script>
+<script>
+	//在mutations.js的mutations对象中写入更新state的方法(最终执行的函数)，并传入state用于操作更新
+	const mutations = {
+		//增加
+		INCREMENT: function(state) {
+			state.count++
+		},
+		//减少
+		DECREMENT: function(state) {
+			state.count--
+		},
+	}
+</script>
+
+
+
+优化和问题
+vuex内置了mapState，mapGetters，mapActions等方法，可用于优化组件中的代码
+
+1.在组件中导入mapState，mapActions，mapGetters等方法：
+<script>
+	import {mapState,mapActions,mapGetters} from 'vuex'
+</script>
+
+2.从state.js和getters.js中获取数据可写成：
+<script>
+	computed: {
+		...mapState(['count']) //相当于...{return this.$store.state['count']}
+		...mapGetters(['evenOrOdd']) //相当于...{return this.$store.getters['evenOrOdd']}
+	}
+</script>
+说明：template中可直接引用{{ count }}和{{ evenOrOdd }}
+
+3.触发actions.js中的行为可以写成：
+<script>
+	methods: {
+		...mapActions(['increment','decrement','incrementIfOdd','incrementAsync'])
+	}
+</script>
+说明：这时组件对象会拥有所有行为方法，可以通过this.increment方式调用
+
+给actions传递参数时，如果传入一个参数，可以直接传递，但是如果传入参数超过一个，必须使用对象形式
+<script>
+	this.actionsFn({
+		name: 'aaa',
+		value: 1111
+	})
+	//actions中第二个参数为对象形式
+</script>

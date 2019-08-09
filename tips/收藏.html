@@ -1,0 +1,84 @@
+<!-- loading动画 -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>test</title>
+	<script src="./vue.js"></script>
+	<script src="./vue-router.js"></script>
+</head>
+<style>
+  /* loading动画1 */
+  html,body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+  }
+  .loading {
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,.5);
+      position: absolute;
+      top: 0;
+      z-index: 5;
+  }
+  .middle {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%,-50%);
+  }
+  .bar {
+      width: 0.33rem;
+      height: 1rem;
+      background-color: #fff;
+      display: inline-block;
+      transform-origin: bottom center;
+      animation: loading 1.5s ease-in-out infinite;
+  }
+  .bar2 {
+      animation-delay: 0.1s;
+  }
+  .bar2 {
+      animation-delay: 0.2s;
+  }
+  .bar3 {
+      animation-delay: 0.3s;
+  }
+  .bar4 {
+      animation-delay: 0.4s;
+  }
+  .bar5 {
+      animation-delay: 0.5s;
+  }
+  .bar6 {
+      animation-delay: 0.6s;
+  }
+
+  @keyframes loading {
+      0% {
+          transform: scaleY(0.1);
+          background: #fff;
+      }
+      50% {
+          transform: scaleY(2);
+          background: #aaa;
+      }
+      100% {
+          transform: scaleY(0.1);
+          background: transparent;
+      }
+  }
+</style>
+<body>
+<div class="middle">
+	<div class="bar bar1"></div>
+	<div class="bar bar2"></div>
+	<div class="bar bar3"></div>
+	<div class="bar bar4"></div>
+	<div class="bar bar5"></div>
+	<div class="bar bar6"></div>
+</div>
+</body>
+</html>

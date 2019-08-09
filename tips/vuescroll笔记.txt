@@ -1,0 +1,114 @@
+安装
+npm i -S
+
+全局引入
+<script>
+	import vuescroll from 'vuescroll'
+
+	Vue.use(vuescroll, {
+	  ops: {}, // 在这里设置全局默认配置
+	  name: 'myScroll' // 在这里自定义组件名字，默认是vueScroll
+	})
+
+	/*
+	 * 或者写成
+	 Vue.use(vuescroll); // install the vuescroll first
+	 Vue.prototype.$vuescrollConfig = {
+	   bar: {
+	     background: '#000'
+	   }
+	 };
+	 */
+</script>
+
+局部引入
+<template>
+  <vuescroll>内容</vuescroll>
+</template>
+<script>
+  import vuescroll from 'vuescroll'
+
+  export default {
+    components: {
+      vuescroll
+    }
+  };
+</script>
+
+只引入需要的模式
+<script>
+	//只引入 native 模式的特性，适用于PC端
+	import vuescroll from 'vuescroll/dist/vuescroll-native';
+
+	Vue.use(vuescroll);
+</script>
+<script>
+	//只引入 slide 模式的特性，适用于移动端
+	import vuescroll from 'vuescroll/dist/vuescroll-slide';
+
+	Vue.use(vuescroll);
+</script>
+
+注： 出现滚动条的必要条件是子元素的尺寸超出了父元素
+
+使用：将 <vue-scroll :ops="ops"></vue-scroll>放在外包裹标签里面，内容标签外面即可（即中间位置）
+<template>
+  <div class="parent-dom">
+    <vue-scroll :ops="ops">
+    	<div class="child-dom">内容</div>
+    </vue-scroll>
+  </div>
+</template>
+<script>
+  export default {
+    data() {
+      return {
+        ops: {
+          vuescroll: {
+          	mode: 'native', //选择一个模式, native 或 slide
+      	    sizeStrategy: 'percent', //如果父容器不是固定高度，设置为 number , 否则保持默认的percent
+      	    detectResize: true, //是否检测内容尺寸发生变化
+          }, 
+          scrollPanel: {
+          	initialScrollY: false, //组件mounted之后自动滚动的距离，可以是数字或百分比，false不滚动
+      	    initialScrollX: false, //组件mounted之后自动滚动的距离，可以是数字或百分比，false不滚动
+      	    scrollingX: true, //是否启用 x 方向上的滚动
+      	    scrollingY: true, //是否启用 y 方向上的滚动
+      	    speed: 300, //多长时间内完成一次滚动。 数值越小滚动的速度越快
+      	    easing: undefined, //滚动动画
+      	    verticalNativeBarPos: 'right', //原生滚动条的位置
+          },
+          rail: {
+			background: '#01a99a', //轨道的背景色
+			opacity: 0, //轨道的透明度
+			size: '6px', //轨道的尺寸
+			specifyBorderRadius: false, //是否指定轨道的 borderRadius，默认会自动设置
+			gutterOfEnds: null, //轨道距 x 和 y 轴两端的距离
+			gutterOfSide: '2px', //距离容器的距离
+			keepShow: false, //是否即使 bar 不存在的情况下也保持显示
+			border: 'none', //轨道的边框
+          }, 
+          bar: {
+          	showDelay: 500, //在鼠标离开容器后多长时间隐藏滚动条
+      	    onlyShowBarOnScroll: true, //是否只在滚动时显示 bar
+      	    keepShow: false, //滚动条是否保持显示
+      	    background: '#c1c1c1', //滚动条背景色
+      	    opacity: 1, //滚动条透明度
+      	    hoverStyle: false，
+      	    specifyBorderRadius: false, //是否指定滚动条的 borderRadius， 如果不那么和轨道的保持一致
+      	    minSize: false, //为 bar 设置一个最小尺寸, 从 0 到 1. 如 0.3, 代表 30%
+      	    size: '6px', //bar 的尺寸
+      	    disable: false, //是否禁用滚动条
+          },
+          scrollButton: {
+          	enable: false, //是否启用 scrollButton（两边的箭头）
+      	    background: 'rgb(3, 185, 118)', //scrollButton 的背景色
+      	    opacity: 1, //scrollButton 的透明度
+      	    step: 180, //每次当你点击 scrollButton 所滚动的距离
+      	    mousedownStep: 30, //每次当你按住 scrollButton 所滚动的距离
+          }
+        }
+      }
+    }
+  }
+</script>

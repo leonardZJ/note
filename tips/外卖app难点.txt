@@ -1,0 +1,3472 @@
+前后台交互相关问题：
+如何查看应用有没有发送某个Ajax请求
+说明：打开浏览器的network
+发送的ajax请求显示404
+说明：请求的路径是否正确？代理是否生效？(配置后需要重启)服务器应用是否运行？
+后台返回了数据，但页面没有显示(功能性bug)
+说明：vuex中是否有数据？组件中是否读取？(通过vue调试工具查看)，vue界面的显示是由数据决定的，通过这个宗旨排查问题
+
+项目描述
+此项目为外卖手机app(SPA项目)，前后台分离，包括商家，商品，购物车，用户等多个功能模块，采用模块化，组件化的模式开发
+
+技术选型： vue全家桶+ES6，axios，mint-ui，moment/date-fns，swiper，better-scroll，mock.js
+
+难点：侧边栏与子项目同步
+
+工程化：使用webpack打包工具，使用脚手架搭建项目
+
+API接口：包含四个关键点：url,请求方式，请求参数的格式，响应数据的方式
+
+测试接口：两个方面，1.接口通不通，2.通了以后看是否跟文档一致
+
+从项目中学到了什么：
+1.学到开发的一些方式和模式
+2.会涉及到很多插件和库，样式布局等等
+
+遇到的问题：
+bug: 更新状态数据时，对应界面不变化，普通方法给已有绑定的对象添加新属性，该属性没有数据绑定，需要用Vue.set方法
+bug: 轮播图swiper对象什么时候进行创建的问题，一开时用watch监视，最后在文档里看到nextTick方法才解决的
+bug: 绑定图片的src时，路径对了但图片不显示，如果使用:src要同时使用require(.../)引入图片才行
+bug: 倒计时的因为this的指向问题造成bug
+bug: 当标签带有v-if时better-scroll会获取不到高度值，将其改为v-show即可
+bug: 子路由组件跳转时默认为push方式，造成返回时不断重复，在router-link标签中写入replace即可(原replace="true")
+
+步骤分解
+0.运行后台应用
+1.cmd到后台应用目录
+2.npm start启动后台应用
+
+1.在src下创建源码目录
+api：与后台交互模块文件夹
+common：通用资源文件夹(例：fonts/img/stylus)
+components：非路由组件文件夹
+filters：自定义过滤器模块文件夹
+mock：模拟数据接口文件夹
+pages：路由组件文件夹
+router：路由器文件夹
+store：vuex相关模块文件夹
+App.vue：应用根组件
+main.js：入口js文件
+
+2.在components下创建
+FooterGuide文件夹
+--FooterGuide.vue
+
+3.在pages下创建
+Home文件夹
+--Home.vue
+Search文件夹
+--Search.vue
+Order文件夹
+--Order.vue
+Profile文件夹
+--profile.vue
+
+4.在根组件App.vue中写入组件模板
+<template>
+	<div>App</div>
+</template>
+<script>
+	export default{}
+</script>
+<style>
+</style>
+
+5.在入口文件main.js中初始化
+<script>
+	import Vue from 'vue'
+	import App from './App.vue'
+
+	new Vue({
+		el: '#app',
+		router,
+		render: h => h(App)
+		//render: function(h) {
+		//	return h(App)
+		//}
+	})
+</script>
+
+6.可以npm run dev测试一下是否报错
+
+7.使用reset.css还是normalize.css
+说明：reset.css更暴力，一视同仁全覆盖掉，normalize.css强调各个默认样式都有其存在的必然性，合理的去利用这些样式
+
+8.移动端添加viewport和fastclick.js
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+引入fastclick.js库并添加：
+<script type='application/javascript' src='.../fastclick.js'></script>
+<head>
+	<script>
+		if ('addEventListener' in document) {
+			document.addEventListener('DOMContentLoaded', function() {
+				FastClick.attach(document.body);
+			}, false);
+		}
+	</script>
+</head>
+
+9.在router中创建路由器index.js(先npm install vue-router --save)
+<script>
+	/* 路由器对象模块 */
+	import Vue from 'vue'
+	import VueRouter from 'vue-router'
+
+	/* 引入各路由对象模块 */
+	import Home from '../.../Home.vue'
+	import Search from '../.../Search.vue'
+	import Order from '../.../Order.vue'
+	import Profile from '../.../Profile.vue'
+
+	Vue.use(VueRouter)
+
+	export default new VueRouter({
+		routes: [
+			{
+				path: '/home',
+				component: Home
+			},
+			{
+				path: '/search',
+				component: Search
+			},
+			{
+				path: '/order',
+				component: Order
+			},
+			{
+				path: '/profile',
+				component: Profile
+			},
+			{
+				path: '/',
+				redirect: '/home'
+			}
+		]
+	})
+</script>
+10.在入口文件main.js中注册路由器，注册后就可以使用router-link,router-view等标签，$route和$router等属性了
+<script>
+	new Vue({
+		router
+	})
+</script>
+
+11.显示路由组件使用<router-view></router-view>标签
+
+12.非路由组件
+<template>
+	<!-- 使用标签  -->
+	<FooterGuide/>
+</template>
+<script>
+	/* 引入组件 */
+	import FooterGuide from './.../FooterGuide.vue'
+	/* 映射成标签 */
+	export default {
+		components: {
+			FooterGuide
+		}
+	}
+</script>
+
+13.从静态页面拆分出FooterGuide组件
+写入FooterGuide.vue中
+动态样式的class利用$router.path里的路径做判断(当路由==='/home'时添加样式：
+:class="{active: $router.path==='/home'}"
+
+14.在a标签添加 点击监听 连接到路由
+<template>
+	<a href="" @click="goTo('/home')"></a>
+</template>
+<script>
+	methods: {
+		goTo: function(path) {
+			this.$router.replace(path)
+		}
+	}
+</script>
+
+15.在各路由组件中分别放入相关文件(如images文件)，拆分出各路由组件
+
+16.抽取头部作为组件(HeaderTop--HeaderTop.vue)，使用插槽方法(slot)控制左右元素，使用porps方法修改中间内容
+
+17.在HeaderTop.vue中使用slot占位
+基础理解：
+具名插槽：
+在组件中写入<slot name="xxx"></slot>标签，在其他组件中的引用标签中间写入内容并加上slot=xxx，该内容会被放置到对应的插槽中
+
+	1.在组件中写入<slot name="xxx"></slot>标签
+	<template>
+		<slot name="left"></slot>
+		<span class="centerTitle">{{ title }}</span>
+		<slot name="right"></slot>
+	</template>
+	2.将头部样式写入<style></style>中
+	3.接收title信息
+	<script>
+		export default {
+			props: {
+				title: String
+			}
+		}
+	</script>
+	4.在各路由组件中引用HeaderTop.vue组件
+	<script>
+		import HeaderTop from '....'
+
+		export default {
+			components: HeaderTop
+		}
+	</script>
+	5.使用HeaderTop标签，将title的值传递给HeaderTop.vue组件(直接写在标签中)，将插槽标签放入相应位置用slot标识
+	<HeaderTop title="...">
+		<span slot="left">...</span>
+		<span slot="right">...</span>
+	</HeaderTop>
+
+18.使用swiper做轮播图
+bug: 第一次加载网页轮播无法滑动，刷新一下又好了
+解决：与PointerEvent有关，谷歌网址里输入chrome://flags/，查找Touch Events API，将其改为enable，重启浏览器就可以了
+19.抽取Shoplist.vue组件(商家列表)，在Home.vue组件中使用
+
+20.创建login.vue路由组件
+在pages中创建login--Login.vue
+在router--index.js中引入并映射成路由
+在Profile.vue中使用<router-link to="/login"></router-link>代替<a>标签(子标签放到router-link中，注意样式也要一致)
+拆分组件到login.vue组件中
+为返回箭头添加点击事件@click="$router.back()"
+
+21.为FooterGuide标签添加显示条件
+在路由器中可以再添加一个配置meta，meta配置默认就有，本质为空对象，可以在其中添加自定义属性，用于储存布尔值，meta默认为空对象，所以不写可代表false
+<script>
+	routes: [
+		{
+			path: '/home',
+			component: Home,
+			meta: {
+				showFooter: true
+			}
+		}
+	]
+</script>
+在FooterGuide标签中使用
+<FooterGuide v-show="$route.meta.showFooter"></FooterGuide>
+
+22.在api--ajax.js中封装ajax请求函数
+利用axios发送异步请求(先下载axios库)：
+import axios from 'axios'
+//向外暴露ajax函数，接收url，data(对象)，请求方式作为参数
+<script>
+	export default function ajax(url,data={},type='GET') {
+		return new Promise(function(resolve,reject) {
+			let promise
+			
+			if(type==='GET') {
+				let dataStr = ''
+				Object.keys(data).forEach(function(key) {
+					dataStr = dataStr + key + '=' + data[key] + '&'
+				})
+				if(dataStr !== '') {
+					dataStr = dataStr.substring(0,dataStr.lastIndexof('&'))
+					url = url + '?' + dataStr
+				}
+				promise = axios.get(url)
+			} else {
+				promise = axios.post(url,data)
+			}
+			//axios请求返回的Promise对象会向外传递response和error对象，response需要用.data获取数据
+			promise.then(function(response) {
+				resolve(response.data)   //这样向外传递的就直接是data对象了，不需要再调用.data
+			}).catch(function(error) {
+				reject(error)
+			})
+		})
+	}
+</script>
+
+23.在index.js中封装接口函数(需要接口文档)
+基础理解：
+query参数和params参数：
+query更加类似于我们ajax中get传参，params则类似于post，前者在浏览器地址栏中显示参数，后者则不显示
+	1.引入封装的ajax模块
+		import ajax from '.../ajax'
+		//如果需要，加上const BASE_URL = 'http://localhost:4000',并将其写入ajax函数的url参数中
+
+	2.写相应的接口函数并向外暴露，请求函数一般以req开头
+	<script>
+		import ajax from '.../ajax'
+		//const BASE_URL = 'http://localhost:4000'
+
+		//根据经纬度获取位置详情
+		export const reqAddress = function(geohash) {
+			ajax(`/position/${geohash}`)
+		}
+		//获取食品分类列表
+		export const reqFoodCategorys = function() {
+			ajax('/index_category')
+		}
+		//根据经纬度获取商铺列表
+		export const reqShops = (longitude,latitude) => ajax('/shops',{longitude,latitude})
+	</script>
+
+24.如果需要则配置代理实现跨域ajax请求(报错提示No'Access-Control-Allow-Origin'代表跨域问题)
+基础理解：
+ajax请求会导致跨域问题，不是ajax请求则不会有跨域问题
+前后台分离项目必然会有跨域问题，最简单的解决方法就是使用代理
+浏览器(前台应用)运行在前台服务器上(该服务器监听的端口为8080)，后台应用运行在后台服务器上(该服务器监听的端口为4000)
+如何判断有没有服务器？只要我们向一个虚拟地址发送请求并且能够得到资源，就必然有服务器的参与
+前台服务器除了运行着前台应用，还运行着一个代理服务器(本质是一段程序)，该代理服务器可以拦截浏览器发来的面向8080端口的请求，并转发给4000端口的后台服务器，而后台服务器响应的资源也由代理服务器接收，再通过8080端口发送给浏览器，浏览器本身并不知道代理服务器的存在，检查请求时发现是从8080端口发送过来的，就判定为非跨域请求，这样一来便实现了跨域请求
+代理的作用：帮前台应用转发请求
+代理的本质：运行在前台服务器上的一段有特殊用途的程序
+代理的运行位置：因为需要拦截请求，所以必须运行在端口上，而且运行在前台服务器上，监听8080端口
+代理服务器本质也是一些程序
+通过配置，可以设置代理的发送对象(如发给谁等信息，一般发给后台服务器)
+	1.在config/index.js中添加以下，更改完配置需要重启服务器(npm run dev)
+	<script>
+		//这是一个代理服务器，作用是拦截前台请求并进行转发
+		proxyTable: {
+			//拦截所有带'/api'的请求
+			'api': { //拦截所有以'api'开头的请求，处理后进行转发
+			    target: 'http://api.douban.com/v2', //请求目标url的基础路径，一般是所有url前面相同的部分
+			    changeOrigin: true, //是否跨域
+			    pathRewrite: { //重写路径: 拦截到请求后，将路径中的'/api'转为'/'(即去掉'/api')，并在前面加上target的地址
+			        '^/api': ''
+			    }
+			}
+		},
+	</script>
+	2.将所有跨域请求去掉基础路径（写在target里的那部分），并在前面加上'/api'，让其被代理服务器拦截，重写，转发
+	<script>
+		import ajax from '.../ajax'
+
+		const BASE_URL = '/api'  //将其写入ajax函数的url参数中
+
+		//根据经纬度获取位置详情
+		export const reqAddress = function(geohash) {
+			ajax(`${BASE_URL}/position/${geohash}`)
+		}
+		//获取食品分类列表
+		export const reqFoodCategorys = function() {
+			ajax(BASE_URL + '/index_category')
+		}
+		//根据经纬度获取商铺列表
+		export const reqShops = (longitude,latitude) => ajax(BASE_URL + '/shops',{longitude,latitude})
+	</script>
+
+25.在组件中使用封装好的接口函数(测试)
+例(引用reqFoodCategorys函数)
+<script>
+	import {reqFoodCategorys} from './api'
+
+	mounted: function() {
+		const result = reqFoodCategorys()
+	}
+</script>
+	
+26.使用Vuex管理数据，下载Vuex，在store文件夹下建立各模块
+	index.js //Vuex最核心的管理对象模块Store
+	state.js
+	mutations.js
+	actions.js
+	getters.js
+	mutation-types.js  //包含n个mutation的type名称常量
+
+27.在store--index.js中配置Vuex
+<script>
+	import Vue from 'vue'
+	import Vuex from 'vuex'
+
+	import state from './state'
+	import mutations from './mutations'
+	import actions from './actions'
+	import getters from './getters'
+
+	Vue.use(Vuex)
+
+	export default new Vuex.Store({
+		state,
+		mutations,
+		actions,
+		getters
+	})
+</script>
+
+27.需要集中管理的数据有经纬度值(经常被作为参数)，地址(title)，食物分类(轮播图)，shops(商家列表)，
+在state.js中暴露管理的共享状态
+<script>
+	export default {
+		latitude: 40.10038,   //维度
+		longitude: 116.36867, //经度
+		address: {},          //地址信息对象
+		categorys: [],        //食品分类数组
+		shops: []             //商家数组
+	}
+</script>
+
+28.在mutation-types.js中定义方法名
+<script>
+	export const RECEIVE_ADDRESS = 'receive_address' //接收地址
+	export const RECEIVE_CATEGORYS = 'receive_categorys' //接收食品分类数组
+	export const RECEIVE_SHOPS = 'receive_shops' //接收商家数组
+</script>
+
+29.在mutations.js中定义方法(修改state的函数)
+<script>
+	import {
+		RECEIVE_ADDRESS,
+		RECEIVE_CATEGORYS,
+		RECEIVE_SHOPS
+	} from './mutation-types'
+
+	export default {
+		[RECEIVE_ADDRESS]: function(state,{address}) {
+			state.address = address
+		},
+		[RECEIVE_CATEGORYS]: function(state,{categorys}) {
+			state.categorys = categorys
+		},
+		[RECEIVE_SHOPS]: function(state,{shops}) {
+			state.shops = shops
+		},
+	}
+</script>
+
+30.在actions.js中定义行为(与后台交互的函数)
+<script>
+	import {
+		RECEIVE_ADDRESS,
+		RECEIVE_CATEGORYS,
+		RECEIVE_SHOPS
+	} from './mutation-types'
+
+	//引入API接口函数
+	import {
+		reqAddress,
+		reqFoodCategorys,
+		reqShops
+	} from '../api'
+
+	export default {
+		//发送异步ajax请求，获取地址
+		getAddress: function({commit,state}) {
+			const geohash = state.latitude + ',' + state.longitude
+			reqAddress(geohash).then(function(result) {
+				//提交给mutations并将address传递过去
+				if(result.code===0) {  //接口文档中code: 0表示请求正常
+					const address = result.data  //接口文档中的data是地址
+					commit(RECEIVE_ADDRESS,{address})
+				}
+			})
+		},
+		//发送异步ajax请求，获取食品分类列表
+		getFoodCategorys: function({commit}) {
+			reqFoodCategorys().then(function(result) {
+				//提交给mutations并将categorys传递过去
+				if(result.code===0) {  //接口文档中code: 0表示请求正常
+					const categorys = result.data  //接口文档中的data是食品分类信息
+					commit(RECEIVE_CATEGORYS,{categorys})
+				}
+			})
+		},
+		//发送异步ajax请求，获取商家列表
+		getShops: function({commit,state}) {
+			const {longitude,latitude} = state
+			reqShops(longitude,latitude).then(function(result) {
+				//提交给mutations并将shops传递过去
+				if(result.code===0) {  //接口文档中code: 0表示请求正常
+					const shops = result.data  //接口文档中的data是商家列表信息
+					commit(RECEIVE_SHOPS,{shops})
+				}
+			})
+		}
+	}
+</script>
+
+31.在main.js中注册store
+<script>
+	import store from './store'
+
+	new Vue({
+		store 
+	}),
+</script>
+
+32.在头部导航栏中使用共享数据，先在App.js根组件中调用actions.js行为获取数据
+<script>
+	import {mapActions} from 'vuex'
+
+	mounted: functions() {
+		this.getAddress()
+	},
+
+	methods: {
+		...mapActions(['getAddress'])
+	},
+</script>
+
+33.在home.js组件中调用共享数据
+<template>
+	<HeaderTop :title="address.name"></HeaderTop>
+</template>
+<script>
+	import {mapState} from 'vuex'
+
+	computed: {
+		...mapState(['address'])
+	},
+</script>
+
+34.在轮播图中使用共享数据
+在home.vue组件中获取数据
+<script>
+	mounted: function() {
+		this.$store.dispatch('getCategorys')
+	},
+
+	computed: {
+		...mapState(['categorys'])
+	}
+</script>
+
+35.将食品列表转化为轮播图
+基础理解：
+轮播图每页有8个分类，因此需要一个二维数组，每个子数组包含8个分类
+即通过获得的categorys食品列表转化为需要的二维数组categorysArr，格式为[[x,x,x,x,x,x,x,x],[x,x,x,x,x,x,x,x],...]
+	1.将食品列表转化为二维数组
+	<script>
+		computed: {
+			categorysArr: function() {
+				const {categorys} = this
+				//先准备一个空的2维数组，和一个内部子数组
+				const arr = []
+				let minArr = []
+				//遍历categorys
+				categorys.forEach(function(c) {
+					//当子数组个数达到8个时清空数组
+					if(minArr.length===8) {
+						minArr = []
+					}
+					//最后一个元素遍历完小数组个数可能还未达到8，所以可以设定为0的时候将小数组添加到大数组中
+					if(minArr.length===0) {
+						arr.push(minArr)
+					}
+					//将当前分类保存到小数组
+					minArr.push(c)
+				})
+				return arr
+			}
+		}
+	</script>
+	2.通过v-for遍历出轮播图内容
+	<div class="swiper-slide" v-for="(categorys,index) in categorysArr" :key="index">
+		<div class="foodList" v-for="(category,index) in categorys" :key="index">
+			<div><img :src="category.img_url" alt=""></div>
+			<span>{{ category.title }}</span>
+		</div>
+	</div>
+
+36.使用watch监视categorys数据，当其发生变化(从后台获取了数据)时，调用组件的this.$nextTick([callback])方法(当页面DOM渲染完成后执行括号中的回调函数)，初始化swiper对象
+<script>
+	watch: {
+		categorys: function(value) {
+			this.$nextTick(function() {
+				new Swiper ('.swiper-container', {
+				    loop: true, //循环轮播
+				    pagination: { //分页器
+				      el: '.swiper-pagination',
+				    },
+				})
+			})
+		}
+	}
+</script>
+
+37.获取商家列表信息，在Shoplist.vue组件中调用共享信息，使用v-for遍历生成商家列表
+	1.在App.js中初始化数据(发请求获取数据)
+	<script>
+		export default {
+			mounted: function() {
+				this.$store.dispatch('getShops')
+			}
+		}
+	</script>
+	2.在Shoplist.vue组件中引入数据
+	<script>
+		import {mapState} from 'vuex'
+		export default {
+			computed: {
+				...mapState(['shops'])
+			}
+		}
+	</script>
+	3.遍历生成商家列表
+	<template>
+		<li v-for="(shop,index) in shops" :key="index">
+			{{ shop.xxx }}
+		</li>
+	</template>
+
+38.通过v-if/v-else在请求未返回时显示缓冲图，提高用户体验
+注意点：v-if的条件可以设置为shops.length>0(或者直接去掉大于0也一样)
+
+39.抽取星星串组件
+	1.创建Star--Star.vue文件，将星星图片分为全星(on)，半星(half)，零星(off)，放到star--images中
+	2.在Star.vue中写入星星模板，评分星级最大为5颗，制作逻辑根据评分选择on/half/off，影响星星数的参数是score(分数)，size(星星尺寸),需要从根组件接收
+	<template>
+		<div class="star star-24">
+			<span class="star-item on"></span>
+			<span class="star-item on"></span>
+			<span class="star-item on"></span>
+			<span class="star-item half"></span>
+			<span class="star-item on"></span>
+		</div>
+	</template>
+	<script>
+		export default {
+			props: {
+				score: Number,
+				size: Number
+			}
+		}
+	</script>
+	3.在需要的组件位置映射Star组件为标签，并将其插入<template></template>中，利用标签将score和size传递到Star.vue组件，
+	shop.rating在获取shops数据(评分数据)的时候可以获得，size有24，36，48三个数值，传递时需加上:(非字符串传递都需要冒号，不然传过去都变成字符串了)，当前星星串已经可以显示，不过不会随着评分改变而改变
+	<template>
+		<Star :score="shop.rating" :size="24"/>
+	</template>
+	<script>
+		import Star from '../Star/Star.vue'
+		export default {
+			components: {
+				Star
+			}
+		}
+	</script>
+
+40.让星星串随评分动态显示
+基础理解：
+星星串最大5个，代表v-for的遍历最大值为5
+需要n个全星，由score的整数部分决定
+需要0/1个半星，由score的小数部分大于等于还是小于0.5决定
+需要n个零星，由剩下多少个位置决定
+通过一个最大length为5的数组储存星星样式，再由遍历获得星星串，星星样式数组可以通过score创建
+	1.为星星串绑定动态大小(size值已获取)
+	<template>
+		<div class="star" :class="'star'+size">
+			<span class="star-item on"></span>
+			<span class="star-item on"></span>
+			<span class="star-item on"></span>
+			<span class="star-item half"></span>
+			<span class="star-item on"></span>
+		</div>
+	</template>
+	2.通过score创建星星样式数组，因为是由一个数据决定另一个数据，所以使用计算属性，因为星星的样式是固定的，所以可以先定义成类名常量
+	<script>
+		//定义类名常量
+		const ClASS_ON = 'on'
+		const ClASS_HALF = 'half'
+		const ClASS_OFF = 'off'
+		export default {
+			props: {
+				score: Number,
+				size: Number
+			},
+			computed: {
+				StarClasses: function() {
+					//先获取score
+					const {score} = this
+					//准备一个空数组
+					const scs = []
+					//对score进行下舍入--Math.floor()，获取score的整数部分
+					const scoreInterger = Math.floor(score)
+					//向scs中遍历添加全星样式CLASS_ON，添加几次由score的整数部分决定
+					for (let i = 0; i < scoreInterger; i++) {
+						scs.push(ClASS_ON)
+					}
+					//当score的小数部分>=0.5时向scs中添加半星样式CLASS_HALF，小数的加减不太精确，所以整体*10
+					if(score*10 - scoreInterger*10 >= 5) {
+						scs.push(ClASS_HALF)
+					}
+					//最后遍历添加零星样式CLASS_OFF，总个数为5个，剩下的位数就是零星的添加次数
+					while(scs.length < 5) { //0到5是6个，所以不加等于
+						scs.push(ClASS_OFF)
+					}
+					//最后返回出去一个数组
+					return scs
+				}
+			}
+		}
+	</script>
+	3.遍历添加星星
+	<template>
+		<div class="star" :class="'star'+size">
+			<span class="star-item" v-for="(sc,index) in StarClasses" :class="sc" :key="index"></span>
+		</div>
+	</template>
+
+41.登陆界面前台交互效果
+基础理解：
+点击按钮实现切换登陆方式
+短信登陆检验手机号位数(是否显示发送验证码按钮)
+发送短信后显示倒计时
+密码登陆开关切换显示隐藏密码
+表单前台验证弹出警示
+	1.通过一个data数据控制按钮的效果显示
+	<template>
+		<div>
+			<!-- 按钮 -->
+			<span :class="{on: loginWay}" @click="loginWay=true">短信登陆</span>
+			<span :class="{on: !loginWay}" @click="loginWay=false">密码登陆</span>
+			<!-- 表单 -->
+			<div :class="{on: loginWay}">短信表单</div>
+			<div :class="{on: !loginWay}">密码表单</div>
+		</div>
+	</template>
+	<script>
+		export default {
+			data() {
+				return {
+					loginWay: true, //true代表短信登陆，false代表密码登陆
+				}
+			},
+		}
+	</script>
+	2.写on的样式
+
+42.检验手机号位数，判断是否显示发送验证码按钮
+	1.为input绑定v-model，收集手机号
+	2.为发送验证码按钮绑定动态类名，当手机号符合要求的时候从灰色变成黑色，当为正确的手机号时让disabled为假(代表按钮可使用)
+		<template>
+			<button disabled="!rightPhone" :class="{right_phone: rightPhone}">发送验证码</button>
+		</template>
+		<script>
+			export default {
+				data() {
+					phone: '',
+				},
+				computed: {
+					rightPhone: function() {
+					//通过正则判断手机号是否正确以1开头10个数字结尾的数字串，.test方法检测正则与括号内是否相同，返回布尔值
+						return /^1\d{10}$/.test(this.phone)
+					}
+				}
+			}
+		</script>
+		3.写right_phone的样式
+		4.添加点击监听，启动倒计时和向指定手机号发送短信验证码，禁止页面默认刷新行为，通过一个data数据记录计时器秒数
+		<template>
+			<button disabled="!rightPhone" :class="{right_phone: rightPhone}" @click.prevent="sendCode">{{computeTime? `已发送(${computeTime}s)` : '发送验证码' }}</button>
+		</template>
+		<script>
+			export default {
+				data() {
+					return {
+						computeTime: 0,
+					}
+				},
+				methods: {
+					sendCode: function() {
+						//如果computeTime === 0时启动计时器(不等于0则不启动)
+						if(!this.computeTime) {
+							//启动倒计时
+							this.computeTime = 30
+							const IntervalId = setInterval(function() {
+								this.computeTime--
+								if(this.computeTime < 0) { //当computeTime小于0时停止计时器
+									clearInterval(IntervalId)
+								}
+							},1000)
+							//向指定手机号发送短信验证码	
+						}
+					}
+				}
+			}
+		</script>
+
+43.切换密码显示隐藏
+	1.分别设置两个input(type分别为text和password)，绑定同一个v-model，通过v-if/v-else交替显示
+	<template>
+		<input type="text" maxlength="8" placeholder="请求输入密码" v-if="showPwd" v-model="pwd">
+		<input type="password" maxlength="8" placeholder="请求输入密码" v-else v-model="pwd">
+	</template>
+	<script>
+		export default {
+			data() {
+				return {
+					pwd: '', //密码
+					showPwd: false //
+				}
+			}
+		}
+	</script>
+	2.为动态按钮添加点击监听切换showPwd的值
+	<div @click="showPwd=!showPwd"></div>
+	3.通过showPwd的值控制按钮的样式变化
+	<div @click="showPwd=!showPwd">
+		<div :class="showPwd? 'on' : 'off'">{{showPwd? 'abc' : '' }}</div>
+	</div>
+
+44.表单前台验证弹出警示
+	1.点击button会默认提交表单，将其替换为methods函数
+	<form @submit.prevent="login">...</form>
+	2.通过v-mode收集表单信息进行检验(按照接口文档定义名称)，定义登陆函数
+	<script>
+		export default {
+			data() {
+				return {
+					loginWay: true, //true代表短信登陆，false代表密码登陆
+					phone: '', //手机号
+					code: '', //短信验证码
+					pwd: '', //密码
+					name: '', //用户名
+					captcha: '', //图形验证码
+				}
+			},
+			computed: {
+				rightPhone: function() {
+					return /^1\d{10}$/.test(this.phone)
+				}
+			},
+			methods: {
+				//异步登陆函数
+				login: function() {
+					//判断登陆方式
+					if(this.loginWay) { //短信登陆
+						const {rightPhone,phone,code} = this
+						if(!rightPhone) {
+							//手机号不正确
+						} else if(!/^\d{6}$/.test(code)) {
+							//验证码必须为6位数
+						}
+					} else { //密码登陆
+						const {name,pwd,captcha} = this
+						if(!name) {
+							//用户名必须指定
+						} else if(!pwd) {
+							//密码不能为空
+						} else if (!captcha) {
+							//验证码不能为空
+						}
+					}
+				}
+			}
+		}
+	</script>
+	3.自写弹出警示框
+	基础理解：
+	通过v-show控制覆盖整个页面的div的显示隐藏，可以达到弹出警示框的效果
+		1.创建AlertTip--AlertTip.vue组件
+		2.写入警示框模板和样式，需要有提示信息和确认按钮
+		<p>{{ alertText }}</p>
+		<div class="btn">确认</div>
+		3.需要接收提示信息作为动态参数，为确认按钮添加点击监听并自定义分发事件
+		<template>
+			<p>{{ alertText }}</p>
+			<div @click="closeTip">确认</div>
+		</template>
+		<script>
+			export default {
+				props: {
+					alertText: String
+				},
+				methods: {
+					closeTip: fucntion() {
+						//自定义分发事件
+						this.$emit('closeTip')
+					}
+				}
+			}
+		</script>
+		4.在组件中引用AlertTip.vue组件，传递动态alertText，并通过v-show动态控制AlertTip标签的显示和隐藏
+		<template>
+			<AlertTip :alertText="alertText" v-show="alertShow"></AlertTip>
+		</template>
+		<script>
+			import AlertTip from '.../AlertTip.vue'
+
+			export default {
+				data () {
+					return {
+						alertText: '', //传递给警示框的文本
+						alertShow: false, //为true则显示警告框，为false隐藏警告框
+					}
+				},
+				components: {
+					AlertTip
+				},
+			}
+		</script>
+		5.将修改alertText和alertShow的方法抽取成函数方便检验表单时复用
+		<template>
+			<AlertTip :alertText="alertText" v-show="alertShow"></AlertTip>
+		</template>
+		<script>
+			import AlertTip from '.../AlertTip.vue'
+
+			export default {
+				data () {
+					return {
+						alertText: '', //传递给警示框的文本
+						alertShow: false, //为true则显示警告框，为false隐藏警告框
+					}
+				},
+				components: {
+					AlertTip
+				},
+				methods: {
+					//控制警示框的显示
+					showAlert: function(alertText) {
+						this.alertShow = true
+						this.alertText = alertText
+					},
+					//异步登陆函数
+					login: function() {
+						//判断登陆方式
+						if(this.loginWay) { //短信登陆
+							const {rightPhone,phone,code} = this
+							if(!rightPhone) {
+								//手机号不正确
+								this.showAlert('手机号不正确')
+							} else if(!/^\d{6}$/.test(code)) {
+								//验证码必须为6位数
+								this.showAlert('验证码必须为6位数')
+							}
+						} else { //密码登陆
+							const {name,pwd,captcha} = this
+							if(!name) {
+								//用户名必须指定
+								this.showAlert('用户名必须指定')
+							} else if(!pwd) {
+								//密码不能为空
+								this.showAlert('密码不能为空')
+							} else if (!captcha) {
+								//验证码不能为空
+								this.showAlert('验证码不能为空')
+							}
+
+						}
+					},
+				}
+			}
+		</script>
+		6.在AlertTip标签中绑定监听(从AlertTip.vue组件中分发过来的)自定义事件，关闭警示框，自定义事件必须写在对应的子标签中(哪个标签分发的就写在哪个标签)
+		<template>
+			<AlertTip :alertText="alertText" v-show="alertShow" @closeTip="closeTip"></AlertTip>
+		</template>
+
+		<script>
+			export default {
+				data () {
+					return {
+						alertText: '', //传递给警示框的文本
+						alertShow: false, //为true则显示警告框，为false隐藏警告框
+					}
+				},
+				methods: {
+					//关闭警告框，并清空警示框文本
+					closeTip: function() {
+						this.alertShow = false
+						this.alertText = ''
+					}
+				}
+			}
+		</script>
+
+45.登陆界面后台交互效果
+基础理解：
+动态一次性图形验证码
+动态一次性短信验证码
+短信登陆
+密码登陆
+短期免登陆(获取用户信息，实现自动登陆)
+退出登陆
+
+46.动态一次性图形验证码
+基础理解：
+动态图形验证码其实是向一个固定的路由发送不带参数的请求
+只需要在img的src中填入路由即可获得图片，不需要Ajax请求
+验证码刷新时如果路由相同将不会重新发送请求，所以在路径后加上当前时间作为假参数，让每次刷新路由都不同
+可以通过事件的event对象获得img的属性信息，event.target代表的就是img标签
+<template>
+	<img src="http://localhost:4000/captcha" alt="captcha" @click="getCaptcha">
+</template>
+<script>
+	export default {
+		methods: {
+			getCaptcha: function(event) {
+				//路由相同不会重新发请求，所以在路径后加上当前时间作为假参数，让每次刷新路由都不同
+				event.target.src = 'http://localhost:4000/captcha?time =' +  Date.now()
+			}
+		}
+	}
+</script>
+
+47.动态一次性短信验证码
+	1.在api--index.js中继续写接口请求函数
+	<script>
+		import ajax from '.../ajax'
+
+		const BASE_URL = '/api'  //将其写入ajax函数的url参数中，用于跨域配置开头匹配
+
+		//根据经纬度获取位置详情
+		export const reqAddress = function(geohash) {
+			ajax(`${BASE_URL}/position/${geohash}`)
+		}
+		//获取食品分类列表
+		export const reqFoodCategorys = function() {
+			ajax(BASE_URL + '/index_category')
+		}
+		//根据经纬度获取商铺列表
+		export const reqShops = (longitude,latitude) => ajax(BASE_URL + '/shops',{longitude,latitude})
+		//用户名密码登陆
+		export const reqPwdLogin = ({name,pwd,captcha}) => ajax(BASE_URL + '/login_pwd',{name,pwd,captcha},'POST')
+		//发送短信验证码
+		export const reqSendCode = (phone) => ajax(BASE_URL + '/sendcode',{phone})
+		//手机号短信验证码登陆
+		export const reqSmsLogin = (phone,code) => ajax(BASE_URL + '/login_sms',{phone,code},'POST')
+		//根据会话获取用户信息
+		export const reqUserInfo = () => ajax(BASE_URL + '/userinfo')
+		//用户登出
+		export const reqLogout = () => ajax(BASE_URL + '/logout')
+		//根据经纬度和关键字搜索商铺列表
+		export const reqSearchShop = (geohash,keyword) => ajax(BASE_URL + '/search_shops',{geohash,keyword})
+	</script>
+	2.发送短信的请求一般是后台写，不过也可以了解一下
+		1.搜索容联云通讯服务
+
+		2.注册登陆(会赠送一定的体验话费)
+
+		3.获得开发者主账号
+
+		4.添加测试号码
+
+		5.根据开发文档写应用
+		接口分两种，平台级和应用级，平台级比较复杂，应用级比较普通
+
+	3.发送请求，在组件中发请求(一般写在vuex的actions.js，但也可以写在组件中)
+	<script>
+		//引入接口请求函数
+		import {reqSendCode,reqSmsLogin,reqPwdLogin} from '.../api/index.js'
+
+		export default {
+			methods: {
+				sendCode: function() {
+					//如果computeTime === 0时启动计时器(不等于0则不启动)
+					if(!this.computeTime) {
+						//启动倒计时
+						this.computeTime = 30
+						//原本是const IntervalId = setInterval(function...
+						this.IntervalId = setInterval(function() {
+							this.computeTime--
+							if(this.computeTime < 0) { //当computeTime小于0时停止计时器
+								//这里变为调用组件对象中的IntervalId
+								clearInterval(this.IntervalId)
+							}
+						},1000)
+						//向指定手机号发送短信验证码
+						const result = reqSendCode(this.phone)
+						result.then(result => {
+							//根据接口文档中的响应信息决定是否使用catch，这里当code为1表示请求失败，并传回msg
+							if(result.code===1) {
+								//复用showAlert可以弹出警示框
+								this.AlertShow(result.msg)
+								//如果还在倒计时则清除倒计时
+								if(this.computeTime) {
+									this.computeTime = 0
+									//提前将IntervalId存到组件中(this.IntervalId)
+									this.clearInterval(this.IntervalId)
+									//清除变量
+									this.IntervalId = undefined
+								}
+							}
+						})
+					}
+				}
+			}
+		}
+	</script>
+
+48.短信登陆和密码登陆
+基础理解：
+登陆成功后会返回用户信息，将其存到vuex的store--state.js中管理，并将页面跳转到首页
+	1.引入接口请求函数
+	<script>
+		import {reqSendCode,reqSmsLogin,reqPwdLogin} from '.../api/index.js'
+	</script>
+	2.所有表单验证成功后调用登陆函数，否则return结束登陆操作
+	<script>
+		import {reqSendCode,reqSmsLogin,reqPwdLogin} from '.../api/index.js'
+
+		export default {
+			methods: {
+				//控制警示框的显示
+				showAlert: function(alertText) {
+					this.alertShow = true
+					this.alertText = alertText
+				},
+				//异步登陆函数
+				login: function() {
+					//判断登陆方式
+					if(this.loginWay) { //短信登陆
+						const {rightPhone,phone,code} = this
+						if(!rightPhone) {
+							//手机号不正确
+							this.showAlert('手机号不正确')
+							return
+						} else if(!/^\d{6}$/.test(code)) {
+							//验证码必须为6位数
+							this.showAlert('验证码必须为6位数')
+							return
+						}
+						//表单验证码通过后执行登陆函数
+						const result = reqSmsLogin(this.phone,this.code)
+						//对返回的Promise对象调用then
+						result.then((result) => {
+							//根据接口文档中的响应信息,当响应信息中的code为0时表示请求成功,data表示响应信息中的数据,code为1时表示请求失败,msg表示响应信息中的错误提示
+							if(result.code===0) {
+								const user = result.data
+							} else {
+								const msg = result.msg
+							}
+						})
+					} else { //密码登陆
+						const {name,pwd,captcha} = this
+						if(!name) {
+							//用户名必须指定
+							this.showAlert('用户名必须指定')
+							return
+						} else if(!pwd) {
+							//密码不能为空
+							this.showAlert('密码不能为空')
+							return
+						} else if (!captcha) {
+							//验证码不能为空
+							this.showAlert('验证码不能为空')
+							return
+						}
+						//表单验证码通过后执行登陆函数
+						const result = reqPwdLogin({name,pwd,captcha})
+						result.then((result) => {
+							//根据接口文档中的响应信息,当响应信息中的code为0时表示请求成功,data表示响应信息中的数据,code为1时表示请求失败,msg表示响应信息中的错误提示
+							if(result.code===0) {
+								const user = result.data
+							} else {
+								const msg = result.msg
+							}
+						})
+					}
+				},
+			}
+		}
+	</script>
+	3.reqSmsLogin和reqPwdLogin的登陆操作(函数)返回结果后执行的操作可以抽取条件判断外执行(当所有条件判断通过则执行，否则return)，并且无论成功失败都需要清除倒计时，需要先将登陆请求函数返回的结果储存起来
+	<script>
+		export default {
+			methods: {
+				//控制警示框的显示
+				showAlert: function(alertText) {
+					this.alertShow = true
+					this.alertText = alertText
+				},
+				//异步登陆函数
+				login: function() {
+					let result;  //储存登陆请求函数返回的结果
+					//判断登陆方式
+					if(this.loginWay) { //短信登陆
+						const {rightPhone,phone,code} = this
+						if(!rightPhone) {
+							//手机号不正确
+							this.showAlert('手机号不正确')
+							return
+						} else if(!/^\d{6}$/.test(code)) {
+							//验证码必须为6位数
+							this.showAlert('验证码必须为6位数')
+							return
+						}
+						//表单验证码通过后执行登陆函数
+						result = reqSmsLogin(this.phone,this.code)
+						
+					} else { //密码登陆
+						const {name,pwd,captcha} = this
+						if(!name) {
+							//用户名必须指定
+							this.showAlert('用户名必须指定')
+							return
+						} else if(!pwd) {
+							//密码不能为空
+							this.showAlert('密码不能为空')
+							return
+						} else if (!captcha) {
+							//验证码不能为空
+							this.showAlert('验证码不能为空')
+							return
+						}
+						//表单验证码通过后执行登陆函数
+						result = reqPwdLogin({name,pwd,captcha})
+					}
+					//无论成功失败都需要清除倒计时
+					if(this.computeTime) {
+						this.computeTime = 0
+						//提前将IntervalId存到组件中(this.IntervalId)
+						this.clearInterval(this.IntervalId)
+						//清除IntervalId变量
+						this.IntervalId = undefined
+					}
+					//当登陆操作(函数)结果返回后执行相应操作
+					result.then((result) => {
+						//根据接口文档中的响应信息,当响应信息中的code为0时表示请求成功,data表示响应信息中的数据,code为1时表示请求失败,msg表示响应信息中的错误提示
+						if(result.code===0) {
+							const user = result.data
+							//将user保存到vuex中的store--state.js进行管理
+
+							//跳转到个人中心页面
+							this.$router.replace('/profile')
+						} else {
+							const msg = result.msg
+							//调用警示框函数
+							this.showAlert(msg)
+						}
+					})
+				},
+			}
+		}
+	</script>
+	4.如果用户名密码登陆失败，一次性图形验证码将会失效，需要调用getCaptcha函数重新刷新，但是没有事件发生时将不会有event对象，所以getCaptcha需要改造一下，通过给img标签添加ref，可以快速找到这个img
+	<template>
+		<img src="http://localhost:4000/captcha" alt="captcha" ref="captcha">
+	</template>
+	<script>
+		export default {
+			methods: {
+				getCaptcha: function() {
+					//路由相同不会重新发请求，所以在路径后加上当前时间作为假参数，让每次刷新路由都不同
+					this.$ref.captcha.src = 'http://localhost:4000/captcha?time =' +  Date.now()
+				},
+				//异步登陆函数
+				login: function() {
+					let result;  //储存登陆请求函数返回的结果
+					//判断登陆方式
+					if(this.loginWay) { //短信登陆
+						const {rightPhone,phone,code} = this
+						if(!rightPhone) {
+							//手机号不正确
+							this.showAlert('手机号不正确')
+							return
+						} else if(!/^\d{6}$/.test(code)) {
+							//验证码必须为6位数
+							this.showAlert('验证码必须为6位数')
+							return
+						}
+						//表单验证码通过后执行登陆函数
+						result = reqSmsLogin(this.phone,this.code)
+						
+					} else { //密码登陆
+						const {name,pwd,captcha} = this
+						if(!name) {
+							//用户名必须指定
+							this.showAlert('用户名必须指定')
+							return
+						} else if(!pwd) {
+							//密码不能为空
+							this.showAlert('密码不能为空')
+							return
+						} else if (!captcha) {
+							//验证码不能为空
+							this.showAlert('验证码不能为空')
+							return
+						}
+						//表单验证码通过后执行登陆函数
+						result = reqPwdLogin({name,pwd,captcha})
+					}
+					//无论成功失败都需要清除倒计时
+					if(this.computeTime) {
+						this.computeTime = 0
+						//提前将IntervalId存到组件中(this.IntervalId)
+						this.clearInterval(this.IntervalId)
+						//清除IntervalId变量
+						this.IntervalId = undefined
+					}
+					//当登陆操作(函数)结果返回后执行相应操作
+					result.then((result) => {
+						//根据接口文档中的响应信息,当响应信息中的code为0时表示请求成功,data表示响应信息中的数据,code为1时表示请求失败,msg表示响应信息中的错误提示
+						if(result.code===0) {
+							const user = result.data
+							//将user保存到vuex中的store--state.js进行管理
+
+							//跳转到个人中心页面
+							this.$router.replace('/profile')
+						} else {
+							//失败时调用getCaptcha显示新的图片验证码
+							this.getCaptcha()
+							const msg = result.msg
+							//显示警告提示
+							this.showAlert(msg)
+						}
+					})
+				},
+			}
+		}
+	</script>
+	5.将后台响应的结果中的用户信息传递给vuex的store--state.js储存起来
+		1.在store--state.js中建立userInfo数据对象
+		<script>
+			export default {
+				userInfo: {}
+			}
+		</script>
+		2.在store--mutations-types.js中建立类名常量
+		<script>
+			export const RECEIVE_USER_INFO = 'receive_user_info' //接收用户信息
+		</script>
+		3.在store--mutations.js中建立修改函数，接收actions.js中传递过来的userInfo，并修改state中的userInfo
+		<script>
+			import {
+				RECEIVE_USER_INFO
+			} from './mutation-types'
+
+			export default {
+				[RECEIVE_USER_INFO]: function(state,{userInfo}) {
+					state.userInfo = userInfo
+				},
+			}
+		</script>
+		4.在store--actions.js中建立行为,因为数据已经得到(请求发送过了)，所以不需要引入异步请求函数再请求了,将userInfo传递给mutations.js
+		<script>
+			import {
+				RECEIVE_USER_INFO
+			} from './mutation-types'
+
+			export default {
+				//同步记录用户信息
+				recordUser: function({commit,userInfo}) {
+					commit(RECEIVE_USER_INFO,{userInfo})
+				}
+			}
+		</script>
+		5.在组件中调用recordUser储存用户数据
+		<script>
+			export default {
+				methods: {
+					getCaptcha: function() {
+						//路由相同不会重新发请求，所以在路径后加上当前时间作为假参数，让每次刷新路由都不同
+						this.$ref.captcha.src = 'http://localhost:4000/captcha?time =' +  Date.now()
+					},
+					//异步登陆函数
+					login: function() {
+						let result;  //储存登陆请求函数返回的结果
+						//判断登陆方式
+						if(this.loginWay) { //短信登陆
+							const {rightPhone,phone,code} = this
+							if(!rightPhone) {
+								//手机号不正确
+								this.showAlert('手机号不正确')
+								return
+							} else if(!/^\d{6}$/.test(code)) {
+								//验证码必须为6位数
+								this.showAlert('验证码必须为6位数')
+								return
+							}
+							//表单验证码通过后执行登陆函数
+							result = reqSmsLogin(this.phone,this.code)
+							
+						} else { //密码登陆
+							const {name,pwd,captcha} = this
+							if(!name) {
+								//用户名必须指定
+								this.showAlert('用户名必须指定')
+								return
+							} else if(!pwd) {
+								//密码不能为空
+								this.showAlert('密码不能为空')
+								return
+							} else if (!captcha) {
+								//验证码不能为空
+								this.showAlert('验证码不能为空')
+								return
+							}
+							//表单验证码通过后执行登陆函数
+							result = reqPwdLogin({name,pwd,captcha})
+						}
+						//无论成功失败都需要清除倒计时
+						if(this.computeTime) {
+							this.computeTime = 0
+							//提前将IntervalId存到组件中(this.IntervalId)
+							this.clearInterval(this.IntervalId)
+							//清除IntervalId变量
+							this.IntervalId = undefined
+						}
+						//当登陆操作(函数)结果返回后执行相应操作
+						result.then((result) => {
+							//根据接口文档中的响应信息,当响应信息中的code为0时表示请求成功,data表示响应信息中的数据,code为1时表示请求失败,msg表示响应信息中的错误提示
+							if(result.code===0) {
+								const userInfo = result.data
+								//将user保存到vuex中的store--state.js进行管理
+								this.$store.dispatch('recordUser',userInfo)
+								//跳转到个人中心页面
+								this.$router.replace('/profile')
+							} else {
+								//失败时调用getCaptcha显示新的图片验证码
+								this.getCaptcha()
+								const msg = result.msg
+								//显示警告提示
+								this.showAlert(msg)
+							}
+						})
+					},
+				}
+			}
+		</script>
+	6.修改proflie页面中的信息
+		1.读取state.js中的用户信息
+		<script>
+			import {mapState} from 'vuex'
+			export default {
+				computed: {
+					...mapState(['userInfo'])
+				}
+			}
+		</script>
+		2.修改页面中的信息，判断当userInfo中有用户名时才显示用户名，否则显示登陆注册，userInfo中有手机号时，才显示手机号，当通过手机短信登陆时，没有用户名，也不显示登陆注册
+		<template>
+			<div class="content">
+				<p v-if="!userInfo.phone">{{ userInfo.user || '登陆/注册' }}</p>
+				<p>{{ userInfo.phone || '暂无绑定手机号' }}</p>
+			</div>
+			<div class="rigth iconfont icon-right"></div>
+		</template>
+		3.登陆后 指向登陆页面的路由 将重新修改，不再指向登陆页面,用三目表达式做判断
+		<template>
+			<router-link :to="userInfo._id? '/userinfo' : '/login' "></router-link>
+		</template>
+		4.同理可修改首页中的登陆注册
+
+49.自动登陆(保持登陆)
+基础理解
+登陆之后 后台 会将user_id储存在session中，这样后台就可以通过user_id获得用户信息
+前台通过后台提供的接口请求获得用户信息
+
+cookie有两种：一种是会话cookie(内存级别，关闭浏览器即消失)，另一种是持久化cookie(指定了Maxage后)
+session(会话)依赖于cookie
+一般的session(依赖于会话cookie)的生命周期从浏览器打开到浏览器结束
+持久化的session(依赖于持久化cookie)的生命周期从开始一直到Maxage指定的最大存在时间
+	1.在vuex的store--actions.js中异步请求用户信息
+	<script>
+		import {RECEIVE_USER_INFO} from '.../mutation-types'
+		import {reqUserInfo} from '.../api'
+
+		export default {
+			getUserInfo({commit}) {
+				reqUserInfo().then((result) => {
+					if(result.code===0) { //这里根据接口文档知道code代表数据是否存在
+						const userInfo = result.data //data在接口文档中表示用户信息
+						commit(RECEIVE_USER_INFO,{userInfo})
+					}
+				})
+			}
+			
+		}
+	</script>
+	2.在应用初始化时调用一次getUserInfo的行为，如果刚登陆不久，则可以直接获得用户信息
+	<script>
+		import {mapActions} from 'vuex'
+
+		export default {
+			mounted: {
+				this.getUserInfo()
+			},
+			methods: function() {
+				...mapActions(['getUserInfo'])
+			}
+		}
+	</script>
+
+50.退出登陆
+	1.使用mint-ui做按钮，下载mint-ui和工具包
+	cnpm install --save mint-ui
+	cnpm install babel-plugin-component -D
+	2.修改插件配置(.babelrc)，该配置可以针对mint-ui按需打包，样式也自动打包
+	在"plugins"中添加：
+	["component", [
+	    {
+	      "libraryName": "mint-ui",
+	      "style": true
+	    }
+	  ]]
+	例：
+	"plugins": ["transform-vue-jsx", "transform-runtime",["component", [
+	    {
+	      "libraryName": "mint-ui",
+	      "style": true
+	    }
+	  ]]],
+	3.在入口js文件(main.js)中引入并注册mint-ui中的button标签组件，这样全局都可以使用这个标签
+	<script>
+		import {Button} from 'mint-ui'
+
+		Vue.component(Button.name,Button) //现在全局都可以使用<mt-button></mt-button>
+	</script>
+	4.在profile里使用<mt-button></mt-button>标签，可以自由加样式，加上v-if当user_id存在时才出现该按钮
+	<template>
+		<section>
+			<!-- type="danger"表示这个按钮是红色 -->
+			<mt-button type="danger" v-if="user_id">退出登陆</mt-button>
+		</section>
+	</template>
+	5.为退出按钮添加confirm框
+	基础理解：
+	mint-ui库中的MessageBox有confirm方法可用于弹出confirm框(具体可查看文档)
+		1.从mint-ui组件中引入MessageBox(可用于添加confirm框)
+		<script>
+			import {MessageBox} from 'mint-ui'
+		</script>
+		2.为<mt-button></mt-button>按钮添加点击事件，调用MessageBox
+		<template>
+			<section>
+				<mt-button type="danger" v-if="user_id" @click="logout">退出登陆</mt-button>
+			</section>
+		</template>
+		<script>
+			import {MessageBox} from 'mint-ui'
+
+			export default {
+				methods: {
+					logout: function() {
+						MessageBox.confirm('确认退出吗？').then(
+							action => { //点击确认时执行的操作
+								//调用actions行为进行异步登出
+								this.$store.dispatch('logout')
+							},
+							action => { //点击取消时执行的操作，一般不使用
+								//console.log('aaa')
+							}
+						)
+					}
+				}
+			}
+		</script>
+		3.在store--actions中写入行为
+		<script>
+			import {
+				reqLogout
+			} from '.../api'
+
+			export default {
+				logout: function({commit}) {
+					reqLogout().then((result) => {
+						if(result.code===0) {  //当result.code为0时表示登出成功
+							commit(RESET_USER_INFO) //reset_user_info重置用户信息
+						}
+					})
+				}
+			}
+		</script>
+		4.在store--mutations-types.js中写入新的类名常量
+		export const RESET_USER_INFO = 'reset_user_info' //重置用户信息
+		5.在store--mutations.js中写入
+		<script>
+			import {
+				RESET_USER_INFO
+			} from '.../mutation-types'
+
+			export default {
+				[RESET_USER_INFO]: function(state) {
+					//将userInfo重置为空对象
+					state.userInfo = {}
+				}
+			}
+		</script>
+	6.在退出后提示退出成功Toast
+	基础理解：
+	mint-ui库中的Toast可用于弹出会自动消失的小文本提示
+	<script>
+		import {MessageBox,Toast} from 'mint-ui'
+
+		export default {
+			methods: {
+				logout: function() {
+					MessageBox.confirm('确认退出吗？').then(
+						action => { //点击确认时执行的操作
+							//调用actions行为进行异步登出
+							this.$store.dispatch('logout')
+							Toast('退出成功')
+						},
+						action => { //点击取消时执行的操作，一般不使用
+							//console.log('aaa')
+						}
+					)
+				}
+			}
+		}
+	</script>
+
+51.拆分shop.vue路由组件
+1.创建目录
+pages
+	--Shop
+		--Shop.vue //商家详情，路由组件
+		--ShopGoods
+			--ShopGoods.vue //商家详情商品列表，子路由组件
+		--ShopRatings
+			--ShopRatings.vue  //商家详情评价，子路由组件
+		--ShopInfo
+			--ShopInfo.vue //商家详情相关信息，子路由组件
+components
+	--ShopHeader
+		--ShopHeader.vue //商家详情头部，非路由组件
+2.将路由组件注册成路由，将子路由默认重定向到ShopGoods
+<script>
+	import Shop from '.../Shop.vue'
+	import ShopGoods from '.../ShopGoods.vue'
+	import ShopRatings from '.../ShopRatings.vue'
+	import ShopInfo from '.../ShopInfo.vue'
+
+	export default {
+		router: [
+			{
+				path: '/shop',
+				component: Shop
+				children: [
+					{
+						path: '/shop/goods'
+						component: ShopGoods
+					},
+					{
+						path: '/shop/ratings'
+						component: ShopRatings
+					},
+					{
+						path: '/shop/info'
+						component: ShopInfo
+					},
+					{
+						path: '',  //子路由重定向不需要写'/'
+						redirect: '/shop/goods'
+					},
+				]
+			}
+		]
+	}
+</script>
+3.为商家列表添加点击监听，跳转到Shop.vue路由组件
+<template>
+	<div class="storeItem" v-for="(item,index) in 12" :key="index" @click="$router.push('/shop')">
+	</div>
+</template>
+4.写入shop.vue组件
+<template>
+	<div>
+		<ShopHeader></ShopHeader>
+		<!-- 中间导航条 -->
+		<div class="tab">
+			<div class="tab-item"><router-link to="/shop/goods">点餐</router-link></div>
+			<div class="tab-item"><router-link to="/shop/ratings">评价</router-link></div>
+			<div class="tab-item"><router-link to="/shop/info">商家</router-link></div>
+		</div>
+		<!-- 子路由将渲染在这里 -->
+		<router-view></router-view>
+	</div>
+</template>
+<script>
+	/* 引入商家详情头部组件 */
+	import ShopHeader from '.../ShopHeader.vue'
+
+	export default {
+		components: {
+			ShopHeader
+		}
+	}
+</script>
+5.分别写入头部，点餐，评价，商家相关信息组件
+
+52.使用mock.js库模拟后台数据
+基础理解：
+mock模拟的数据是json数据
+需要设计json数据的结构，简单来说，就是模拟后台返回的数据的格式
+mock.js会拦截Ajax请求，返回生成的随机数据
+mock.js
+1.下载mock.js
+npm install --save mock.js
+2.设计数据结构
+	1.json数据由两部分构成，即"结构"和"值"，结构分两种，即"[]"和"{}"，所以关键就是要判断什么时候使用[]，什么时候使用{}
+	2.所有的json数据到最后肯定都得用遍历来渲染到页面上，然后通过点方法来使用其子元素(对象)中的key-value对
+	3.数组表示有序数据的集合，而对象表示无序数据的集合。如果数据的顺序很重要，就用数组，否则就用对象
+
+3.将设计好的data存入mock--data.json中
+{
+	"info": {
+		"name": "城隍包子铺",
+		"xxx": ...,
+	},
+	"goods": [
+		{
+			"name": "今日折扣",
+			"icon": "...",
+			"foods": [
+				{
+					"name": "炖豆腐",
+					"price": 12
+				}
+			]
+		}
+	],
+	"ratings": {
+		...
+	}
+}
+4.创建mock--mockServer.js文件，引入mock.js，该库向外提供Mock对象，提供.mock(rurl,template)方法，拦截访问rurl的请求，并返回template指定的类型的数据，mockServer.js模块不需要通过export default {}向外暴露接口，只需要加载运行一次该模块，接口就可以使用了
+<script>
+	import Mock from 'mockjs'
+	import data from 'data.json'
+
+	//暴露返回goods的接口
+	Mock.mock('/goods',{code: 0,data: data.goods})
+	//暴露返回ratings的接口
+	Mock.mock('/ratings',{code: 0,data: data.ratings})
+	//暴露返回info的接口
+	Mock.mock('/info',{code: 0,data: data.info})
+</script>
+5.运行加载mockServer.js模块
+基础理解：
+webpack在打包的时候会根据入口文件加载所有相关的模块，所以只要将mock.js库加载到入口文件main.js中即可，重启服务器
+<script>
+	import './mock/mockServer' //加载mockServer模块即可
+</script>
+6.mock数据的测试，mock数据必须发送ajax请求才可以测试
+1.在api--index.js中写接口请求函数，注意不需要再加'/api'(不需要使用跨域代理)
+<script>
+	import ajax from './ajax.js'
+
+	//获取商家商品数组
+	export const reqShopGoods = () => ajax('/goods')
+	//获取商家评价信息
+	export const reqShopRatings = () => ajax('/ratings')
+	//获取商家信息
+	export const reqShopInfo = () => ajax('/info')
+</script>
+2.写一套vuex
+1.store--state.js
+<script>
+	export default {
+		goods: {},  //商品列表
+		ratings: [],  //商家评价列表
+		info: {},  //商家信息
+	}
+</script>
+2.store--mutation-type.js
+<script>
+	export const RECEIVE_GOODS = 'receive_goods' //接收商品列表
+	export const RECEIVE_RATINGS = 'receive_ratings' //接收商家评价列表
+	export const RECEIVE_INFO = 'receive_info'  //接收商家信息
+</script>
+3.store--mutations.js
+<script>
+	import {
+		RECEIVE_GOODS,
+		RECEIVE_RATINGS,
+		RECEIVE_INFO,
+	} from './mutation-types'
+
+	export default {
+		[RECEIVE_GOODS]: function(state,goods) {
+			state.goods = goods
+		},
+		[RECEIVE_RATINGS]: function(state,ratings) {
+			state.ratings = ratings
+		},
+		[RECEIVE_INFO]: function(state,info) {
+			state.info = info
+		},
+	}
+</script>
+4.store--actions.js
+<script>
+	import {
+		RECEIVE_GOODS,
+		RECEIVE_RATINGS,
+		RECEIVE_INFO,
+	} from './mutation-types'
+	import {
+		reqShopGoods,
+		reqShopRatings,
+		reqShopInfo,
+	} from '../api'
+
+	getGoods: function({commit}) {
+		reqShopGoods().then((result) => {
+			if(result.code===0) {
+				const goods = result.data
+				commit(RECEIVE_GOODS,goods)
+			}
+		})
+	},
+	getratings: function({commit}) {
+		reqShopRatings().then((result) => {
+			if(result.code===0) {
+				const ratings = result.data
+				commit(RECEIVE_RATINGS,ratings)
+			}
+		})
+	},
+	getInfo: function({commit}) {
+		reqShopInfo().then((result) => {
+			if(result.code===0) {
+				const Info = result.data
+				commit(RECEIVE_INFO,Info)
+			}
+		})
+	},
+</script>
+5.在相应组件的mounted中调用actions.js发送请求，之后可从state.js中获取数据使用
+<script>
+	mounted() {
+		this.$store.dispatch('getGoods')
+	}
+</script>
+3.可以通过vue工具查看vuex的state中是否有数据
+
+53.写ShopHeader.vue头部组件
+1.拆分ShopHeader.vue头部组件
+2.为返回箭头添加返回点击事件
+<template>
+	<a href="" @click="$router.back()"></a>
+</template>
+3.动态绑定背景图片
+<template>
+	<nav :style="{backgroundImage: `url(${info.bgImg})`}"></nav>
+</template>
+4.动态绑定商家头像
+5.动态加载商家名称，评分，销量，描述，配送时间，距离
+6.动态加载商家优惠并显示不同样式
+基础理解:
+获取的数据中有一项type对应值0标识红色，1标识绿色，2标识橙色
+1.用一个数组data数据控制对应的样式
+<template>
+	<div>
+		<div v-if="info.supports">
+			<div :class="supportClass[info.supports.type]"></div>
+		</div>
+	</div>
+</template>
+<script>
+	export default {
+		data() {
+			return {
+				supportClass: ["red","green","orange"]
+			}
+		}
+	}
+</script>
+注意：这里数据是异步显示的，所以一开始info为空对象，空对象.属性不会报错，但是空对象.属性.属性则会报错，因为空对象.属性返回undefind，而undefind.属性则不行
+解决：通过v-if控制当info.supports中有数据时才渲染标签
+
+54.添加点击弹出和关闭中心优惠框
+
+55.添加点击弹出和关闭下方优惠信息
+
+56.通过vue的动画标签添加过渡动画，将需要发生变化的标签用<transition name="xxx"></transition>包裹起来，然后为进入中(即过渡阶段)设置动画(transform: all 2s;),为隐藏时(进入前和消失后)设置样式(变动后的模样)
+.xxx-enter-active,.xxx-leave-active：opacity .5s;过渡时(常用)
+.xxx-enter,.xxx-leave-to：opacity: 0;进入前/消失后(常用)
+.xxx-enter-to,.xxx-leave：进入后/消失前(不常用)
+<transition name="fade">
+	<div>...</div>
+</transition>
+
+57.开发ShopGoods.vue组件
+基础理解：
+开发Food食品详情部分
+使用better-scroll库制作滑动效果
+开发shopCar购物车部分
+开发CartControl购物车操作组件
+1.拆分Food食品详情静态页
+2.从后台(或者mock.js)获取食品详情数据，在mounted中发送Ajax请求，通过mapState读取state.js中的数据
+<script>
+	import {mapState} from 'vuex'
+
+	computed: {
+		...mapState(['goods'])
+	},
+	mounted() {
+		this.$store.dispatch('getGoods')
+	},
+</script>
+3.将获取到的数据填充到页面中
+
+58.制作滑动效果
+1.为当前类名制作特殊样式，让被选中的分类名变绿，设定一个currentIndex(当前下标)，当currentIndex和li的index相等时，加上特殊样式
+<template>
+	<li :class="{active: index===currentIndex}">分类1</li>
+</template>
+<style>
+	.active {
+		background-color: #fff;
+		color: #绿色;
+	}
+</style>
+2.currentIndex与第二列食品详情的滚动有关，具体到数据则是其滚动的scrollY值，以及跟右侧每块分类的top值(每块分类顶部位置的y值)有关，所以这两个数据需要收集，然后再看如何转化成currentIndex属性，scrollY值是在滑动中收集的，tops值构成的数组则在第一次收集完成后不在变化(因为数据是固定的，除非重新添加新的商品)
+<script>
+	data() {
+		return {
+			scrollY: 0, //右侧列表的滚动值，初始为0
+			tops: [], //右侧列表每个分类的top值，初始为空
+		}
+	},
+	computed: {
+		currentIndex: fucntion() {
+
+		}
+	},
+</script>
+3.使用better-scroll滑动库实现两列div的滑动
+	1.下载安装better-scroll
+	npm install --save better-scroll
+
+	2.引入better-scroll滑动库，并通过new BScroll('.xxx')进行初始化，初始化时可以指定一个类名，拥有.xxx类名的标签将作为滑动块外层的包裹，即如果一个div被加上初始化时指定的类名.xxx，则这个div的第一个子元素会被赋予滑动效果(其他都会被忽略)，需要注意的是只有子元素超出外层包裹div时，滑动效果才会生效，注意.xxx类名可以加样式，不影响，如果需要多个滑动，则初始化多个BScroll
+	<template>
+		<div class="aaa">
+			<ul>
+				<li></li>
+				<li></li>
+				<li></li>
+			</ul>
+		</ul>
+	</template>
+	<script>
+		import BScroll from 'better-scroll'
+
+		new BScroll('.aaa')
+	</script>
+	3.初始化需要在数据获取之后，即列表数据已经有了，才可以进行初始化
+		方法1：(watch+$naxtTick)
+		通过watch监听列表数据，当其发生变化(从后台获取了数据)时，调用组件的this.$nextTick(function() {...})方法(当页面DOM渲染完成后执行括号中的回调函数)，初始化BScroll
+		<script>
+			watch: {
+				goods: function(value) {  //value是监视数据传回的最新值
+					this.$nextTick(function() {
+						new BScroll('.aaa')
+						})
+					})
+				}
+			}
+		</script>
+		方法2：(callback+$nextTick)
+		给调用的actions传递一个函数(调用actions时可以传参，函数也属于参数，所以可以传递给actions)，actions在获取到数据后执行参数(即传过去的函数)，这样一来写在该函数中的语句就可以在数据获得之后执行，这条语句就是初始化new BScroll('aaa')，当然，依然需要执行.$nextTick保证数据获取到之后才执行初始化
+		组件中：
+		<script>
+			mounted: function() {
+				//调用的actions传递一个函数
+				this.$store.dispatch('getGoods',function() {})
+			}
+		</script>
+		actions中：
+		<script>
+			getGoods: fucntion(commit,callback) {
+				//发送请求获取数据
+				reqShopGoods().then((result) => {
+					if(result.code===0) {
+						const goods = result.data
+						commit(RECEIVE_GOODS,goods)
+						//所有步骤完成后，执行回调函数callback
+						callback()
+					}
+				})
+			}
+		</script>
+		组件中：
+		<script>
+			mounted: function() {
+				//调用的actions传递一个函数
+				this.$store.dispatch('getGoods',() => {
+					//callback()被调用时开始执行初始化，当然，在nextTick之后执行
+					this.$nextTick(() => {
+						new BScroll('.aaa')
+					})
+				})
+			}
+		</script>
+		另外，如果不选择方法2，则callback参数不会传，如此便会造成报错问题，需要修改一下
+		actions中：
+		<script>
+			getGoods: fucntion(commit,callback) {
+				//发送请求获取数据
+				reqShopGoods().then((result) => {
+					if(result.code===0) {
+						const goods = result.data
+						commit(RECEIVE_GOODS,goods)
+						//所有步骤完成后，执行回调函数callback
+						callback && callback()  
+						//利用了JS中&&符号的一个小技巧，&&符号在前面为假时就不会执行后面的语句了
+					}
+				})
+			}
+		</script>
+		同理，初始化右侧的滑动
+		<script>
+			mounted: function() {
+				//调用的actions传递一个函数
+				this.$store.dispatch('getGoods',() => {
+					//callback()被调用时证明请求数据已经返回，开始执行初始化，当然，在nextTick之后执行
+					this.$nextTick(() => {
+						new BScroll('.aaa') //初始化左侧滑动
+						new BScroll('.bbb') //初始化右侧滑动
+					})
+				})
+			}
+		</script>
+
+59.在滑动过程中收集scrollY，通过监听BScroll对象的行为即可
+基础理解：
+BScroll对象有.on(type,() => {...})方法可以监听自定义事件(行为)，type为自定义事件的类型(具体看文档)，这里选择监听scroll行为，fn为回调执行函数，当监听的行为是scroll时，括号中会接收scroll传回来的{x,y}，即当前的坐标值，因此可以通过回调函数收集scrollY
+什么时候才会触发scroll事件从而传回{x,y}呢?这需要BScroll对象的一个配置来处理：probeType
+probeType有4个值：0，1，2，3，0代表不派发，1代表滑动超过一定距离(避免滑动太小也触发)时派发事件(从而触发事件)，2代表滑动时立即派发事件(但是惯性滑动时不派发，即手指离开屏幕后)，3代表任何滑动都会派发事件(包括惯性滑动)，这里选择2模式即可
+1.调用on方法
+<script>
+	mounted: function() {
+		//调用的actions传递一个函数
+		this.$store.dispatch('getGoods',() => {
+			//callback()被调用时证明请求数据已经返回，开始执行初始化，当然，在nextTick之后执行
+			this.$nextTick(() => {
+				//初始化左侧滑动
+				new BScroll('.aaa')
+
+				//初始化右侧滑动
+				const foodsBScroll = new BScroll('.bbb',{
+					probeType: 2, //选择第2个模式
+				}) 
+
+				foodsBScroll.on('scroll',({x,y}) => {
+
+				})
+			})
+		})
+	}
+</script>
+2.将获取到的y值储存到data中，因为是向下滑动，所以y是负值，先abs一下
+<script>
+	date() {
+		return {
+			scrollY: 0, //滑动时的y值
+		}
+	},
+	mounted: function() {
+		//调用的actions传递一个函数
+		this.$store.dispatch('getGoods',() => {
+			//callback()被调用时证明请求数据已经返回，开始执行初始化，当然，在nextTick之后执行
+			this.$nextTick(() => {
+				//初始化左侧滑动
+				new BScroll('.aaa')
+
+				//初始化右侧滑动
+				const foodsBScroll = new BScroll('.bbb',{
+					probeType: 2, //选择第2个模式
+				}) 
+
+				foodsBScroll.on('scroll',({x,y}) => {
+					this.scrollY = Math.abs(y)
+				})
+			})
+		})
+	}
+</script>
+
+60.在列表第一次显示时收集tops(一次成型)，
+	1.找到所有分类的li
+	<script>
+		mounted: function() {
+			this.$store.dispatch('getGoods',() => {
+				this.$nextTick(() => {
+					//找到所有分类的li
+					const lis = document.getElementsByClassName('xxx')
+				})
+			})
+		}
+	</script>
+	2.收集前先初始化一个数组用于储存top
+	<script>
+		mounted: function() {
+			this.$store.dispatch('getGoods',() => {
+				this.$nextTick(() => {
+					//初始化一个数组用于储存top
+					const tops = []
+					//找到所有分类的li
+					const lis = document.getElementsByClassName('xxx')
+				})
+			})
+		}
+	</script>
+	3.收集top数据，并更新到数组中
+	基础理解：
+	数组对象原型中的.slice(start,end)方法可以截取数组中的某一段，返回一个新数组，且不影响原数组，如果不传参数则默认截取从0到末尾的所有元素，但伪数组没有.slice方法，可以通过.call(obj,arg1,arg2...)方法来替换掉原来调用slice方法的对象,从而间接的调用slice方法，obj为替换上去的新对象，arg1等为传给slice的参数，这里选择不传，slice截取了伪数组内所有元素后返回一个真正的数组，从而实现伪数组转化成真数组
+	clientHeight：元素的高度
+	<script>
+		mounted: function() {
+			//调用的actions传递一个函数
+			this.$store.dispatch('getGoods',() => {
+				//callback()被调用时证明请求数据已经返回，开始执行初始化，当然，在nextTick之后执行
+				this.$nextTick(() => {
+					//初始化一个数组用于储存top
+					const tops = []
+					//第一组分类的top值为0，先添加到tops中
+					let top = 0
+					tops.push(top)
+					//找到所有分类的li
+					const lis = document.getElementsByClassName('xxx')
+					//数组.slice.call()方法将其转化为真数组，并调用forEach()方法，遍历每个li,获取他们的高度值
+					Array.prototype.slice.call(lis).forEach(li => {
+						//后一组分类的top坐标y值为前一组分类坐标y值加上后一组高度值
+						top = top + li.clientHeight
+						//继续将后面的top值添加到tops中
+						tops.push(top)
+					})
+					//更新数组
+					this.tops = tops
+				})
+			})
+		}
+	</script>
+	4.将初始化滚动条和初始化tops都抽取到methods中，名字前可以加 _ 以便跟事件回调函数区分开来
+	<script>
+		mounted() {
+			this.$store.dispatch('getGoods',() => {
+				//callback()被调用时证明请求数据已经返回，开始执行初始化，当然，在nextTick之后执行
+				this.$nextTick(() => {
+					this._initScroll()
+					this._initTops()
+				})
+			})
+		},
+		methods: {
+			//初始化滑动并收集scrollY值
+			_initScroll: function() {
+				//初始化左侧滑动
+				new BScroll('.aaa')
+
+				//初始化右侧滑动
+				const foodsBScroll = new BScroll('.bbb',{
+					probeType: 2, //选择第2个模式
+				}) 
+				foodsBScroll.on('scroll',({x,y}) => {
+					this.scrollY = Math.abs(y)
+				})
+			},
+			//初始化tops数组
+			_initTops: function() {
+				//初始化数组
+				const tops = []
+				//第一组分类的top值为0，先添加到tops中
+				let top = 0
+				tops.push(top)
+				//找到所有分类的li
+				const lis = document.getElementsByClassName('xxx')
+				//数组.slice.call()方法将其转化为真数组，并调用forEach()方法，遍历每个li,获取他们的高度值
+				Array.prototype.slice.call(lis).forEach(li => {
+					//后一组分类的top坐标y值为前一组分类坐标y值加上后一组高度值
+					top = top + li.clientHeight
+					//继续将后面的top值添加到tops中
+					tops.push(top)
+				})
+				//更新数组
+				this.tops = tops
+			}
+		}
+	</script>
+
+61.设计currentIndex计算属性
+基础理解：
+currentIndex(右侧滑动块当前分类区间的top值)，由scrollY和tops数组共同决定，scrollY(y坐标值)是随着滑动不断变化的，而当scrollY值处于tops中某两个top值之间时，这两个top值中的前一个top的下标，就是右侧滑动块当前分类区间的下标，即要找的currentIndex的值
+数组方法.findIndex((x,index) => {...})会遍历当前数组，查找目标元素，找到第一个符合要求的元素后停止执行，并返回元素的位置(下标)，找不到就返回-1，在后面的回调函数中设置条件
+<script>
+	computed: {
+		currentIndex: function() {
+			const {scrollY,tops} = this
+			//调用findIndex方法遍历tops
+			tops.findIndex((top,index) => {
+				//当scrollY(y坐标值)大于top的值并小于下一个top值时，该top值的下标会返回给currentIndex
+				return scrollY >= top && scrollY < tops[index+1]
+			})
+		}
+	}
+</script>
+
+62.前面初始化滑动块时使用的配置是：probeType: 2，这会导致惯性滑动时(手指离开屏幕)无法收集scrollY，从而导致左侧分类样式不更新，简单的处理方式是调用probeType: 3模式，另外，如果左侧分类样式不需要中间的切换过程的化，可以用另一种方法解决
+BScroll.on()方法也可以监听滑动停下来时滑块的情况，事件名为scrollEnd，同样也会传回{x,y}值，因此可以获得当滑块最终停止滑动时的y坐标
+<script>
+	methods: {
+		_initScroll: function() {
+			//初始化左侧滑动
+			new BScroll('.aaa')
+
+			//初始化右侧滑动
+			const foodsBScroll = new BScroll('.bbb',{
+				probeType: 2, //选择第2个模式
+			}) 
+			//监听滑动事件，并获取y坐标绝对值
+			foodsBScroll.on('scroll',({x,y}) => {
+				this.scrollY = Math.abs(y)
+			})
+			//监听滑动停止事件，并获取y坐标绝对值
+			foodsBScroll.on('scrollEnd',({x,y}) => {
+				this.scrollY = Math.abs(y)
+			})
+		},
+	}
+</script>
+
+63.点击左侧滑块选择某分类，右侧滑动到相应位置
+	1.为li标签添加点击事件，并将index传给事件回调函数，BScroll对象的配置中最好写上click: true，因为BScroll对象默认会阻止原生事件
+	<template>
+		<div>
+			<ul>
+				<li v-for="(good,index) in good" @click="toMenuGroup(index)"></li>
+			</ul>
+		</div>
+	</template>
+	<script>
+		export default {
+			methods: {
+				_initScroll: function() {
+					//初始化左侧滑动
+					new BScroll('.aaa',{
+						click: true
+					})
+					//初始化右侧滑动
+					const foodsBScroll = new BScroll('.bbb',{
+						probeType: 2, //选择第2个模式
+						click: true
+					}) 
+					//监听滑动事件，并获取y坐标绝对值
+					foodsBScroll.on('scroll',({x,y}) => {
+						this.scrollY = Math.abs(y)
+					})
+					//监听滑动停止事件，并获取y坐标绝对值
+					foodsBScroll.on('scrollEnd',({x,y}) => {
+						this.scrollY = Math.abs(y)
+					})
+				},
+				toMenuGroup: function(index) {
+					//使右侧列表滑动到相应位置
+				}
+			}
+		}
+	</script>
+	2.通过代码使右侧列表滑动到相应位置，可以使用右侧滑动块对象的scrollTo(x,y,time,easing)方法或scrollToElement()，前者让滑块滑动到某一个坐标(注意向下滚动y为负值)，后者让滑块滑动到某一个元素，可以先将右侧滑动块对象存到this中，从而实现在别处调用scrollTo等方法
+	<script>
+		export default {
+			methods: {
+				_initScroll: function() {
+					//初始化左侧滑动
+					new BScroll('.aaa',{
+						click: true
+					})
+					//将右侧滑动对象存到this中
+					this.foodsBScroll = new BScroll('.bbb',{
+						probeType: 2, //选择第2个模式
+						click: true
+					}) 
+					//监听滑动事件，并获取y坐标绝对值
+					this.foodsBScroll.on('scroll',({x,y}) => {
+						this.scrollY = Math.abs(y)
+					})
+					//监听滑动停止事件，并获取y坐标绝对值
+					this.foodsBScroll.on('scrollEnd',({x,y}) => {
+						this.scrollY = Math.abs(y)
+					})
+				},
+				toMenuGroup: function(index) {
+					const scrollY = this.tops[index]
+					//顺便将scrollY值改为当前，让激活样式生效
+					this.scrollY = scrollY
+					//使右侧列表滑动到相应位置，并设置时间为300毫秒
+					this.foodsBScroll.scrollTo(0,-scrollY,300)
+				}
+			}
+		}
+	</script>
+
+64.购物车控制组件
+基础理解：
+分析当前组件需要哪些数据(props需要接收什么)
+小购物车组件需要count数据，即食品数量
+因为每个小购物车都需要有自己count，所以这个count数据必须存在于每个food数据里面
+小购物车组件需要foods数据，而有了food数据就相当于有了count数据(count存在food里面)
+将小购物车组件写在每个food里面，这样小购物车就可以获得food中的数据了
+1.创建小购物车控制组件CartControl.vue，写入模板和样式
+<template>
+	<div>
+		<div v-if="food.count">-</div>
+		<div v-if="food.count">{{ food.count}}</div>
+		<div>+</div>
+	</div>
+</template>
+<script>
+	export default{
+		props: {
+			food: Object
+		}
+	}
+</script>
+2.在ShopGoods.vue组件中引入CartControl.vue组件，并将food通过<CartControl></CartControl>传递过去
+<template>
+	<div>
+		<li v-for="(food,index) in foods">
+			<CartControl :food="food"></CartControl>
+		</li>
+	</div>
+</template>
+<script>
+	import CartControl from '....'
+
+	export default {
+		components: {
+			CartControl
+		}
+	}
+</script>
+3.需要通过子组件CartControl.vue的点击事件更新food中的数据，food数据存在于foods中，foods在goods中，所以最好通过vuex来管理，可以很方便的更改数据
+添加点击事件，并通过vuex更改和接收数据：
+<template>
+	<div>
+		<div v-if="food.count" @click="updateFoodCount(false)">-</div>
+		<div v-if="food.count">{{ food.count}}</div>
+		<div @click="updateFoodCount(false)">+</div>
+	</div>
+</template>
+<script>
+	export default {
+		props: {
+			food: Object
+		},
+		methods: {
+			//调用actions更新food中的count,isAdd参数true表示增加，false表示减少
+			//将isAdd和foods一起传给actions
+			updateFoodCount(isAdd) {
+				this.$store.dispatch('updateFoodCount',{isAdd,food: this.food})
+			}
+		}
+	}
+</script>
+写一套vuex:
+state中：
+<script>
+	export default {
+		cartFoods: []
+	}
+</script>
+actions中：
+<script>
+	import {
+		INCREMENT_FOOD_COUNT,
+		DECREMENT_FOOD_COUNT	
+	} from '....'
+
+
+	export default {
+		//更新food中count值
+		updateFoodCount: function(commit,{isAdd,food}) {
+			if(isAdd) {  //为真时调用增加mutations
+				commit(INCREMENT_FOOD_COUNT,food)
+			} else {  //为假时调用减少mutations
+				commit(DECREMENT_FOOD_COUNT,food)
+			}
+		}
+	}
+</script>
+mutations-types中：
+<script>
+	export const INCREMENT_FOOD_COUNT = 'increment_food_count'  //增加food中的count值
+	export const DECREMENT_FOOD_COUNT = 'decrement_food_count'  //减少food中的count值
+</script>
+mutations中：
+基础理解：
+food中原本没有count，而如果手动添加的话，vue不会对新的数据自动进行数据绑定，从而会造成虽然数据更新了，但界面没有变化的情况，此时只需要使用vue对象的.set(对象，'属性名'，属性值)方法，就可以添加新的数据，并进行数据绑定
+<script>
+	//引入Vue对象，为了使用其.set()方法
+	import Vue from 'vue'
+
+	import {
+		INCREMENT_FOOD_COUNT,
+		DECREMENT_FOOD_COUNT
+	} from '....'
+
+	export default {
+		[INCREMENT_FOOD_COUNT]: function(state,food) {
+			if(!food.count) {  //当food中不存在count项时，添加一个count并加1
+				//food.count = 1普通方法添加新属性，会造成数据无绑定
+				//使用vue提供的方法，可以在添加新属性时同时绑定该数据
+				//set(x,y,z)方法参数：x为要添加新数据的对象，y为属性名，z为属性值
+				Vue.set(food,'count',1)
+			} else {
+				food.count++
+			}
+		},
+		[DECREMENT_FOOD_COUNT]: function(state,food) {
+			if(food.count) {  //当count===0时，不再进行减少(避免连续点击变成负数)
+				food.count--
+			}
+		}
+	}
+</script>
+为减号和食品数量添加过渡动画
+<template>
+	<div>
+		<transition name="move">
+			<div v-if="food.count" @click="updateFoodCount(false)">-</div>
+		</transition>
+		<transition name="move">
+			<div v-if="food.count">{{ food.count}}</div>
+		</transition>
+		<div @click="updateFoodCount(false)">+</div>
+	</div>
+</template>
+<style>
+	/* 过渡的样式和时间 */
+	.move-enter-active,.move-leave-active {
+		transition all .3s
+	}
+	/* 消失后的样式 */
+	.move-enter,.move-leave-to {
+		opacity: 0
+		transform: translateX(5rem) rotate(180deg)
+	}
+</style>
+
+65.点击显示中心食品卡片说明
+1.创建一个遮罩卡片组件Food.vue，并写入相关模板样式，该组件中需要接收food数据
+<script>
+	export default {
+		props: {
+			food: Object
+		}
+	}
+</script>
+2.在ShopGoods中引用该组件，并将food对象传递过去
+<template>
+	<div>
+		<Food :food="food"/>
+	</div>
+</template>
+<script>
+	import Food from '....'
+
+	export default {
+		data() {
+			return {
+				food: {},  //传递给Food组件的food的对象，这里适合写{}而不是null，便于写表达式不容易报错
+			}
+		},
+		components: {
+			Food
+		}
+	}
+</script>
+3.为每个food添加点击事件，并将food作为参数传给methods
+<template>
+	<div>
+		<li v-for="(food,index) in foods" @click="showFood(food)"></li>
+	</div>	
+</template>
+<script>
+	export default {
+		data() {
+			return {
+				food: {},  //传递给Food组件的food的对象，这里适合写{}而不是null，便于写表达式不容易报错
+			}
+		},
+		methods: {
+			//显示Food组件
+			showFood: function(food) {
+				//更新data中的food对象
+				this.food = food
+				//显示Food组件
+
+			}
+		}
+	}
+</script>
+4.显示Food.vue组件
+方法1：
+直接在<Food/>标签中添加v-if控制
+方法2：
+将v-if="isShow"放在Food.vue组件内部，父组件的methods调用子组件的methods从而更改isShow达到控制效果
+Food.vue组件中：
+<template>
+	<div v-if="isShow"></div>
+</template>
+<script>
+	export default {
+		data() {
+			return {
+				isShow: false
+			}
+		},
+		methods: {
+			toggleShow: function() {
+				this.isShow = !this.isShow
+			}
+		}
+	}
+</script>
+父组件中：
+先获取<Food/>标签对象，从而获得该对象里面的methods方法
+<template>
+	<div>
+		<Food ref="food"/>
+	</div>	
+</template>
+<script>
+	export default {
+		methods: {
+			showFood: function(food) {
+				this.food = food
+				this.$refs.food.toggleShow()
+			}
+		}
+	}
+</script>
+在返回箭头和遮罩添加点击调用toggleShow关闭Food组件
+将food对象中的数据绑定到Food组件里
+bug: 当点击购物车的+号时，click事件会冒泡到到外层，从而导致Food组件被激活显示出来
+解决: 为绑定的click添加.stop方法阻止事件冒泡
+<template>
+	<div>
+		<div @click.stop="...">+</div>
+	</div>
+</template>
+
+65.底部购物车组件
+基础理解：
+购物车数据分为两部分，上半部分显示的是每样食品购入的数量，下半部分显示的是总数量和总价格
+上半部分可以看成一个数组(我们将它命名为cartFoods)，子元素是food对象(count值不为0的)，该数组可以放在vuex中管理
+下半部分数据有总数量和总价格(可以通过cartFoods获得)，配送费和起送价(可以通过商家信息获得)
+1.创建ShopCart.vue组件并写入模板和样式
+2.通过mapState读取vuex中的cartFoods和info
+<script>
+	import {mapState,mapGetters} from 'vuex'
+
+	export default {
+		computed: {
+			//cartFood写在state中
+			...mapState(['cartFoods','info'])
+			//总数量和总价格是通过cartFoods计算获得的，所以将他们写在getters中
+			...mapGetters(['totalCount','totalPrice'])
+		}
+	}
+</script>
+写vuex
+state中：
+<script>
+	export default {
+		cartFoods: [], //购物车中食品的列表
+	}
+</script>
+getters中：
+<script>
+	export default {
+		totalCount: function(state) {
+			return state.cartFoods.reduce((preTotal,food) => preTotal + food.count,0)
+		},
+		totalPrice: function(state) {
+			return state.cartFoods.reduce((preTotal,food) => preTotal + food.count*food.price,0)
+		}
+	}
+</script>
+3.在父组件中引入ShopCart.vue组件，将数据动态写入template中
+<template>
+	<div>
+		<ShopCart/>
+	</div>
+</template>
+<script>
+	import ShopCart from '....'
+
+	export default {
+		components: {
+			ShopCart
+		}
+	}
+</script>
+底部购物篮右边会随着总金额发生样式改变(起送价)，设置两个计算属性来控制
+<template>
+	<div>
+		<div :class="payClass">{{ payText }}</div>
+	</div>
+</template>
+<script>
+	export default {
+		computed: {
+			payClass: function() {
+				const {totalPrice} = this
+				const {minPrice} = this.info
+				//当条件达成时，返回类名enough
+				return totalPrice >= minPrice? 'enough': 'not-enough'
+			},
+			payText: function() {
+				const {totalPrice} = this
+				const {minPrice} = this.info
+				//不同条件下显示不同文字
+				if(totalPrice === 0) {
+					return `￥${minPrice}元起送`
+				} else if(totalPrice < minPrice) {
+					return `还差￥${minPrice - totalPrice}元起送`
+				} else {
+					return '去结算'
+				}
+			}
+		}
+	}
+</script>
+
+66.更新state中的cartFood数组数据
+基础理解：
+第一次将count添加到food对象中时，将该food对象添加到cartFood数组中
+count++(或count--)改变的是所有引用变量指向的元数据，所以改变后所有food都会一起改变
+在mutations中：
+<script>
+	//引入Vue对象，为了使用其.set()方法
+	import Vue from 'vue'
+
+	import {
+		INCREMENT_FOOD_COUNT,
+		DECREMENT_FOOD_COUNT
+	} from '....'
+
+	export default {
+		[INCREMENT_FOOD_COUNT]: function(state,food) {
+			if(!food.count) {  //当food中不存在count项时，添加一个count并加1
+				//food.count = 1普通方法添加新属性，会造成数据无绑定
+				//使用vue提供的方法，可以在添加新属性时同时绑定该数据
+				//set(x,y,z)方法参数：x为要添加新数据的对象，y为属性名，z为属性值
+				Vue.set(food,'count',1)
+				//第一次添加count时，push()到cartFoods中
+				state.cartFoods.push(food)
+			} else {
+				//count++会改变元数据，所有指向该元数据的food都会一起发生改变
+				food.count++
+			}
+		},
+		[DECREMENT_FOOD_COUNT]: function(state,food) {
+			if(food.count) {  //当count===0时，不再进行减少(避免连续点击变成负数)
+				food.count--
+				//当count===0时，将food从cartFoods中移除
+				if(food.count===0) {
+					state.cartFoods.splice(state.cartFoods.indexOf(food),1)
+				}
+			}
+		}
+	}
+</script>
+
+67.显示底部购物车上半部分
+1.为底部购物车和遮罩添加点击监听，控制上半部分的显示隐藏
+<template>
+	<div>
+		<div class="cart" @click="toggleShow" v-if="isShow">
+			<div class="zhezhao" @click="toggleShow"></div>
+		</div>
+	</div>
+</template>
+<script>
+	export default {
+		data() {
+			return {
+				isShow: false
+			}
+		},
+		methods: {
+			toggleShow: function() {
+				this.isShow = !this.isShow
+			}
+		}
+	}
+</script>
+bug1：上半部分为打开状态时，不断减少购物车中食品数量直至为0，上半部分不隐藏
+解决：上半部分的显示隐藏应该由isShow和totalCount共同决定，设置一个新的计算属性listShow处理逻辑
+<template>
+	<div>
+		<div class="cart" @click="toggleShow" v-if="listShow">
+			<div class="zhezhao" @click="toggleShow"></div>
+		</div>
+	</div>
+</template>
+<script>
+	export default {
+		data() {
+			return {
+				isShow: false
+			}
+		},
+		computed: {
+			listShow: function() {
+				if(this.totalCount===0) {
+					return false
+				}
+				//当总数量不为0时，listShow应该与当前isShow一致
+				return this.isShow
+			}
+		},
+		methods: {
+			toggleShow: function() {
+				this.isShow = !this.isShow
+			}
+		}
+	}
+</script>
+bug2：上半部分显示时将总食品数减少到0，此时上半部分会消失，但是当前isShow依然为true，当点击添加一个食品时，上半部分又会出现
+解决：上半部分显示时将总食品数减少到0时，还应该将isShow也一起变为false(初始化)，避免影响到后续操作
+<template>
+	<div>
+		<div class="cart" @click="toggleShow" v-if="listShow">
+			<div class="zhezhao" @click="toggleShow"></div>
+		</div>
+	</div>
+</template>
+<script>
+	export default {
+		data() {
+			return {
+				isShow: false
+			}
+		},
+		computed: {
+			listShow: function() {
+				if(this.totalCount===0) {
+					this.isShow = false
+					return false
+				}
+				//当总数量不为0时，listShow应该与当前isShow一致
+				return this.isShow
+			}
+		},
+		methods: {
+			toggleShow: function() {
+				this.isShow = !this.isShow
+			}
+		}
+	}
+</script>
+bug3：总数量为0，上半部分隐藏时，点击一下底部购物车，虽然界面没有发生改变，但此时isShow再次变为true，当点击添加一个食品，上半部分又会立即出现
+解决：当总数量大于0时，才修改this.isShow
+<template>
+	<div>
+		<div class="cart" @click="toggleShow" v-if="listShow">
+			<div class="zhezhao" @click="toggleShow"></div>
+		</div>
+	</div>
+</template>
+<script>
+	export default {
+		data() {
+			return {
+				isShow: false
+			}
+		},
+		computed: {
+			listShow: function() {
+				if(this.totalCount===0) {
+					this.isShow = false
+					return false
+				}
+				//当总数量不为0时，listShow应该与当前isShow一致
+				return this.isShow
+			}
+		},
+		methods: {
+			toggleShow: function() {
+				//当总数量大于0时，才修改this.isShow
+				if(this.totalCount > 0) {
+					this.isShow = !this.isShow
+				}
+			}
+		}
+	}
+</script>
+
+68.底部购物车弹出动画
+基础理解：
+因为弹出的高度不固定，所以通过向上移动100%来让所有项弹出
+<transition name="move">
+	<div class="shop-list">...</div>
+</transition>
+<style>
+	/* 过渡时的样式和时间 */
+	.move4-enter-active, .move4-leave-active {
+		transition: all 2s;
+	}
+	/* 进入前/消失后的样式 */
+	.move4-enter, .move4-leave-to {
+		opacity: 0;
+	}
+</style>
+
+69.底部购物车商品列表滑动
+1.引入better-scroll库
+<script>
+	import BScroll from 'better-scroll'
+
+	export default {
+
+	}
+</script>
+2.初始化，当isShow变为存在时，初始化滑动，注意外层包裹(.shopCart-list)必须有{ max-height: 12.8rem;overflow: hidden; }
+<template>
+	<div class="shopCart-list">...</div>
+</template>
+<script>
+	import BScroll from 'better-scroll'
+
+	export default {
+		listShow: fucntion() {
+			if(this.isShow) {
+				this.$nextTick(() => {
+					new BScroll('.shopCart-list',{
+						click: true
+					})
+				})
+			}
+		}
+	}
+</script>
+3.listShow被激活时会创建BScroll对象，因此多次点击会创建多个BScroll,造成多个BScroll同时响应一个点击事件，所以要实现BScroll对象实例为单例
+<script>
+	import BScroll from 'better-scroll'
+
+	export default {
+		listShow: fucntion() {
+			if(listShow) {
+				this.$nextTick(() => {
+					//创建之前查看是否有scroll对象存储在this中
+					if(!this.scroll) {
+						//创建之后将对象存储在this中
+						this.scroll = new BScroll('.shopCart-list',{
+							click: true
+						})
+					}
+				})
+			}
+		}
+	}
+</script>
+4.首次添加列表并触发创建BScroll实例(打开底部购物篮)，再次添加列表进行滑动，会出现第一次无法滑动的情况，因为首次添加列表时BScroll实例已经创建，再次添加列表时做了限制无法再创建实例，所以需要刷新一下列表，另外需要注意隐藏列表必须使用v-show而不是v-if，否则better-scroll将无法获得列表高度(造成列表无法滚动)
+<script>
+	import BScroll from 'better-scroll'
+
+	export default {
+		listShow: fucntion() {
+			if(listShow) {
+				this.$nextTick(() => {
+					//创建之前查看是否有scroll对象存储在this中
+					if(!this.scroll) {
+						//创建之后将对象存储在this中
+						this.scroll = new BScroll('.shopCart-list',{
+							click: true
+						})
+					} else { //非首次激活listShow时刷新一次列表
+						this.scroll.refresh()
+					}
+				})
+			}
+		}
+	}
+</script>
+
+70.清空购物车
+1.绑定清空按钮点击事件
+<template>
+	<div class="clearBtn" @click="clearCart"></div>
+</template>
+2.使用mint-ui弹出确认框
+引入mint-ui:
+<script>
+	import {MessageBox} from 'mint-ui'
+
+	export default {
+		methods: {
+			clearCart: function() {
+				MessageBox.confirm('确定清空吗？').then(action => {
+					//点击确认时
+					this.$store.dispatch('clearCart')
+				},() => {
+					//点击取消时
+				})
+			}
+			
+		}
+	}
+</script>
+3.写vuex
+actions中：
+<script>
+	import {CLEAR_CART} from 'mutations-types'
+	export default {
+		//同步清空购物车
+		clearCart: function({commit}) {
+			commit(CLEAR_CART)
+		}
+	}
+</script>
+mutations-types中:
+<script>
+	export const CLEAR_CART = 'clear_Cart' //清空购物车
+</script>
+mutations中：
+<script>
+	import {CLEAR_CART} from 'mutations-types'
+
+	[CLEAR_CART]: function(state) {
+		//cartFoods中的元素引用的是food对象，所以还应该清空food中count的值
+		state.cartFoods.forEach(food => food.count = 0)
+		//最后清空购物车数组
+		state.cartFoods = []
+	}
+</script>
+
+71.评价页面
+基础理解：
+评价页面需要两个数据，info和ratings
+1.在shopRatings.vue组件中写入模板和样式，引入<Star></Star>组件
+2.获取info和ratings数据
+<script>
+	import {mapState} from 'vuex'
+
+	export default {
+		mounted: function() {
+			this.$store.dispatch('getShopRatings')
+		},
+		computed: {
+			...mapState(['info','ratings'])
+		}
+	}
+</script>
+3.将数据动态写入<template></template>中
+4.引入滑动库better-scroll，滑动评论
+<script>
+	import BScroll from 'better-scroll'
+
+	export default {
+		mounted: function() {
+			this.$store.dispatch('getShopRatings',() => {
+				this.$nextTick(() => {
+					new BScroll('.wrapper',{
+						click: true
+					})	
+				})
+			})
+		}
+	}
+</script>
+5.制作 全部/满意/不满意 评价过滤按钮 和 只看有文本内容的数据 按钮
+基础理解：
+评价过滤按钮：制作不同的数组作为遍历对象，可以产生新的评价列表，将评价的遍历对象改为filterRatings(过滤产生的新评价数组)
+只看有文本内容的数据按钮：通过一个data数据控制该按钮的切换
+
+1.通过一个data数据控制只看有文本内容评价的切换
+<script>
+	export default {
+		data() {
+			return {
+				onlyShowText: true, //true代表只显示有文本内容的评价，false显示全部评价
+				selectType: 2, //0代表选择满意类评价，1代表选择不满意评价，2代表选择全部评价
+			}
+		},
+	}
+</script>
+2.绑定点击监听
+<template>
+	<span @click="setSelectType(2)">全部</span>
+	<span @click="setSelectType(0)">满意</span>
+	<span @click="setSelectType(1)">不满意</span>
+	<span :on="{on: onlyShowText}" @click="toggleOnlyShowText"></span><span>只显示有文本的评价</span>
+</template>
+<script>
+	export default {
+		data() {
+			return {
+				onlyShowText: true, //true代表只显示有文本内容的评价，false显示全部评价
+				selectType: 2, //0代表选择满意类评价，1代表选择不满意评价，2代表选择全部评价
+			}
+		},
+		methods: {
+			//设置selectType的值
+			setSelectType: function(selectType) {
+				this.selectType = selectType
+			},
+			//切换显示有文本/无文本评价
+			toggleOnlyShowText: function() {
+				this.onlyShowText = !onlyShowText
+			}
+		}
+	}
+</script>
+3.统计 全部/满意/不满意 的评价数量
+全部：ratings.length
+满意：positiveSive，即ratings中rateType值为0的数量
+不满意：ratings.length - positiveSive
+positiveSive计算属性可以定义在getters中：
+<script>
+	export default {
+		positiveSive(state) {
+			return state.ratings.reduce((preTotal,rating) => {
+				preTotal + (rating.rateType === 0? 1 : 0)
+			},0)
+		}
+	}
+</script>
+在shopRatings.vue组件中引用positiveSive
+<script>
+	import {mapGetters} from 'vuex'
+
+	export default {
+		computed: {
+			...mapGetters(['positiveSive'])
+		}
+	}
+</script>
+将评价的遍历对象改为filterRatings(过滤产生的新评价数组)
+基础理解：
+filterRatings数组中的元素由 是否有文本内容评论变量和评论类型变量两者决定，通过filter来过滤子元素
+<script>
+	import {mapState,mapGetters} from 'vuex'
+
+	export default {
+		data() {
+			return {
+				onlyShowText: true, //true代表只显示有文本内容的评价，false显示全部评价
+				selectType: 2, //0代表选择满意类评价，1代表选择不满意评价，2代表选择全部评价
+			}
+		},
+		computed: {
+			...mapState(['info','ratings']),
+			...mapGetters(['positiveSive']),
+			//过滤产生的新评价数组
+			filterRatings: fucntion() {
+				//获得相关数据：原始评价数组，是否有文本内容评论变量，评论类型变量
+				const {ratings,onlyShowText,selectType} = this
+				//产生一个过滤新数组
+				return ratings.filter(rating => {
+					//条件1：
+					//selectType 情况分为: 0/1/2
+					//rateType 情况分为： 0/1
+					//当selectType为2时，即需要全部子元素，可以直接返回原数组(true)
+					//当selectType不为2时，需要选择selectType===rateType情况的子元素
+					//合并两个条件即：selectType===2 || !selectType===2 && selectType===rateType 时返回true
+					//简化：如果selectType===2，该逻辑式不会继续进行，而如果进行则代表selectType不为2
+					//简化：selectType===2 || selectType===rateType 时返回true
+					//条件2：
+					//onlyShowText 情况分为: true和false
+					//text(是否有文本) 情况分为：有值和没值
+					//当onlyShowText为false，即不要求text必须有值，即onlyShowText为false时返回true
+					//当onlyShowText为true，即要求text必须有值，即text.length>0
+					//合并两个条件即：!onlyShowText || onlyShowText==true && text.length>0 时返回true
+					//简化：如果!onlyShowText==true成立，该逻辑式不会继续进行，如果进行则代表!onlyShowText==true不成立，即onlyShowText==true成立
+					//简化：!onlyShowText || text>0 时返回true
+					//最后合并条件1和条件2(同时符合两个条件，即求交集)：
+					//(selectType===2 || selectType===rateType) && (!onlyShowText || text.length>0)时返回true
+					return (selectType===2 || selectType===rateType) && (!onlyShowText || text.length>0)
+				})
+			}
+		}
+	}
+</script>
+
+71.商家信息页面
+1.在ShopInfo.vue组件中写入模板和样式
+1.获取info数据，动态显示各数据
+3.在mounted中初始化滑动(垂直滑动和水平滑动)
+bug: 动态绑定图片时，会出现图片路径正确，而图片不显示的问题，这是因为动态的图片路径是需要引入的
+解决：在动态的src中通过require引入图片路径，<img :src="require(`./images/${index+1}.jpg`)">
+bug: 从其他页面跳转到当前页没有问题，在当前页面进行刷新，滑动会卡住，因为数据还没获得，页面已经加载，需要通过数据加载的地方会报错
+解决：当界面切换到当前页时，会重新加载页面，从而触发mounted，但却不会调用watch，因为数据早在进入shop页时就加载好了，不会再发生变化，所以在mounted中的初始化滑动前，加上条件判断if(this.info.数据)，当未获得数据，return结束掉mounted中的初始化，新增watch监视info.数据，当其发生改变(由空对象变为有数据)时，再调用初始化函数(可以先将初始化滑动定义成函数)，watch中的初始化在用户从其他页面切换过来时不会调用
+<script>
+	import {mapState} from 'vuex'
+	import BScroll from 'better-scroll'
+
+	export default {
+		computed: {
+			...mapState(['info'])
+		},
+		mounted: function() {
+			if(this.info.数据) {
+				//如果数据还没有获取到，则return结束掉
+				return
+			}
+			//调用初始化函数
+			this._initScroll()
+		},
+		methods: {
+			_initScroll: function() {
+				//初始化垂直滑动
+				new BScroll('.wrapper')
+				//初始化水平滑动
+				new BScroll('.wrapper',{
+					scrollX: true,//变成横向滑动模式
+				})
+			}
+		},
+		watch: {
+			//监视info数据，发生变化时初始化滑动
+			info() {
+				this.$nextTick(() => {
+					this._initScroll()
+				})
+			}
+		}
+	}
+</script>
+
+72.搜索组件
+1.在Search.vue中写入模板和样式
+2.写vuex
+api--index.js中写接口函数(前面似乎有写过)
+store--states.js中写搜索得到的商家列表：
+<script>
+	export default {
+		searchShops: [], //搜索到的商家列表
+	}
+</script>
+mutations-types.js中：
+<script>
+	export const RECEIVE_SEARCH_SHOPS = 'receive_search_shops' //接收搜索到的商家列表
+</script>
+mutations.js中：
+<script>
+	import {RECEIVE_SEARCH_SHOPS} from '...'
+
+	export default {
+		[RECEIVE_SEARCH_SHOPS](state,searchShops) {
+			this.searchShops = searchShops
+		}
+	}
+</script>
+actions.js中：
+<script>
+	import {RECEIVE_SEARCH_SHOPS} from '...'
+	import {reqSearchShop} from '...'
+
+	export default {
+		//异步获取搜索到的商家列表
+		getSearchShops({commit}) {
+			reqSearchShop(geohash,keyword).then((result) => {
+				if(result.code===0) {
+					const searchShops = result.data
+					commit(RECEIVE_SEARCH_SHOPS,searchShops)
+				}
+			})
+		}
+	}
+</script>
+3.为搜索输入框绑定v-model="keyword"
+<template>
+	<div>
+		<form>
+			<input type="text" v-model="keyword">
+			<button>确定</button>
+		</form>
+	</div>
+</template>
+<script>
+	export default {
+		data() {
+			return {
+				keyword: '', //搜索关键字
+			}
+		}
+	}
+</script>
+4.为表单绑定提交事件
+<template>
+	<form @submit.prevent="search">
+		<input type="text" v-model="keyword">
+		<button>确定</button>
+	</form>
+</template>
+<script>
+	export default {
+		data() {
+			return {
+				keyword: '', //搜索关键字
+			}
+		},
+		methods: {
+			search() {
+				const keyword = this.keyword.trim()
+
+				if(keyword) {
+					this.$store.dispatch('getSearchShops',keyword)
+				}
+			}
+		}
+	}
+</script>
+5.读取数据进行展现
+基础理解：
+1.遍历获得的searchShops数组进行展现
+2.<router-link>默认渲染成<a>标签，也可以通过tag="xx"渲染成想要的标签
+3.通过{}方法可以在to里面传入query参数(或者params参数)，或者直接拼串
+<template>
+	<section>
+		<ul>
+			<router-link :to="{path: '/shop',query: {id: searchShop.id}}" tag="li" v-for="searchShop in searchShops" :key="searchShop.id">
+				...
+			</router-link>
+		</ul>
+	</section>
+</template>
+<script>
+	import {mapState} from 'vuex'
+
+	export default {
+		data() {
+			return {
+				keyword: '', //搜索关键字
+			}
+		},
+		computed: {
+			...mapState(['searchShops'])
+		},
+		methods: {
+			search() {
+				const keyword = this.keyword.trim()
+
+				if(keyword) {
+					this.$store.dispatch('getSearchShops',keyword)
+				}
+			}
+		}
+	}
+</script>
+6.显示无搜索结果文本提示
+基础理解：
+bug:虽然通过v-if/v-else判断searchShops是否为空可以切换显示无搜索结果div，但未搜索时searchShops也为空，造成未搜索时也显示无搜索结果div
+解决：通过另一个data变量noSearchShops控制切换，通过watch监视searchShops当其发生变化时判断变化是否为空(异步请求后searchShops会被重新赋值，即使为[]，也算作发生改变)，如果为空则将noSearchShops控赋值为false，否则改为true
+<section>
+	<ul>
+		<router-link :to="{path: '/shop',query: {id: searchShop.id}}" tag="li" v-for="searchShop in searchShops" :key="searchShop.id" v-if="!noSearchShops">
+			...
+		</router-link>
+		<div v-else>很抱歉！无搜索结果</div>
+	</ul>
+</section>
+<script>
+	import {mapState} from 'vuex'
+
+	export default {
+		data() {
+			return {
+				keyword: '', //搜索关键字
+				noSearchShops: false, //为false时不显示"无搜索结果div"，为true时显示
+			}
+		},
+		computed: {
+			...mapState(['searchShops'])
+		},
+		methods: {
+			search() {
+				const keyword = this.keyword.trim()
+
+				if(keyword) {
+					this.$store.dispatch('getSearchShops',keyword)
+				}
+			}
+		},
+		watch: {
+			//监视searchShops获得其最新值value
+			searchShops(value) {
+				if(!value.length) { //当返回值为空时显示"无搜索结果div"
+					this.noSearchShops = true
+				} else { //当返回值不为空时不显示"无搜索结果div"
+					this.noSearchShops = false
+				}
+			}
+		}
+	}
+</script>
+
+73.缓存路由
+基础理解：
+在不缓存的情况下，路由组件切换会让页面刷新，比如滑动后切换到其他路由再切换回来，原本滑动到的位置会变为初始位置，即页面重新刷新了，另外购物车也会因此出现bug
+通过<keep-alive></keep-alive>包裹住想要缓存的<router-view></router-view>，即可实现缓存该路由组件
+
+74.路由组件懒加载
+基础理解：
+通过npm run bulid打包时，会将自己写的js打包成一个包，引用的第三方库一个包(最大，vendor开头)，webpack类一个包(manifest开头)，
+路由组件懒加载即点击用到哪个路由组件，就加载哪个组件的代码，避免第一次加载就直接加载所有组件代码
+其原理本质是代码分割，即将自己写的打包好的包进行代码分割，避免其一次性加载出来
+路由组件懒加载可以优化首次加载时间，前提是代码已经进行了分割打包，但也会消耗请求数，所以一般小路由就不需要这样
+具体步骤：
+在router--index.js中引用路由组件时，通过函数进行引入，函数未被调用时不会引入
+<script>
+	//import Home from '../pages/Home/Home.vue'
+	//import Order from '../pages/Order/Order.vue'
+	//import Profile from '../pages/Profile/Profile.vue'
+	//import Search from '../pages/Search/Search.vue'
+
+	//通过函数进行引入，函数未被调用时不会引入
+	const Home = () => import('../pages/Home/Home.vue')
+	const Order = () => import('../pages/Order/Order.vue')
+	const Profile = () => import('../pages/Profile/Profile.vue')
+	const Search = () => import('../pages/Search/Search.vue')
+
+	export default {
+		routes: [
+		  {
+		    path: '/home',
+		    //现在Home变为一个返回路由组件的函数，当component被调用时(请求路由时)，才加载(引入)路由组件
+		    component: Home, 
+		    meta: {
+		      showFooter: true
+		    }
+		  }
+		]
+	}
+</script>
+
+75.图片懒加载
+基础理解：
+图片懒加载就是当图片不在可视区时，暂不加载图片(发送请求)，当图片滑动进入可视区时，再加载图片，并且当网速不够快时，可以显示代替的图片，以此来优化加载速度
+1.安装vue-lazyload库: npm install --save vue-lazyload
+2.在main.js中引入vue-lazyload库，声明使用，并添加配置
+<script>
+	import VueLazyload from 'vue-lazyload'
+
+	Vue.use(VueLazyload,{
+		loading: '...图片路径'
+	})
+</script>
+3.创建common--images文件夹，放入懒加载图片
+4.自定义懒加载图片，先引入图片(类似引入CSS)，再添加到配置中
+<script>
+	import VueLazyload from 'vue-lazyload'
+	import loading from '...懒加载图片路径.gif'
+
+	Vue.use(VueLazyload,{  //该操作内部自定义了一个指令lazy
+		loading
+	})
+</script>
+5.在需要的位置使用懒加载(需要使用懒加载的图片)，将src替换成v-lazy既可，如果图片加载过一次，会被浏览器缓存，测试时先清除缓存
+<template>
+	<div>
+		<img v-lazy="..." alt="loading">
+	</div>
+</template>
+
+76.日期格式化过滤器
+1.在filters--index.js中自定义过滤器
+引入vue，通过vue的.filter('name',function(value) {return...})方法来定义过滤器，name为过滤器名字(一般写成'data-format')，回调函数接收一个value(需要被过滤的数据)，该函数return一个新的值
+<script>
+	import Vue from 'vue'
+
+	//自定义过滤器
+	Vue.filter('data-format',function(value) {
+		return ...
+	})
+</script>
+2.使用moment库(日期时间格式化)，通过该库提供的moment(value).format('YYYY-MM-DD HH:mm:ss')方法来格式化日期时间，value为需要被格式化的数据，format中可以指定响应的格式
+安装moment: npm install --save moment
+引入并使用moment:
+<script>
+	import Vue from 'vue'
+	import moment from 'moment'
+
+	//自定义过滤器
+	Vue.filter('data-format',function(value) {
+		return moment(value).format('YYYY-MM-DD HH:mm:ss')
+	})
+</script>
+改造一下，可以自由定义日期时间的格式，也可使用默认格式
+<script>
+	import Vue from 'vue'
+	import moment from 'moment'
+
+	//自定义过滤器
+	Vue.filter('data-format',function(value,formatStr='YYYY-MM-DD HH:mm:ss') {
+		return moment(value).format(formatStr)
+	})
+</script>
+3.在main.js中引入过滤器，加载所有过滤器
+<script>
+	import './filters' //加载过滤器
+</script>
+4.在需要的地方使用过滤器，通过：数据 | 过滤器名方法使用，
+<template>
+	<div>{{ rating.ratetime | data-filter }}</div>
+</template>
+优化：使用date-fns代替moment库，相对于moment体积更小，date-fns中的format部分提供format(value,'YYYY-MM-DD HH:mm:ss')接口，value为需要被格式化的数据，第二个参数为日期时间格式
+1.安装date-fns: npm install --save date-fns
+2.有两种方法引入date-fns，
+<script>
+	import {format} from 'date-fns'  //引入整个库
+	import format from 'date-fns/format' //引入需要的部分
+</script>
+
+3.修改Vue.filter()
+<script>
+	import format from 'date-fns/format'
+
+	Vue.filter('date-format',function(value,formatStr='YYYY-MM-DD HH:mm:ss') {
+		return format(value,formatStr)
+	})
+</script>
+
+77.打包文件分析及优化
+基础理解：
+vue脚手架提供了一个可用于 可视化分析 打包文件 的包--webpack-bundle-analyzer以及配置，可以可视化的查看项目文件的结构(例如哪些库的体积占比最大等)
+基本步骤：
+1.在打包时加上--report
+npm run bulid--report
+2.在生成的dist文件夹后页面会跳转到webpack bundle analyzer，可以查看相关库的体即占比
+
+78.使用$router.push时传递参数
+基础理解：
+有时候需要通过$router.push()传递参数到其他组件，路由传参有两种方法query和params，query在地址上显示参数，params不在地址上显示参数
+1.Query通过对象中的path和query传递参数
+在template中跳转
+<template>
+	<div 
+	@click="$router.push({path:'/home',query: {pk_refinfo:'test',value:'test1'}})"></div>
+</template>
+或者在script中跳转
+<script>
+	methods: {
+		aaa: function() {
+			this.$router.push({path:'/home',query: {pk_refinfo:'test',value:'test1'}})
+		}
+	}
+</script>
+在指向的组件中通过this.$route.query获取参数，注意是route而不是router
+<script>
+	this.$route.query.pk_refinfo
+</script>
+2.Params
+由于动态路由也是传递params的，所以在 this.$router.push()方法中path不能和params一起使用，否则params将无效，需要用name来指定页面，及通过路由配置的name属性访问
+在router--index.js中配置name属性
+<script>
+	export default new VueRouter({
+		routes: [
+			{
+				name: 'aaa',
+				path: '/home',
+				component: Home,
+				meta: {
+					showFooter: true
+				}
+			}
+		]
+	})
+</script>
+在template中跳转
+<template>
+	<div @click="$router.push({name: 'aaa',params: {pk_refinfo:'test',value:'test1'}})"></div>
+</template>
+或者在script中跳转
+<script>
+	methods: {
+		aaa: function() {
+			this.$router.push({name:'aaa',params:{pk_refinfo:'test',value:'test1'}})
+		}
+	}
+</script>
+在指向的组件中通过this.$route.params获取参数，注意是route而不是router
+<script>
+	this.$route.params.pk_refinfo
+</script>

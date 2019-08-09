@@ -1,0 +1,255 @@
+安装
+1.首先安装Ruby
+2.在命令行输入gem install sass开始安装
+
+在vue中使用sass
+cnpm install node-sass --save-dev
+cnpm install sass-loader --save-dev
+
+编译SASS
+1.命令行进入项目文件夹(根目录)，创建.scss文件
+2.命令行输入 sass 文件夹/文件名.后缀:指定文件夹/文件名.后缀
+  说明：这条命令表示将前面的文件编译成后面的文件并命名
+3.每输入一条sass语句,运行一遍上面的命令，可以手动编译
+4.命令行输入 sass --watch sass:指定文件夹
+  说明：这条命令表示开启监视，自动将sass编译成css语句放到指定文件夹中
+5.命令行输入 sass --watch sass:css --style 编译模式
+  说明：编译模式(4种):
+		nested ：嵌套，默认模式，编译后 各样式子样式会缩进一格
+		compact ：紧凑，编译后 每种样式各占一行
+		expanded ：扩展，编译后 样式写法同我们平常写的一样
+		compressed ：压缩，编译后 所有样式在同一行(不换行)
+
+定义变量
+$变量名:变量值;
+说明：就像写样式一样写变量值(例：1px solid #fff)，另外在变量值里面也可以引用其他变量(例：1px solid $a),变量值的-和_没有差别，不过最好尽量统一
+
+嵌套写法
+说明：可以方便的修改选择器的子选择器的样式，可以减少代码量，以及让格式变得清晰
+例：
+.nav {background: #fff;}
+.nav ul {background: #fff;}
+.nav ul li {background: #fff;}
+可以写成：
+.nav {
+	background: #fff;
+	ul {
+		background: #fff;
+		li {
+			background: #fff;
+		}
+	}
+}
+
+使用&引用父选择器：
+例：
+	a {
+		background: #fff;
+	}
+	a:hover {
+		background: #fff;
+	}
+变为：
+	a {
+		background: #fff;
+		&:hover {
+			background: #fff;
+		}
+	}
+说明：&就代表父选择器(同理：&-left,&-right等等)
+
+属性父级：
+例：
+	.class {
+		font-family:...;
+		font-size:...;
+		font-weight:...;
+	}
+变为：
+.class {
+	font: {
+		familiy:...;
+		size:...;
+		weight:...;
+	}
+}
+说明：主要是将属性头提取出来，少些很多代码，另外：后面依然可以接样式(例：border: 1px solid #fff {...})
+
+mixin
+说明：类似于js的函数，格式为：@minxin 函数名(参数1,参数2...) {...}
+例：
+使用@mixin进行定义(也可以不传参数)：
+	@mixin alert($a,$b) {
+		color: $a;
+		background: $b;
+	}
+使用@include进行调用：
+	.class {
+		@include alert(#fff,#eee);
+	}
+说明：mixin也可以使用嵌套写法
+
+继承@extend
+说明：继承指定选择器的样式和它的相关样式(例如.class和.class a)
+例：
+.alert {
+	padding: 15px;
+}
+.alert a {
+	font-weight: bold;
+}
+使用@extend指定要继承的选择器：
+.class {
+	@extend: .alert;
+	backgroud: #fff;
+}
+说明：以上会输出：.alert .class {...} .alert a,.class a {...}，即会继承所有相关的属性
+
+@import
+说明：导入外部partials(项目模块)，partials文件需以_开头，后缀为.scss，导入时省略下划线
+例：
+1.新建_base.scss文件
+2.用@import "base";导入
+
+注释
+//:单行注释
+/**/：多行注释
+/*!*/:强制多行注释(压缩后依然保留)
+
+sass运算符
+说明：/号运算需要用括号括起来，运算的各个数字种只能有一个带单位(如px)
+
+sass内置函数
+type-of(x):判断数据类型，返回字符串(有number,list,string,color等)
+abs(x):求绝对值
+round(x):四舍五入
+celi(x):上舍入
+floor(x):下舍入
+percentage(x):将数字转化为百分比形式
+min(x,y...):求最小值
+max(x,y...):求最大值
+to-upper-case(x):转化为大写
+to-lower-case(x):转化为小写
+str-length(x):字符串长度
+str-index(x,y):求指定字符段在字符串中的索引，x为字符串，y为字符段(注：索引是从1开始的
+str-insert(x,y,z):在指定位置插入字符段，x为字符串，y为字符段，z为插入位置
+darken(x,y):增加颜色的明度，x为颜色(可以先用变量储存一下)，y为增加的百分比
+darken(x,y):减少颜色的明度，x为颜色(可以先用变量储存一下)，y为减小的百分比
+saturate(x,y):增加颜色的饱和度，x为颜色(可以先用变量储存一下)，y为增加的白分比
+desaturate(x,y):减少颜色的饱和度，x为颜色(可以先用变量储存一下)，y为减小的白分比
+opacify(x,y):增加颜色的不透明度，x为颜色(可以先用变量储存一下),y为增加的不透明度的值(0~1之间)
+transparentize(x,y):减少颜色的不透明度，x为颜色(可以先用变量储存一下),y为减少的不透明度的值(0~1之间)
+
+字符串连接
++号：类似js
+-号：输出字符串中带-
+/号：输出字符串中带/
+
+$list
+列表，格式为 $list: (x y z...)，也可以用空格分隔也可用逗号分隔，list里可以包含另外的list，各个list之间可以用逗号或者括号分隔开
+列表函数
+length($list):返回列表的长度
+nth(x,y):获得list中指定下标的元素，x为列表，y为下标(从1开始)
+index(x,y):获得list中指定元素的下标，x为列表，y为元素
+append(x,y):在list最后插入元素，x为列表，y为插入元素
+join(x,y,z):将两个列表组合到一起，x为列表1，y为列表2，z为分隔符(可不填，默认为空格)
+
+$map
+键值对列表，格式为$map:(key:value,key:value...)
+length($map):获取map的长度(有几对数据)
+map-get(x,y):获取map里的指定key的value，x为map,y为key
+map-keys(x):获取所有的key值，x为map
+map-values(x):获取所有的value值，x为map
+map-has-key(x,y):判断是否key存在,返回布尔值，x为map，y为key
+map-merge(x,y):合并两个map,x为map1，y为map2
+map-remove(x,y,z...):移除键值对，x为map，y,z...为移除的key
+
+插值表达式
+格式为：#{要插入的变量}，相当于替换，可以用在任何地方
+例：$b:border
+	.class { #{$b}-left: 1px solid #fff; }
+
+控制语句
+@if:格式如下
+	.class {
+		background:#fff;
+		@if $a < 0 {
+			...
+		} @else if $a > 0 {
+			...
+		} @else {
+			...
+		}
+	}
+
+@for:格式如下
+	@for $i from 1 through 4 {
+		.class-#{$i} {
+			width: 1px*$i;
+		}
+	}
+	说明：可以循环输出:
+					.class-1 { width:1px; }
+					.class-2 { width:2px; }
+					.class-3 { width:3px; }
+					.class-4 { width:4px; }
+	注：through可替换to,to表示不包括最后一次，最后输出3条语句
+
+@each:循环处理list中的项目
+	例：
+	$list: left center right;
+	@each $i in $list {
+		.class-#{$i} {
+			text-align: #{$i};
+		}
+	}
+	说明：可以循环输出：
+					.class-left { text-align: left; }
+					.class-center { text-align: center; }
+					.class-right { text-align: right; }
+
+@while:循环语句，格式如下
+	$i:3
+	@while $i > 0 {
+		.class-#{$i} {
+			width: 5px * $i;
+		}
+		$i:$i-1;
+	}
+	说明：可以循环输出：
+					.class-3 { width: 15px };
+					.class-2 { width: 10px };
+					.class-1 { width: 5px };
+
+函数
+格式为：@function 函数名(参数1,参数2...) {...}
+例：
+$list: (light: #fff,dark: #000);
+//用@function定义函数,@return返回值
+	@function color($x) {
+		@return map-get(@list,$x);
+	}
+//用函数名调用函数
+	.class {
+		background: color(light);
+	}
+
+错误与警告
+说明：用于设置错误提示
+在控制台返回：@warn "错误信息"
+在文件中返回：@error "错误信息"
+例：
+	$list: (light: #fff,dark: #000);
+
+	@function color($x) {
+		//判断在$list中是否存在键$x
+		@if not map-has-key($list,$x) {
+			@warn "在$list中不存在#{$x}key";
+			//也可写成@error "在$list中不存在#{$x}key";
+		}
+		@return map-get(@list,$x);
+	}
+//用函数名调用函数
+	.class {
+		background: color(light);
+	}

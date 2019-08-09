@@ -1,0 +1,463 @@
+ECMA6.0就是ES6,别名ES2015
+
+兼容性
+FF,chrome,IE10+(Edge)兼容
+IE10以下不兼容
+
+export和export default
+export default:输出一个叫做default的变量，然后系统允许你为它取任意名字。所以可以为import的模块起任何变量名，且不需要用大括号包含
+
+ES6编译(转换为ES5)
+在线编译
+引入bable文件就可以，缺点是用户每次打开都要加载，不建议使用
+<script src="browser.js"></script>
+<script tpye="text/bable">
+	在这里编写js语句;
+</script>
+
+预编译
+用bable进行编译
+1.进入项目文件夹启动cmd
+2.npm install --save-dev @babel/cli
+3.基本用法
+# 转码结果输出到标准输出
+$ npx babel example.js
+
+# 转码结果写入一个文件
+# --out-file 或 -o 参数指定输出文件
+$ npx babel example.js --out-file compiled.js
+# 或者
+$ npx babel example.js -o compiled.js
+
+# 整个目录转码
+# --out-dir 或 -d 参数指定输出目录
+$ npx babel src --out-dir lib
+# 或者
+$ npx babel src -d lib
+
+# -s 参数生成source map文件
+$ npx babel src -d lib -s
+
+
+变量定义
+let：声明变量
+1.不允许在相同作用域内，重复声明同一个变量
+2.拥有块级作用域：只在它所在的代码块{}中有效
+3.不存在变量提升，必须先声明才能使用变量（暂时性死区）
+
+const：声明一个只读的常量，一旦声明，常量的值就不能改变，声明时就必须立刻赋值
+1.不允许在相同作用域内，重复声明同一个常量
+2.拥有块级作用域：只在它所在的代码块{}中有效
+3.不存在变量提升，必须先声明才能使用常量（暂时性死区）
+4.const保证的是变量指向的那个内存地址所保存的数据不得改动
+注：对于原始数据，值就保存在变量指向的那个内存地址，因此等同于常量，但对于复合类型的数据，变量指向的内存地址，保存的只是一个指向实际数据的指针，const只能保证这个指针是固定的（即总是指向另一个固定的地址），至于它指向的数据结构是不是可变的，就完全不能控制了
+<script>
+	//const声明后就必须立即赋值
+	const PI = 3.1415;
+	PI // 3.1415
+
+	PI = 3 //报错，不能对已经赋值过的常量再次赋值
+</script>
+
+总结：块级作用域的出现，实际上使得获得广泛应用的立即执行函数表达式（IIFE）不再必要了。
+
+使用let解决for循环闭包问题
+for(let i = 0; i < list.length; i++){
+	...
+}
+
+箭头函数(=>)
+格式：() => {...},其实跟function的区别就是写法不同
+例：
+let show = function() {...}
+let show = () => {...}
+说明：两者等价
+1.如果只有一个参数，()可省
+2.如果只有一行return语句，{}可省(有其他语句不行)
+例：
+let show = function(a) {
+	return a * 2;
+};
+let show = a => a*2;
+说明：两者等价(类似python匿名函数)
+
+...方法
+用途1：不定参，放在函数所有传入参数的最后，作用是收集多传入的参数
+<script>
+	let show = function(a,b,...args) {
+		//...
+	}
+</script>
+
+用途2：展开数组，将一个数组转为用逗号分隔的参数序列, 
+<script>
+	...[1,2,3]
+	// 会展开为1,2,3(只有函数调用时，扩展运算符才可以放在圆括号中，其他时候放在圆括号中会报错。)
+</script>
+
+解构赋值
+一种全新的赋值方式(只要两边结构一样，可以随意拆解集合)，需要注意：
+1.左右两边结构必须一样
+2.等号右边必须为合法集合(数组或者json)
+3.声明和赋值不能分开(同一行完成，不能拆开两行执行)
+格式：
+let [a,b,c] = [1,2,3]; 
+输出：a=1;b=2;c=3
+let {a,b} = {a: 1,b: 2}
+输出：a=1;b=2(对象的解构赋值变量名要跟属性名一致)
+let [{a,b},[c,d,e],f,g] = [{a: 1,b: 2},[1,2,3],18,'abc']
+输出：a=1;b=2;c=1;d=2;e=3;f=18;g='abc'
+let [json,arr,num,str] = [{a: 1,b: 2},[1,2,3],18,'abc']
+输出：json = {a: 1,b: 2};arr = [1,2,3];num = 18;str = 'abc'
+
+
+
+
+array新方法
+.map(x => {...})：映射,将array的元素通过指定方式映射成另一个数组,x为每次映射的参数(可自由取名)，最后返回一个新数组
+<script>
+	let arr = [1,2,3]
+	arr.map(item => item*2)
+</script>
+.reduce((x,y,z) => {...},i)：链运算，最终返回一个值，即上一次运算的结果跟下一个元素进行运算，将array的元素按照指定方式进行链运算,x为上一次运算的返回值(首次运算如果没有初始值，则为数组第一个元素),y为下一个元素(首次运算如果没有初始值，则为数组第二个元素),z为下一个元素的下标(非必传),i为传递给x的初始值
+<script>
+	//最终返回出一个数
+	let arr = [1,2,3,4]
+	arr.reduce((tmp,item,index) => tmp + item)
+</script>
+.filter(x => {...})：过滤器，将array里的元素按指定规律过滤成另一个数组，x为变量，会不断迭代数组中的元素(类似于i)由执行语句返回的布尔值判断是否留下(true留下false去掉)，执行语句必须能返回布尔值
+{# 例：
+	let arr = [1,2,3];
+	arr.filter(item => item>2) #}
+.forEach((item,index,arr) => {...})：迭代，将array元素不断迭代入函数中并执行语句,item为代入的元素，index为元素的下标(可选)，
+<script>
+	let arr = [1,2,3]
+	arr.forEach((item,index) => item*2)
+	//map和forEach的区别是：map有返回值，forEach没有，只是循环的方便写法，不过forEach中途是不能停下来的，for则可以
+</script>
+
+.find(x => {...})：用于找出第一个符合条件的数组成员，它的参数是一个回调函数，所有数组成员依次执行该回调函数，直到找出第一个返回值为true的成员，然后返回该成员，如果没有符合条件的成员，则返回undefined，x为数组中的每个成员
+
+string新方法
+.startsWith('x')：检测字符串是否以x开头，x为字符段，返回布尔值
+.endsWith('x')：检测字符串是否以x结尾，x为字符段，返回布尔值
+
+字符串模板
+`${...}`:在``内可以用${...}方便的进行字符串拼接、换行，${}为插值表达式，${}里面可放变量达到引入内容的目的
+使用条件：1.在``中 2.变量写在${}中
+
+面向对象新写法
+<script>
+	//class 用于声明一个类
+	class User{
+	//使用constructor()写构造函数
+		constructor(name,pass) {
+			this.name = name;
+			this.pass = pass;
+		}
+	//方法可以直接写在类里了
+		showName() {
+			console.log(this.name)
+		}
+		showName() {
+			console.log(this.pass)
+		}
+	}
+	//调用
+	var u1 = User('leonard','123')
+	u1.name = 'leonard'
+	u1.pass = '123'
+</script>
+
+继承
+<script>
+	//通过extends方法继承父类，完成方法的继承
+	class VipUser extends User {
+		//在子类的构造函数中用super()方法继承父类，并传入父类需要的参数，就完成了属性继承
+		constructor(name,pass,level) {
+			super(name,pass);
+			//写入子类自己的属性
+			this.level = level;
+		}
+		//新的方法直接添加在子类中
+		showLevel() {
+			this.level...
+		}
+	}
+	//调用
+	var u1 = User('leonard','123')
+	u1.name = 'leonard'
+	u1.pass = '123'
+</script>
+
+
+对象新方法
+Object.assign(x,y,z...)：合并多个对象(将源对象的属性和方法都合并到目标对象上，如果有同名情况，后覆盖前)，x为目标对象，y,z...为源对象，
+<script>
+	//简单来说就是合并对象，key重复的后覆盖前
+	let a = Object.assign({a: 1,b: 2},{c: 3},{d: 4})
+	//a = {a: 1,b: 2,c: 3,d: 4}
+</script>
+
+json
+JSON.stringify(x)：将非标准json转为标准json,x为传入的非标json
+JSON.parse(x)：将标准json转为非标准json,x为传入的标准json
+1.json里数据的key和value如果相同，可以简写为key(如a: a变成a)
+2.json里如果value为function，可以省去:function(如a: function() {...}变成a() {...})
+
+Pormise类
+说明：ES6新增内置类，目的是为了管理异步操作(用同步的方式写异步代码)，从而避免回调地狱
+1.每个Promise实例都可以管理一个异步操作，要管理多个异步操作则可以创建多个Promise实例，Promise的原型prototype上有then(),catch(),finally()三个方法，所以每个Promise实例都可以使用这三个方法(各个方法的作用看6,7,8条)
+
+2.new一个Promise实例时需传入一个回调函数(该回调函数会在Promise实例被创建后立即执行)，该回调函数有两个参数：resolve和reject(分别代表两个函数，reject因为不常用所以通常省略)，在请求语句中(例如Ajax)中调用resolve()或reject()时，可以向括号内传入参数(比如说传入服务器返回的结果)
+
+3.resolve函数：可以在异步操作成功时调用，负责将Promise对象的状态从“未完成”变为“成功”(从pending变为resolved)，并将异步操作的结果，作为参数传递出去
+
+4.reject函数：可以在异步操作失败时调用，负责将Promise对象的状态从“未完成”变为“失败”(从pending变为rejected)，并将异步操作失败报出的错误，作为参数传递出去
+
+5.当resolve函数或reject函数被调用时，会改变Promise实例的状态，当Promise的状态发生改变时，then()等方法里的回调函数会被触发执行
+
+6.then()方法：管理着上一个Promise实例状态发生改变时执行的回调函数，then有两个参数，分别是成功函数和失败函数，当Promise状态发生改变时(即实例中的resolve()或reject()被调用时)，then中相应的函数会被执行，执行时会接收resolve()或reject()函数的参数作为自身参数
+
+7.catch()方法：管理Promise对象失败时执行的函数，如果Promise状态为fulfilled则不会执行
+
+8.finally()方法：管理Promise对象不论成功和失败都执行的函数，不管Promise状态为什么都会执行，不常用
+
+9.Promise实例中的请求发送后(此时结果还未返回，所以还没调用resolve()或reject()，Promise状态未发生改变)，then()会先将resolve()和reject()的回调函数添加到队列中(生成但未调用)，直到请求返回后(Promise状态发生改变时)，then中的函数会被触发执行，根据Promise的状态(fulfilled或rejected)，执行相应的函数，执行完毕后返回一个新的Promise实例(该实例的状态由被执行的函数的执行结果决定(执行成功或报错))，以此类推继续触发下一个then中的回调函数
+<script>
+	
+	let requestA = new promise(function(resolve) {
+		$.ajax({
+			url: '...',
+			method: 'get',
+			success: function(result) {
+				resolve(result)
+			}
+		})	
+	})
+	let requestB = new promise(resolve => {
+		$.ajax({
+			url: '...',
+			method: 'get',
+			success: function(result) => {
+				resolve(result)
+			}
+		})
+	})
+	let requestC = new Promise((resolve,reject) => { 
+		$.ajax({
+			url：'...',
+			method: 'post',
+			data: {username: '...',password: '...'},
+			success: function(result) { //请求成功时执行，将服务器返回的结果传递给resolve
+				resolve(result)
+			},
+			error: function(msg) { //请求失败时执行，将服务器返回的信息传递给reject
+				reject(msg)
+			}
+		})
+	})
+
+	requestA.then(
+		function(result) {  //result是requestA请求返回的结果
+			console.log('A请求成功')
+			return requestB
+		}
+	).then(
+		result => {  //result是requestB请求返回的结果
+			console.log('B请求成功')
+			return requestC
+		}
+	).then(
+		result => {  //result是requestC请求成功时返回的结果
+			console.log('C请求成功')
+		},
+		msg => {   //msg是requestC请求失败时返回的信息
+			console.log('C请求失败')
+		}
+	)
+</script>
+说明：Promise状态改变时执行then方法中的回调函数(fulfilled执行成功函数rejected执行失败函数)，每个then执行完毕后默认返回一个新的Promise实例(未定义过的Promise实例即undefine，但也可以调用then/catch)，也可以手动return一个自定义Promise实例，这样就可以按顺序执行异步请求了
+
+Pormise.all():当所有请求完成后执行
+例：Pormise.all([$.ajax(请求1),$.ajax(请求2)]).then(result => {...},err => {...});
+Pormise.race():与上用法类似，不过不是全部执行，而是哪个快执行哪个，主要用于负载均衡，但发送多个请求也对服务器有负担，所以不常用
+
+generator(生成器)
+与普通函数不同，generator类似循环，但循环进行到yield时暂时放弃执行，直到调用.next()方法(即一走一停)
+格式：
+function *show() {
+	...
+	yeild
+	...
+}
+let ogen = show()
+ogen.next()
+ogen.next(x)
+说明:用.next继续执行函数时，第二次执行可以传参，该参数会传递给generator的yield(第一次调用next传参无效)，yield会有返回值，每次的返回值传递给下一次的执行函数作为参数，最终的结果依靠return返回
+
+
+步骤分解
+1.用Promise构造函数new一个Promise实例对象，接收一个回调函数作为参数
+new Promise(function() {})
+
+2.传入resolve和reject函数作为参数
+new Promise(function(resolve,reject) {})
+
+3.在Promise的回调函数中写异步请求
+new Promise(functin(resolve,reject) {
+	$.ajax({
+		url：'...',
+		method: 'post',
+		data: {username: '...',password: '...'},
+		success: function(result) {},
+		error: function(msg) {}
+	})
+})
+
+4.请求成功时调用resolve参数(函数)，请求失败时调用reject参数(函数)
+new Promise(functin(resolve,reject) {
+	$.ajax({
+		url：'...',
+		method: 'post',
+		data: {username: '...',password: '...'},
+		success: function(result) { //请求成功时执行，将服务器返回的结果传递给resolve
+			resolve()
+		},
+		error: function(msg) { //请求失败时执行，将服务器返回的信息传递给reject
+			reject()
+		}
+	})
+})
+
+5.将请求成功时返回的结果通过resolve函数传递出去(给then等方法)，将请求失败时返回的信息通过reject函数传递出(给catch等方法)
+new Promise(functin(resolve,reject) {
+	$.ajax({
+		url：'...',
+		method: 'post',
+		data: {username: '...',password: '...'},
+		success: function(result) {
+			resolve(result)
+		},
+		error: function(msg) {
+			reject(msg)
+		}
+	})
+})
+
+6.调用then()等方法，接收一个回调函数作为参数，并将Promise对象传递出来的result(或msg)作为回调函数的参数
+new Promise(functin(resolve,reject) {
+	$.ajax({
+		url：'...',
+		method: 'post',
+		data: {username: '...',password: '...'},
+		success: function(result) {
+			resolve(result)
+		},
+		error: function(msg) {
+			reject(msg)
+		}
+	})
+}).then(function(result) {}).catch(function(msg) {})
+
+7.在then()等方法的回调函数中对result(或msg)进行操作(或进行另外的请求)
+new Promise(functin(resolve,reject) {
+	$.ajax({
+		url：'...',
+		method: 'post',
+		data: {username: '...',password: '...'},
+		success: function(result) {
+			resolve(result)
+		},
+		error: function(msg) {
+			reject(msg)
+		}
+	})
+}).then(function(result) {
+	console.log(result)
+	return new Promise(functin(resolve,reject) {
+		$.ajax({
+			url：'...',
+			method: 'post',
+			data: {username: '...',password: '...'},
+			success: function(result) {
+				resolve(result)
+			},
+			error: function(msg) {
+				reject(msg)
+			}
+		})
+	})
+}).catch(function(msg) {
+	console.log(msg)
+})
+
+8.将请求部分提取出来单独管理
+let reqA = new Promise(functin(resolve,reject) {
+	$.ajax({
+		url：'...',
+		method: 'post',
+		data: {username: '...',password: '...'},
+		success: function(result) {
+			resolve(result)
+		},
+		error: function(msg) {
+			reject(msg)
+		}
+	})
+})
+
+let reqB = new Promise(functin(resolve,reject) {
+	$.ajax({
+		url：'...',
+		method: 'post',
+		data: {username: '...',password: '...'},
+		success: function(result) {
+			resolve(result)
+		},
+		error: function(msg) {
+			reject(msg)
+		}
+	})
+})
+
+reqA.then(function(result) {
+	console.log(result)
+	return reqB
+}).catch(function(msg) {
+	console.log(msg)
+})
+
+ES7新语法
+async和await：主要用于简化then/catch等方法，让语句看起来更加简洁
+async：使用时被放置在一个函数前面，确保该函数返回一个promise对象，如果返回值中包含非promise，JavaScript会自动把返回的这个value值包装成promise的resolved值，简单来说，函数前加了async，代表这个函数是异步函数，不会阻塞后面的代码执行
+await：只能在async函数里使用，可以让JavaScript进行等待，直到一个promise执行并返回它的结果，JavaScript才会继续往下执行，这里的等待指的是内部的等待，即在async函数内部进行语句执行时，遇到await就停下来，等到异步请求返回了结果(Promise对象)，await继续执行，并捕获resolve传递出来的结果(成功结果)
+请求失败时：因为await只捕获成功时返回的结果，通过try/catch方法捕获请求失败时返回的错误信息(不再使用catch方法)，将await语句放在try/catch语句中，catch会捕获请求失败时返回的错误信息
+<script>
+	//证明async返回的是Promise对象
+	async function() {
+	    return 1
+	}.then(alert) //返回1，只有Promise对象可以调用then方法，证明async返回的是Promise对象
+
+
+	//通过await方法等待请求返回并处理成功结果(以前是通过then等待请求返回)
+	async function() {
+		let promise0 = new Promise((resolve,reject) => {
+			setTimeout(() => {
+				resolve('aaa')  //通过resolve将'aaa'传递出去
+			})
+		})
+		let result = await promise0 //异步请求promise0返回了值之后才会执行，自动捕获从promise传递出来的'aaa'
+	}
+
+	//错误写法
+	async aaa: function() {
+		...
+	}
+
+	//正确写法
+	async aaa() {
+		...
+	}
+	
+</script>	

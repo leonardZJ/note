@@ -1,0 +1,111 @@
+安装
+npm i element-ui -S
+
+完整引入（注意样式文件要单独引入）
+import 'element-ui/lib/theme-chalk/index.css'
+import ElementUI from 'element-ui'
+
+按需引入
+借助 babel-plugin-component，可以只引入需要的组件，达到减小项目体积的目的
+
+安装babel-plugin-component
+npm install babel-plugin-component -D
+
+配置.babelrc
+<script>
+	//官网
+	{
+	  "presets": [["es2015", { "modules": false }]],
+	  "plugins": [
+	    [
+	      "component",
+	      {
+	        "libraryName": "element-ui",
+	        "styleLibraryName": "theme-chalk"
+	      }
+	    ]
+	  ]
+	}
+	//百度
+	"env": {
+	  "test": {
+	    "presets": ["env", "stage-2"],
+	    "libraryName": ["element-ui"], //添加这一行
+	    "plugins": ["transform-vue-jsx", "transform-es2015-modules-commonjs", "dynamic-import-node"]
+	  }
+	}
+</script>
+
+在mian.js中注册使用
+<script>
+	//注意样式文件要单独引入
+	import 'element-ui/lib/theme-chalk/index.css'
+	import { Button, Select } from 'element-ui'
+
+	Vue.component(Button.name, Button)
+	Vue.component(Select.name, Select)
+	/* 或写为
+	* Vue.use(Button)
+	* Vue.use(Select)
+	*/
+
+	new Vue({
+	  el: '#app',
+	  render: h => h(App),
+	  router,
+	  store
+	})
+
+	//注册后全局都可以使用：
+	//按钮
+	//<el-button>按钮</el-button>
+
+	//多选框
+	// <el-select v-model="value" placeholder="请选择">
+	//     <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"></el-option>
+	// </el-select>
+</script>
+
+日历插件选择日期后输入框不显示
+解决：检查是否有v-model绑定选中日期到data中
+
+Select 组件下拉不显示
+解决：引入 Select 组件需要同时引入 Options 组件才能使用
+
+upload 组件的上传默认是在选择文件之后立即自动上传，或者可以通过:auto-upload="false"设置为不自动上传
+
+dialog弹出框遮罩出现在弹出框上面挡住弹出框
+解决：dialog组件需放在跟父组件并列的地方
+
+poi搜索配合自定义模板特别好用
+<el-autocomplete v-model="eventPlace" :fetch-suggestions="querySearch" :trigger-on-focus="false">
+	<template slot-scope="{ item }"> <!-- item会自动获取到传给cb回调函数的数组(item相当于数组中的每一项) -->
+		<div class="name">{{ item.value }}</div>
+		<span class="addr">{{ item.address }}</span>
+	</template>
+</el-autocomplete>
+<script>
+	export default {
+		data() {
+			return {
+				eventPlace: '',
+			}
+		},
+		methods: {
+			querySearch(queryString,cb) {
+				searchpoi(queryString).then((res) => {
+					console.log(res.results) //获取到的数组结果
+					cb(res.results)
+				})
+			}
+		}
+	}
+</script>
+
+修改样式：elementui的很多样式名是一样的，修改时如果不加限制，全局的elementui样式都会受到影响，如何才能避免污染全局elementui的样式呢？
+解决：
+1.在引入的elementui外面包一层，并加上class名，修改宽度时修改这层外包，大部分elementui组件会自动适应（应该设置了100%）
+
+2.用F12找到组件的样式名（一般看最外面那层）
+
+3.修改样式时前面带上外包样式名

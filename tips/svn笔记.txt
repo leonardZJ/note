@@ -1,0 +1,15 @@
+忽略某些文件夹
+1.点击该文件夹选中
+
+2.右键进入tortoiseSVN
+
+3.进入Unversion and add to ignore list
+
+4.选择第二个文件夹名（带括号的），表示递归添加
+
+设置成中文
+1.右键空白区域，选择tortoiseSVN
+
+2.选择settings（设置），General中的Language换成中文
+
+红色感叹号代表修改未提交，黄色感叹号代表有冲突

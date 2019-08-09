@@ -1,0 +1,3 @@
+删除文件夹：rmdir /s/q 文件夹名称
+
+查看ip地址：ipconfig

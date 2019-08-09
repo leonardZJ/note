@@ -1,0 +1,33 @@
+block等元素通过触发BFC清除浮动：
+	1.float不为none
+	2.position为absolute或fixed
+	3.display为inline-block,table-cell,table-caption,flex,inline-flex
+	4.overflow不为visible
+	
+让子元素处于不同的BFC,解决外边距合并问题
+
+在浮动元素后的标准流创建BFC后，不会被浮动元素压住，还可以实现标准流自适应
+li是块元素
+p是块元素
+h1是块元素
+a是行内元素
+em是行内元素
+img是行内元素
+margin从上一个元素开始
+浮动时从上一个非浮动元素开始
+添加clear清除浮动后，margin会失效
+同级或者嵌套的之间没有非空内容、Padding或Border分隔的两个或更多盒元素的margin将会合并为一个margin共享
+使用overflow：hidden在IE6无效，需加上zoom：1；属性
+使用position时：
+	所有relative从自己原来的位置开始(不重叠，不浮空)
+	所有absolute从上一个非浮动元素开始(重叠，浮空)，如果设置移动则从relative开始(重叠)
+	所有fiex统一从浏览器左上角开始
+
+float+relative可以，但float+abosulte和float+absolute不可以，会浮动不起来了，absolute/fixed的优先级大于float ,大于display
+
+z-index和float元素无关
+
+使用float时，display变为inline-block，宽高自适应，脱离文档流，按浮动流的先后顺序排列
+使用relative时，不改变display，原来如何就如何，不脱离文档流
+使用absolute时，display变为inline-block，宽高自适应，脱离文档流，重叠在一起
+使用fixed时，display变为inline-block，宽高自适应，脱离文档流

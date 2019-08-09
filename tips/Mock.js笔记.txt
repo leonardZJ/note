@@ -1,0 +1,114 @@
+# Node安装(CommonJS)
+npm install mockjs --save
+
+# 使用
+```js
+import Mock from 'mockjs'
+```
+# 使用
+```js
+var Mock = require('mockjs')
+var data = Mock.mock({
+    // 属性 list 的值是一个数组，其中含有 1 到 10 个元素
+    'list|1-10': [{
+        // 属性 id 是一个自增数，起始值为 1，每次增 1
+        'id|+1': 1
+    }]
+})
+// 输出结果（转成json数据用于请求，如果需要直接使用则不用转）
+console.log(JSON.stringify(data, null, 4))
+```
+
+# Bower安装
+npm install -g bower
+bower install --save mockjs
+
+# 使用
+```html
+<script type="text/javascript" src="./bower_components/mockjs/dist/mock.js"></script>
+```
+
+注：
+mock模拟的数据是json数据
+需要设计json数据的结构，简单来说，就是模拟后台返回的数据的格式
+mock.js会拦截Ajax请求，返回生成的随机数据
+
+1.设计数据结构
+    1.json数据由两部分构成，即"结构"和"值"，结构分两种，即"[]"和"{}"，所以关键就是要判断什么时候使用[]，什么时候使用{}
+    2.所有的json数据到最后肯定都得用遍历来渲染到页面上，然后通过点方法来使用其子元素(对象)中的key-value对
+    3.数组表示有序数据的集合，而对象表示无序数据的集合。如果数据的顺序很重要，就用数组，否则就用对象
+
+2.将设计好的data存入mock--data.json中
+```json
+{
+    "info": {
+        "name": "城隍包子铺",
+        "xxx": ...,
+    },
+    "goods": [
+        {
+            "name": "今日折扣",
+            "icon": "...",
+            "foods": [
+                {
+                    "name": "炖豆腐",
+                    "price": 12
+                }
+            ]
+        }
+    ],
+    "ratings": {
+        ...
+    }
+}
+```
+4.创建mock--mockServer.js文件，引入mock.js，该库向外提供Mock对象，提供.mock(rurl,template)方法，拦截访问rurl的请求，并返回template指定的类型的数据，mockServer.js模块不需要通过export default {}向外暴露接口，只需要加载运行一次该模块，接口就可以使用了
+```js
+    import Mock from 'mockjs'
+    import data from 'data.json'
+
+    //暴露返回goods的接口
+    Mock.mock('/goods',{code: 0,data: data.goods})
+    //暴露返回ratings的接口
+    Mock.mock('/ratings',{code: 0,data: data.ratings})
+    //暴露返回info的接口
+    Mock.mock('/info',{code: 0,data: data.info})
+```
+5.运行加载mockServer.js模块
+基础理解：
+webpack在打包的时候会根据入口文件加载所有相关的模块，所以只要将mock.js库加载到入口文件main.js中即可，重启服务器
+```js
+    import './mock/mockServer' // main.js中加载mockServer模块即可
+```
+
+6.mock数据的测试，mock数据必须发送ajax请求才可以测试
+```js
+import ajax from './ajax.js'
+
+export const reqShopGoods = () => ajax('/goods')
+export const reqShopRatings = () => ajax('/ratings')
+export const reqShopInfo = () => ajax('/info')
+```
+
+数据模板（data.json）中的每个属性由 3 部分构成：属性名、生成规则、属性值：
+```json
+{
+    'name|rule': value
+}
+```
+属性名name：生成数据后的key值
+
+生成规则rule： 指定数据的生成方式，一共有7种规则，生成规则的具体含义需要依赖属性值才能确定
+min-max，count，min-max.dmin-dmax，min-max.dcount，count.dmin-dmax，count.dcount，+step
+
+属性值value：生成数据后的value值，同时也指明了数据的类型
+
+```js
+{
+    'username|1-10':'a'
+}
+```
+这里属性名是'username'，生成规则是'1-10'，属性值是字符串'a'
+该条数据会通过重复'a'生成一个字符串，重复的次数大于等于1，小于等于10
+
+最终结果可能是 'name': 'aaa' 或 'name': 'aaaaaaaa'

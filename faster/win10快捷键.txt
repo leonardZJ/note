@@ -1,0 +1,4 @@
+win10快捷键
+屏幕截图：win+shift+s
+显示桌面：win+d
+打开文件夹：win+e

@@ -1,0 +1,93 @@
+http模块
+<div>
+	<script>
+		//引入
+		var http = require('http')
+
+		//调用createServer方法创建服务器，listen监听8888端口
+		http.createServer((request,response) => {
+			//发送http头部信息，200表示成功，Content-Type内容类型为text/plain
+			response.writeHead(200,{'Content-Type': 'text/plain'})
+
+			// 发送响应数据 "hello world"
+			response.end('hello world\n')
+		}).listen(8888)
+
+		//在终端（cmd）打印信息
+		console.log('Server running at http://127.0.0.1:8888/')
+	</script>
+</div>
+events 模块
+<div>
+	<script name="一般用法">
+		// 引入
+		let events = require('events')
+		// 创建 eventEmitter 对象
+		let eventEmitter = new events.EventEmitter()
+
+		// 绑定 connection 事件
+		eventEmitter.on('connection',() => {
+			console.log('连接成功')
+			eventEmitter.emit('received')
+		})
+		// 绑定 received 事件
+		eventEmitter.on('received', () => {
+			console.log('数据接收成功')
+		})
+
+		// 最后，触发 connection 事件，间接触发连锁事件 received
+		eventEmitter.emit('connection')
+	</script>
+	<script name="同一个事件注册多个事件监听器">
+		var events = require('events') 
+		var emitter = new events.EventEmitter()
+		emitter.on('someEvent', (arg1, arg2) => { 
+			//两个监听器会按顺序执行，并且都会接收到触发时传递过来的参数 
+		    console.log('listener1', arg1, arg2) 
+		})
+		emitter.on('someEvent', (arg1, arg2) => { 
+			//两个监听器会按顺序执行，并且都会接收到触发时传递过来的参数 
+		    console.log('listener2', arg1, arg2) 
+		}) 
+		//触发并传递参数
+		emitter.emit('someEvent', 'arg1参数', 'arg2参数') 
+		// 输出
+		// listener1 arg1参数 arg2参数
+		// listener2 arg1参数 arg2参数
+	</script>
+	<script name="EventEmitter 对象 其他属性和方法">
+	//注：调用方法都是通过 EventEmitter.方法(...)
+		once(event, listener)
+		//为指定事件注册一个单次监听器，只会触发一次，触发后立即移除
+		removeListener(event, listener)
+		//它接受两个参数，第一个是事件名称，第二个是回调函数名称
+		//移除指定事件的某个监听器，监听器就是回调函数名，必须是该事件已经注册过的监听器
+		removeAllListeners([event])
+		//移除所有事件的所有监听器，如果指定事件[event]，则移除指定事件的所有监听器。
+		setMaxListeners(n)
+		//默认情况下， EventEmitters 如果你添加的监听器超过 10 个就会输出警告信息。 setMaxListeners 函数用于提高监听器的默认限制的数量。
+		listeners(event)
+		//返回指定事件的监听器数组。
+		emit(event, [arg1], [arg2], [...])
+		//按监听器的顺序执行执行每个监听器，如果事件有注册监听返回 true，否则返回 false。
+		listenerCount(event)
+		//返回指定事件的监听器数量。
+	</script>
+</div>
+fs模块
+<div>
+	<script>
+		//引入
+		var fs = require("fs")
+
+		fs.readFile('input.txt',(err, data) => {
+		   if (err){
+		      console.log(err.stack)
+		      return
+		   }
+		   console.log(data.toString())
+		})
+		console.log("程序执行完毕")
+	</script>
+</div>
+

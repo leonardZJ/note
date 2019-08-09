@@ -1,0 +1,40 @@
+switch 最后可接 default
+do while 可让代码先执行，最后分号不能省
+continue top; 后标签可让代码跳外层
+typeof 判断三原始一函数，undefined 返回undefined，null/对象返回object
+a instanceof Array 返回Boolean，可以判断不同对象
+!undefined为false，!null为false，undefined == null
+唯一区别 Number(null) //0，Number(undefined) //NaN
+null表有值但值为空，undefined表未定义，没有值
+slice可以用于复制数组，不传值就可以了
+Array.from(伪数组)，可以把伪数组转化成真数组，ES6语法
+DocumentFragment也属于Node之一，document对应显示的页面，包含n个element的容器,documentFragment对应内存中保存n个element的容器
+Number.MAX_VALUE获取最大值
+Number.MIN_VALUE获取最小值
+特殊符号使用“&#”加数字的形式表示，温度的编码分别是8451和176，前者温度符号全显示，后者只显示温度的符号没有后面的“C”
+const 声明的原始类型常量可以保证不被改变，但是Object和Array类型的依然可以复制，可以使用Object.freeze(obj)冻结它
+<script>
+	const abc = Object.freeze({a: 1,b: 2,c: 3})
+	const abc = 123 //报错，冻结后不允许重新赋值
+</script>
+import 和 class 也属于变量声明
+split()如果传入的值为不存在的符号，则会返回整体字符串外面包一个数组
+Number() 会把null转化成0
+... 要放在 [] 或者 () 里面才能执行，并且只有在函数里才能用 () ，因为展开出来的东西是分散的数字，js 没有这种格式的数据，必须放在有意义的地方使用
+复制数组可以用 ... , 展开后赋值给某个数组就可以，不会影响原来的数组
+<script>
+//请求，最好将参数放在页面里，好找，也好增减，公共参数可以写到外部config文件，引入到main.js里使用（全局引入）
+export const reqAreaToType = (obj, _this, fnName) => ajax(SERVICE_URL2 + "/cityDetail/baseRanking", obj, 'GET', _this, fnName)
+</script>
+unshift() 向数组的开头添加一个或更多元素，并返回新的长度
+shift() 删除数组的第一个元素，并返回第一个元素的值
+splice() 删除插入，返回删除的值（数组形式），三种方法都会改变数组
+<script>
+//两个元素互换位置，等号右边先执行
+arr[1] = arr.splice(5, 1, arr[1])[0]
+</script>
+如果计算属性没有使用过，也就是说页面中没有引用，也没有其他变量使用他，则运行时不会触发执行
+不能使用arr[0]判断数组是否为空，如果数组第一项是0也会返回false
+
+为div加上焦点事件
+<div tabindex="0" hidefocus="true" onfocus='console.log("得到焦点")' onblur='console.log("失去焦点")'></div>

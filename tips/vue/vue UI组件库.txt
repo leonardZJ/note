@@ -1,0 +1,57 @@
+npm降级
+npm install -g npm@5.4.0
+
+常用的有两个(饿了么出品)：
+Mint UI
+说明：饿了么的开源的基于vue的移动端UI组件库
+Elment
+说明：饿了么开源的基于vue的PC端UI组件库
+
+安装Mint UI
+npm install --save mint-ui
+
+实现按需引入
+说明：UI组件库中的组件非常多，所以也可以借助babel的component插件按需引入
+
+1.安装babel-plugin-component
+npm install -save-dev babel-plugin-component -D
+
+2.修改.babelrc文件中的"env"项，在其中的"plugins"数组的末尾添加上(官方文档Quickstart按需引入)：
+["component", [
+    {
+      "libraryName": "mint-ui",
+      "style": true
+    }
+  ]]
+
+3.移动端开发需要在index.html中加上<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1,minimum-scale=1,user-scalable=no" />
+
+4.移动端事件延迟问题
+说明：起源于双击缩放功能，手机浏览器在捕获第一次点击后会先等待300ms，如果用户再次点击则浏览器会进行双击事件处理，否则进行单击事件处理
+
+使用fastclick.js库解决：
+	1.引入fastclick.js库(网上找CDN或下载)
+
+	2.在页面<script></script>中添加(在<head></head>里)：
+	if ('addEventListener' in document) {
+		document.addEventListener('DOMContentLoaded', function() {
+			FastClick.attach(document.body);
+		}, false);
+	}
+
+5.在mian.js中引入需要的组件(例如Button和Cell)
+import { Button, Cell } from 'mint-ui'
+
+6.标签类组件需要先映射成标签(全局映射)
+Vue.component(Button.name,Button)
+Vue.component(Cell.name,Cell)
+说明：平常写的属于局部映射(写在new Vue({...})里面的components)，全局映射后在任何一个组件当中都可以使用，映射后的标签格式为<mt-...></mt-...>
+
+5.在App.vue的<template></template>中插入<mt-button></mt-button>和<mt-cell></mt-cell>
+
+6.添加事件
+说明：事件添加与vue相同，使用"@事件.native"格式，加上.native表示使用原生vue事件语法(建议加上)
+
+7.非标签类组件直接在需要的组件处引入即可
+例(引入Toast):
+import {Toast} from 'mint-ui'

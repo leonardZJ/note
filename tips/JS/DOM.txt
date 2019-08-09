@@ -1,0 +1,758 @@
+DOM
+它的作用是将网页转为一个JS对象，从而可以用脚本进行各种操作（比如增删内容）
+节点类型
+Document：整个文档树的顶层节点
+DocumentType：doctype标签（比如<!DOCTYPE html>）
+Element：网页的各种HTML标签（比如<body>、<a>等）
+Attribute：网页元素的属性（比如class="right"）
+Text：标签之间或标签包含的文本
+Comment：注释
+DocumentFragment：文档的片段
+
+Node接口对象
+所有DOM节点对象都继承了Node对象接口（类似数组继承对象的关系），因此所有DOM对象都拥有一些共同的属性和方法
+
+静态属性：主要是一个些常量
+Node.ELEMENT_NODE：元素节点（element）--1
+Node.ATTRIBUTE_NODE：属性节点（attr）--2
+Node.TEXT_NODE：文本节点（text）--3
+Node.COMMENT_NOD：注释节点（Comment）--8
+Node.DOCUMENT_NODE：文档节点（document）--9
+Node.DOCUMENT_T：文档类型节点（DocumentType）--10
+Node.DOCUME：文档片断节点（DocumentFragment）--11
+
+实例属性
+Node.prototype.nodeType
+说明：返回一个整数值，表示节点的类型
+<script>
+	document.nodeType // 9
+</script>
+Node.prototype.nodeName
+说明：返回节点的名称
+<html>
+	<div id="d1">hello world</div>
+</html>
+<script>
+	var div = document.getElementById('d1');
+	div.nodeName // "DIV"
+</script>
+Node.prototype.nodeValue
+说明：返回一个字符串，表示当前节点本身的文本值，该属性可读写
+注：只有文本节点（text）、注释节点（comment）和属性节点（attr）才有文本值，因此这三类节点可以返回结果，其他一律返回null，也只有这三类节点可以设置nodeValue的值，其他节点设置无效
+<html>
+	<div id="d1">hello world</div>
+</html>
+<script>
+	var div = document.getElementById('d1');
+	div.nodeValue // null
+	div.firstChild.nodeValue //"hello world"
+	//div是元素节点，nodeValue返回null，div.firstChild是文本节点，nodeValue返回文本值
+</script>
+Node.prototype.textContent
+说明：返回当前节点和它的所有后代节点的文本内容，该属性可读写
+注1：设置该属性的值，会用新的文本节点，替换所有原来的子节点
+注2：它还会自动对HTML标签转义，这很适合用于用户提供的内容。
+<html>
+	<div id="divA">This is <span>some</span> text</div>
+</html>
+<script>
+	document.getElementById('divA').textContent
+	// This is some text
+
+	document.getElementById('foo').textContent = '<p>GoodBye!</p>';
+	//上面代码在插入文本时，会将<p>标签解释为文本，而不会当作标签处理
+</script>
+Node.prototype.baseURI
+说明：返回一个字符串，表示当前网页的绝对路径，该属性只读，无法读到返回null
+<script>
+	// 当前网页的网址为
+	// http://www.example.com/index.html
+	document.baseURI
+	// "http://www.example.com/index.html"
+</script>
+Node.prototype.ownerDocument
+说明：返回当前节点所在的顶层文档对象，即document对象
+<script>
+	var d = p.ownerDocument;
+	d === document // true
+</script>
+Node.prototype.nextSibling
+说明：返回紧跟在当前节点后面的第一个同级节点，如果没有同级节点，则返回null
+注：该属性还包括文本节点和注释节点（<!-- comment -->），如果当前节点后面有空格，该属性会返回一个文本节点，内容为空格
+<html>
+	<div id="d1">hello</div><div id="d2">world</div>
+</html>
+<script>
+	var d1 = document.getElementById('d1');
+	var d2 = document.getElementById('d2');
+
+	d1.nextSibling === d2 // true
+</script>
+Node.prototype.previousSibling
+说明：返回当前节点前面的、距离最近的一个同级节点，如果当前节点前面没有同级节点，则返回null
+注：该属性还包括文本节点和注释节点，如果当前节点后面有空格，该属性会返回一个文本节点，内容为空格
+<html>
+	<div id="d1">hello</div><div id="d2">world</div>
+</html>
+<script>
+	var d1 = document.getElementById('d1');
+	var d2 = document.getElementById('d2');
+
+	d2.previousSibling === d1 // true
+</script>
+Node.prototype.parentNode
+说明：返回当前节点的父节点
+注：对于一个节点来说，它的父节点只可能是三种类型：元素节点（element）、文档节点（document）和文档片段节点（documentfragment）
+<script>
+	if (node.parentNode) {
+	  node.parentNode.removeChild(node);
+	}
+
+</script>
+Node.prototype.parentElement
+说明：返回当前节点的父元素节点，如果当前节点没有父节点，或者父节点类型不是元素节点，则返回null
+注：父节点只可能是三种类型：元素节点、文档节点（document）和文档片段节点（documentfragment），parentElement属性相当于把后两种父节点都排除了。
+<script>
+	if (node.parentElement) {
+	  node.parentElement.style.color = 'red';
+	}
+</script>
+Node.prototype.firstChild，Node.prototype.lastChild
+说明：返回当前节点的第一个子节点或最后一个子节点，如果当前节点没有子节点，则返回null。
+注：firstChild返回的除了元素节点，还可能是文本节点或注释节点
+<script>
+	// HTML 代码如下
+	// <p id="p1"><span>First span</span></p>
+	var p1 = document.getElementById('p1');
+	p1.firstChild.nodeName // "SPAN"
+
+	// HTML 代码如下
+	// <p id="p1">
+	//   <span>First span</span>
+	//  </p>
+	var p1 = document.getElementById('p1');
+	p1.firstChild.nodeName // "#text"
+	//因为p元素与span元素之间有空白字符，这导致firstChild返回的是文本节点
+</script>
+Node.prototype.childNodes
+说明：返回一个类似数组的对象（NodeList集合），成员包括当前节点的所有子节点，如果当前节点没有任何子节点，则返回一个空的NodeList集合
+注1：除了元素节点，childNodes属性的返回值还包括文本节点和注释节点
+注2：由于NodeList对象是一个动态集合，一旦子节点发生变化，立刻会反映在返回结果之中
+<script>
+	var children = document.querySelector('ul').childNodes;
+</script>
+Node.prototype.isConnected
+说明：返回一个布尔值，表示当前节点是否在文档之中
+<script>
+	var test = document.createElement('p');
+	test.isConnected // false
+
+	document.body.appendChild(test);
+	test.isConnected // true
+</script>
+
+实例方法
+Node.prototype.appendChild()
+说明：接受一个节点对象作为参数，将其作为最后一个子节点，插入当前节点，返回值是插入文档的子节点
+注：如果参数节点是 DOM 已经存在的节点，appendChild方法会将其从原来的位置，移动到新位置，返回值移动的子节点
+<script>
+	var p = document.createElement('p');
+	document.body.appendChild(p);
+</script>
+Node.prototype.hasChildNodes()
+说明：返回一个布尔值，表示当前节点是否有子节点
+注：子节点包括所有类型的节点，不仅仅是元素节点，哪怕只包含一个空格，hasChildNodes方法也返回true
+<script>
+	var foo = document.getElementById('foo');
+
+	if (foo.hasChildNodes()) { //如果有子节点，就移除第一个子节点。
+	  foo.removeChild(foo.childNodes[0]);
+	}
+</script>
+Node.prototype.cloneNode()
+说明：用于克隆一个节点。它接受一个布尔值作为参数，表示是否同时克隆子节点，它的返回值是一个克隆出来的新节点
+<script>
+	var cloneUL = document.querySelector('ul').cloneNode(true);
+</script>
+Node.prototype.insertBefore()
+说明：用于将某个节点插入父节点内部的指定位置，返回值是插入的新节点newNode。
+注：如果所要插入的节点是当前 DOM 现有的节点，则该节点将从原有的位置移除，插入新的位置
+<script>
+	var insertedNode = parentNode.insertBefore(newNode, referenceNode);
+	//newNode将插在referenceNode这个子节点的前面
+	//insertBefore方法接受两个参数
+	//第一个是所要插入的节点newNode
+	//第二个是父节点parentNode内部的一个子节点referenceNode用于定位
+	//如果第二个参数为null，新节点将插在当前节点内部的最后位置，即变成最后一个子节点
+	
+	//不存在insertAfter方法，可以结合nextSibling模拟
+	parent.insertBefore(s1, s2.nextSibling);
+	//将s1插入到s2后一个节点的前面，即s2的后面，如果s2后面没有节点返回null，s1插最后，也是在s2后面
+</script>
+Node.prototype.removeChild()
+说明：接受一个子节点作为参数，用于从当前节点移除该子节点，返回值是移除的子节点
+注：该方法是父节点上调用的
+<script>
+	var divA = document.getElementById('A');
+	divA.parentNode.removeChild(divA);
+
+	//移除当前节点所有子节点
+	var element = document.getElementById('top');
+	while (element.firstChild) {
+	  element.removeChild(element.firstChild);
+	}
+</script>
+Node.prototype.replaceChild()
+说明：用于将一个新的节点，替换当前节点的某一个子节点,接受两个参数，第一个参数newChild是用来替换的新节点，第二个参数oldChild是将要替换走的子节点，返回值是替换走的那个节点oldChild。
+<script>
+	var replacedNode = parentNode.replaceChild(newChild, oldChild);
+
+	var divA = document.getElementById('divA');
+	var newSpan = document.createElement('span');
+	newSpan.textContent = 'Hello World!';
+	divA.parentNode.replaceChild(newSpan, divA);
+</script>
+Node.prototype.contains()
+返回一个布尔值，表示参数节点是否满足以下三个条件之一：
+参数节点为当前节点
+参数节点为当前节点的子节点
+参数节点为当前节点的后代节点
+<script>
+	document.body.contains(node)
+</script>
+Node.prototype.isEqualNode()
+说明：返回一个布尔值，用于检查两个节点是否相等。所谓相等的节点，指的是两个节点的类型相同、属性相同、子节点相同。
+<script>
+	var p1 = document.createElement('p');
+	var p2 = document.createElement('p');
+
+	p1.isEqualNode(p2) // true
+</script>
+Node.prototype.isSameNode()
+说明：返回一个布尔值，表示两个节点是否为同一个节点。
+<script>
+	var p1 = document.createElement('p');
+	var p2 = document.createElement('p');
+
+	p1.isSameNode(p2) // false
+	p1.isSameNode(p1) // true
+</script>
+Node.prototype.normalize()
+说明：用于清理当前节点内部的所有文本节点（text），它会去除空的文本节点，并且将毗邻的文本节点合并成一个，也就是说不存在空的文本节点，以及毗邻的文本节点。
+<script>
+	var wrapper = document.createElement('div');
+
+	wrapper.appendChild(document.createTextNode('Part 1 '));
+	wrapper.appendChild(document.createTextNode('Part 2 '));
+
+	wrapper.childNodes.length // 2
+	wrapper.normalize();
+	wrapper.childNodes.length // 1
+	//使用normalize方法之前，wrapper节点有两个毗邻的文本子节点，使用normalize方法之后，两个文本子节点被合并成一个。
+</script>
+
+节点集合接口对象
+DOM提供两种节点集合，用于容纳多个节点：NodeList和HTMLCollection
+区别：NodeList可以包含各种类型的节点，HTMLCollection只能包含HTML元素节点
+
+NodeList接口对象
+如何获得
+通过Node.childNodes，document.querySelectorAll()等方法返回NodeList实例
+
+动态集合与静态集合
+说明：NodeList实例可能是动态集合，也可能是静态集合，目前只有Node.childNodes方法返回的是动态集合，其他的 NodeList都是静态集合
+
+实例属性
+NodeList.prototype.length
+返回 NodeList 实例包含的节点数量
+<script>
+	document.querySelectorAll('xxx').length
+	// 0
+</script>
+实例方法
+NodeList.prototype.forEach()
+用于遍历NodeList的所有成员，接受一个回调函数作为参数，每一轮遍历就执行一次这个回调函数，用法与数组一致
+<script>
+	var children = document.body.childNodes;
+	children.forEach(function f(item, i, list) {
+	  // ...
+	}, this);
+</script>
+NodeList.prototype.item()
+接受一个整数值作为参数，表示成员的位置，返回该位置上的成员
+注：一般情况下，都是使用方括号运算符，而不使用item方法
+<script>
+	document.body.childNodes.item(0)
+</script>
+NodeList.prototype.keys()，NodeList.prototype.values()，NodeList.prototype.entries()
+返回一个 ES6 的遍历器对象，可以通过for...of循环遍历获取每一个成员的信息
+keys()返回键名的遍历器，values()返回键值的遍历器，entries()返回的遍历器同时包含键名和键值的信息
+<script>
+	var children = document.body.childNodes;
+
+	for (var key of children.keys()) {
+	  console.log(key);
+	}
+	// 0
+	// 1
+	// 2
+	// ...
+
+	for (var value of children.values()) {
+	  console.log(value);
+	}
+	// #text
+	// <script>
+	// ...
+
+	for (var entry of children.entries()) {
+	  console.log(entry);
+	}
+	// Array [ 0, #text ]
+	// Array [ 1, <script> ]
+	// ...
+</script>
+
+HTMLCollection接口对象：HTMLCollection没有forEach方法，只能使用for循环遍历
+
+如何获得
+返回HTMLCollection实例的，主要是一些Document对象的集合属性，比如document.links、document.forms、document.images等
+
+动态集合
+HTMLCollection实例都是动态集合，节点的变化会实时反映在集合中
+
+实例属性
+HTMLCollection.prototype.length
+返回HTMLCollection实例包含的成员数量
+<script>
+	document.links.length // 18
+</script>
+实例方法
+HTMLCollection.prototype.item()
+接受一个整数值作为参数，表示成员的位置，返回该位置上的成员
+注：一般情况下，总是使用方括号运算符
+<script>
+	var c = document.images;
+	var img0 = c.item(0);
+</script>
+HTMLCollection.prototype.namedItem()
+参数是一个字符串，表示id属性或name属性的值，返回对应的元素节点，如果没有对应的节点，则返回null
+<script>
+	// HTML 代码如下
+	// <img id="pic" src="http://example.com/foo.jpg">
+
+	var pic = document.getElementById('pic');
+	document.images.namedItem('pic') === pic // true
+</script>
+
+父子节点接口对象
+ParentNode接口对象
+如果当前节点是父节点，就会继承ParentNode接口，以及它提供的一些处理子节点的方法
+
+实例属性
+.children
+返回一个HTMLCollection实例，成员是当前节点的所有 元素 子节点，该属性只读
+<script>
+	//HTMLCollection对象只能用for方法
+	for (var i = 0; i < el.children.length; i++) {
+	  // ...
+	}
+</script>
+.firstElementChild和.lastElementChild
+返回当前节点的第一个或最后一个元素子节点，如果没有任何元素子节点，则返回null
+<script>
+	document.firstElementChild.nodeName
+	// "HTML
+
+	document.lastElementChild.nodeName
+	// "HTML"
+</script>
+.childElementCount
+返回一个整数，表示当前节点的所有元素子节点的数目，如果不包含任何元素子节点，则返回0。
+<script>
+	document.body.childElementCount // 13
+</script>
+实例方法
+.append()和.prepend()
+为当前节点追加一个或多个子节点，位置是最后一个或第一个元素子节点的后面，该方法不仅可以添加元素子节点，还可以添加文本子节点，没有返回值
+<script>
+	var parent = document.body;
+
+	// 添加元素子节点
+	var p = document.createElement('p');
+	parent.append(p);
+
+	// 添加文本子节点
+	parent.append('Hello');
+
+	// 添加多个元素子节点
+	var p1 = document.createElement('p');
+	var p2 = document.createElement('p');
+	parent.append(p1, p2);
+
+	// 添加元素子节点和文本子节点
+	var p = document.createElement('p');
+	parent.append('Hello', p);
+
+	//.prepend()同理
+</script>
+
+ChildNode接口对象
+如果一个节点有父节点，那么该节点就继承了ChildNode接口，以及它提供的一些相关方法
+实例方法
+.remove()
+用于从父节点移除当前节点
+<script>
+	el.remove() //在 DOM 里面移除了el节点。
+</script>
+.before()和.after()
+用于在当前节点的前面或后面，插入一个或多个同级节点。两者拥有相同的父节点，该方法不仅可以插入元素节点，还可以插入文本节点。
+<script>
+	var p = document.createElement('p');
+	var p1 = document.createElement('p');
+
+	// 插入元素节点
+	el.before(p);
+
+	// 插入文本节点
+	el.before('Hello');
+
+	// 插入多个元素节点
+	el.before(p, p1);
+
+	// 插入元素节点和文本节点
+	el.before(p, 'Hello');
+</script>
+.replaceWith()
+使用参数节点，替换当前节点，参数可以是元素节点，也可以是文本节点
+<script>
+	var span = document.createElement('span');
+	el.replaceWith(span);
+	//el节点将被span节点替换
+</script>
+
+tips:IFRAME是HTML标签,作用是文档中的文档,或者浮动的框架(FRAME)
+
+document节点对象
+代表整个文档，每张网页都有自己的document对象，window.document属性就指向这个对象，只要浏览器开始载入HTML文档，该对象就存在了，可以直接使用
+
+获取document节点对象
+1.正常的网页，直接使用document或window.document
+2.iframe框架里面的网页，使用iframe节点的contentDocument属性
+3.Ajax操作返回的文档，使用XMLHttpRequest对象的responseXML属性
+4.内部节点的ownerDocument属性
+
+document对象继承了EventTarget接口、Node接口、ParentNode接口，这些接口的方法都可以在document对象上调用，document对象还有很多自己的属性和方法
+
+静态属性
+document.defaultView
+返回document对象所属的window对象，如果当前文档不属于window对象，该属性返回null
+<script>
+	document.defaultView === window // true
+</script>
+
+document.doctype，document.documentElement
+document对象下的两个子节点
+document.doctype：指向<DOCTYPE>节点，即文档类型（Document Type Declaration，简写DTD）节点
+document.documentElement：指向根元素节点（root），HTML网页一般是<html>节点
+
+document.body，document.head
+document.body属性指向<body>节点，document.head属性指向<head>节点。
+
+document.scrollingElement
+返回文档的滚动元素，即，当文档整体滚动时，到底是哪个元素在滚动。
+注：标准模式下，这个属性返回文档根元素<html>，兼容（quirk）模式下，返回<body>，如果该元素不存在，返回null
+<script>
+	// 页面滚动到浏览器顶部
+	document.scrollingElement.scrollTop = 0;
+</script>
+
+document.activeElement
+返回获得当前焦点（focus）的 DOM 元素，通常返回的是<input>、<textarea>、<select>等表单元素，如果当前没有焦点元素，返回<body>元素或null
+
+document.fullscreenElement
+返回当前以全屏状态展示的 DOM 元素，如果不是全屏状态，该属性返回null。
+<script>
+	//通过document.fullscreenElement判断<video>元素有没有处在全屏状态
+	if (document.fullscreenElement.nodeName == 'VIDEO') {
+	  console.log('全屏播放视频');
+	}
+</script>
+
+节点集合属性
+document.links
+返回当前文档所有设定了href属性的<a>及<area>节点
+document.forms
+返回所有<form>表单节点。
+<script>
+	var selectForm = document.forms[0];
+	//获取文档第一个表单
+
+	/* HTML 代码如下
+	  <form name="foo" id="bar"></form>
+	*/
+	//id属性和name属性也可以用来引用表单。
+	document.forms[0] === document.forms.foo // true
+	document.forms.bar === document.forms.foo // true
+</script>
+document.images
+返回页面所有<img>图片节点。
+<script>
+	var imglist = document.images;
+
+	for(var i = 0; i < imglist.length; i++) {
+	  if (imglist[i].src === 'banner.gif') {
+	    // ...
+	  }
+	}
+</script>
+document.embeds，document.plugins
+返回所有<embed>节点
+说明：<embed src="url">可以用来插入各种多媒体，格式可以是 Midi、Wav、AIFF、AU、MP3等等，Netscape及新版的IE 都支持。url为音频或视频文件及其路径，可以是相对路径或绝对路径。
+
+document.scripts
+返回所有script节点。
+<script>
+	var scripts = document.scripts;
+	if (scripts.length !== 0 ) {
+	  console.log('当前网页有脚本');
+	}
+</script>
+
+document.styleSheets
+返回文档内嵌或引入的样式表集合
+除了document.styleSheet，以上的集合属性返回的都是HTMLCollection实例。
+
+文档静态信息属性
+document.documentURI，document.URL
+返回一个字符串，表示当前文档的网址。
+区别：documentURI继承自Document接口，可用于所有文档；URL继承自HTMLDocument接口，只能用于 HTML 文档。
+<script>
+	document.URL
+	// http://www.example.com/about
+
+	document.documentURI === document.URL
+	// true
+</script>
+document.domain
+返回当前文档的域名，不包含协议和接口。
+例：网址是http://www.example.com:80/hello.html，domain属性返回www.example.com。
+document.location
+浏览器提供的原生对象，提供URL相关的信息和操作方法，通过window.location和document.location属性，可以拿到这个对象。
+document.lastModified
+返回一个字符串，表示当前文档最后修改的时间，不同浏览器的返回值，日期格式不同。
+注：如果页面上有 JavaScript 生成的内容，document.lastModified属性返回的总是当前时间。
+<script>
+	document.lastModified
+	// "03/07/2018 11:18:27"
+
+	//用Date.parse方法将字符串转为Date实例，才能比较两个网页。
+	var lastVisitedDate = Date.parse('01/01/2018');
+	if (Date.parse(document.lastModified) > lastVisitedDate) {
+	  console.log('网页已经变更');
+	}
+</script>
+document.title
+返回当前文档的标题，该属性可写
+document.characterSet
+返回当前文档的编码，比如UTF-8、ISO-8859-1等等。
+document.referrer
+返回一个字符串，表示当前文档的访问者来自哪里。
+<script>
+	document.referrer
+	// "https://example.com/path"
+	//如果无法获取来源，或者用户直接键入网址而不是从其他网页点击进入，document.referrer返回一个空字符串。
+	//document.referrer的值，总是与 HTTP 头信息的Referer字段保持一致。
+</script>
+
+文档状态属性
+document.hidden
+返回一个布尔值，表示当前页面是否可见。如窗口最小化、浏览器切换Tab，都会导致导致页面不可见，这时document.hidden返回true。
+
+document.visibilityState
+返回文档的可见状态，有四种可能的值：
+visible：页面可见。注：页面可能是部分可见，即不是焦点窗口，前面被其他窗口部分挡住了。
+hidden：页面不可见，有可能窗口最小化，或者浏览器切换到了另一个Tab。
+prerender：页面处于正在渲染状态，对于用户来说，该页面不可见。
+unloaded：页面从内存里面卸载了。
+可以用在页面加载时，防止加载某些资源；或者页面不可见时，停掉一些页面功能。
+
+document.readyState
+返回当前文档的状态，有三种可能的值：
+loading：加载HTML代码阶段（尚未完成解析）
+interactive：加载外部资源阶段
+complete：加载完成
+过程：
+1.浏览器开始解析 HTML 文档，document.readyState属性等于loading。
+2.浏览器遇到 HTML 文档中的script元素，并且没有async或defer属性，就暂停解析，开始执行脚本，document.readyState属性依然等于loading。
+3.HTML 文档解析完成，document.readyState属性变成interactive。
+4.浏览器等待图片、样式表、字体文件等外部资源加载完成，全部加载完成后，document.readyState属性变成complete。
+<script>
+	// 检查网页是否加载成功。
+	if (document.readyState === 'complete') {
+	  // ...
+	}
+
+	// 轮询检查
+	var interval = setInterval(function() {
+	  if (document.readyState === 'complete') {
+	    clearInterval(interval);
+	    // ...
+	  }
+	}, 100);
+	//另外，每次状态变化还会触发一个readystatechange事件。
+</script>
+document.cookie
+用来操作浏览器 Cookie
+document.designMode
+用于控制当前文档是否可编辑。该属性只有两个值on和off，默认值为off。一旦设为on，用户就可以编辑整个文档的内容。
+<script>
+	// HTML 代码如下
+	// <iframe id="editor" src="about:blank"></iframe>
+	//打开iframe元素内部文档的designMode属性，将其变为一个所见即所得的编辑器。
+	var editor = document.getElementById('editor');
+	editor.contentDocument.designMode = 'on';
+</script>
+document.implementation
+返回一个DOMImplementation对象，该对象有三个方法，主要用于创建独立于当前文档的新的 Document 对象。
+DOMImplementation.createDocument()：创建一个 XML 文档。
+DOMImplementation.createHTMLDocument()：创建一个 HTML 文档。
+DOMImplementation.createDocumentType()：创建一个 DocumentType 对象。
+
+document.open()，document.close()
+document.open方法清除当前文档所有内容，使得文档处于可写状态
+document.write方法可以写入内容。
+document.close方法用来关闭document.open()打开的文档。
+
+document.querySelector()，document.querySelectorAll()
+document.querySelector接受一个CSS选择器作为参数，返回匹配该选择器的元素节点。如果有多个节点满足匹配条件，则返回第一个匹配的节点。如果没有发现匹配的节点，则返回null。
+document.querySelectorAll接受一个CSS选择器作为参数，返回一个NodeList对象，包含所有匹配给定选择器的节点。
+注：不支持 CSS 伪元素的选择器（比如:first-line和:first-letter）和伪类的选择器（比如:link和:visited），即无法选中伪元素和伪类。
+
+document.getElementsByTagName()
+搜索 HTML 标签名，返回符合条件的元素，返回值是HTMLCollection实例
+
+document.getElementsByClassName()
+返回HTMLCollection实例，包括了所有class名字符合指定条件的元素，元素的变化实时反映在返回结果中。
+
+document.getElementsByName()
+用于选择拥有name属性的 HTML 元素（如<form>、<radio>、<img>、<frame>、<embed>和<object>等），返回NodeList实例，因为name属性相同的元素可能不止一个。
+
+document.getElementById()
+返回匹配指定id属性的元素节点。如果没有发现匹配的节点，则返回null。
+
+document.createElement()
+用来生成元素节点，并返回该节点。
+<script>
+	var newDiv = document.createElement('div');
+</script>
+
+document.createTextNode()
+用来生成文本节点（Text实例），并返回该节点。
+<script>
+	//新建一个div节点和一个文本节点，然后将文本节点插入div节点。
+	var newDiv = document.createElement('div');
+	var newContent = document.createTextNode('Hello');
+	newDiv.appendChild(newContent);
+</script>
+document.createAttribute()
+生成一个新的属性节点（Attr实例），并返回它。
+<script>
+	var node = document.getElementById('div1');
+
+	var a = document.createAttribute('my_attrib');
+	a.value = 'newVal';
+
+	node.setAttributeNode(a);
+	// 或者
+	node.setAttribute('my_attrib', 'newVal');
+</script>
+document.createComment()
+生成一个新的注释节点，并返回该节点。
+<script>
+	var CommentNode = document.createComment(data);
+</script>
+document.createDocumentFragment()
+生成一个空的文档片段对象（DocumentFragment实例）。
+<script>
+	var docfrag = document.createDocumentFragment();
+
+	[1, 2, 3, 4].forEach(function (e) {
+	  var li = document.createElement('li');
+	  li.textContent = e;
+	  docfrag.appendChild(li);
+	});
+
+	var element  = document.getElementById('ul');
+	element.appendChild(docfrag);
+</script>
+document.createEvent()
+生成一个事件对象（Event实例），该对象可以被element.dispatchEvent方法使用，触发指定事件。
+<script>
+	var event = document.createEvent('Event');
+	event.initEvent('build', true, true);
+	document.addEventListener('build', function (e) {
+	  console.log(e.type); // "build"
+	}, false);
+	document.dispatchEvent(event);
+</script>
+document.addEventListener()，document.removeEventListener()，document.dispatchEvent()
+用于处理document节点的事件。
+<script>
+	// 添加事件监听函数
+	document.addEventListener('click', listener, false);
+
+	// 移除事件监听函数
+	document.removeEventListener('click', listener, false);
+
+	// 触发事件
+	var event = new Event('click');
+	document.dispatchEvent(event);
+</script>
+document.hasFocus()
+返回一个布尔值，表示当前文档之中是否有元素被激活或获得焦点。
+注：有焦点的文档必定被激活（active），反之不成立，激活的文档未必有焦点。比如，用户点击按钮，从当前窗口跳出一个新窗口，该新窗口就是激活的，但是不拥有焦点。
+<script>
+	var focused = document.hasFocus();
+</script>
+document.adoptNode()，document.importNode()
+document.adoptNode()将某个节点及其子节点，从原来所在的文档或DocumentFragment里面移除，归属当前document对象，返回插入后的新节点。插入的节点对象的ownerDocument属性，会变成当前的document对象，而parentNode属性是null。
+<script>
+	var node = document.adoptNode(externalNode);
+	document.appendChild(node);
+	//document.adoptNode方法只是改变了节点的归属，并没有将这个节点插入新的文档树。所以，还要再用appendChild方法或insertBefore方法，将新节点插入当前文档树。
+
+	//document.importNode方法则是从原来所在的文档或DocumentFragment里面，拷贝某个节点及其子节点，让它们归属当前document对象。
+</script>
+document.createNodeIterator()
+返回一个子节点遍历器。
+注1：第一个参数为所要遍历的根节点，第二个参数为所要遍历的节点类型，这里指定为元素节点（NodeFilter.SHOW_ELEMENT）。
+注2：该实例的nextNode()方法和previousNode()方法，可以用来遍历所有子节点。
+<script>
+	var nodeIterator = document.createNodeIterator(
+	  document.body,
+	  NodeFilter.SHOW_ELEMENT
+	);
+
+	//所有节点：NodeFilter.SHOW_ALL
+	//元素节点：NodeFilter.SHOW_ELEMENT
+	//文本节点：NodeFilter.SHOW_TEXT
+	//评论节点：NodeFilter.SHOW_COMMENT
+</script>
+document.createTreeWalker()
+返回一个 DOM 的子树遍历器。
+document.createTreeWalker方法的第一个参数是所要遍历的根节点，第二个参数指定所要遍历的节点类型，与createNodeIterator相同
+<script>
+	var treeWalker = document.createTreeWalker(
+	  document.body,
+	  NodeFilter.SHOW_ELEMENT
+	);
+
+	var nodeList = [];
+
+	while(treeWalker.nextNode()) {
+	  nodeList.push(treeWalker.currentNode);
+	}
+</script>
+document.getSelection()
+这个方法指向window.getSelection()

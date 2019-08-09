@@ -1,0 +1,408 @@
+Set去重
+<script>
+	[...new Set([1, 2, 3, 4, 4])] //[1,2,3,4]
+</script>
+
+最好的排序结构
+<script>
+	[{},{},{},{}]
+</script>
+
+获取奇数列和偶数列
+{# 利用for循环i%2=0可以得到0,2,4...剩下的就是1,3,5... #}
+将时间戳转化为年月日时分秒
+{# 先用parseInt(.../...)，然后利用取余获得秒 #}
+判断一个数是否两位数
+{# x>9 && x<100 #}
+根据性别不同替换欢迎语中的"先生","女士"
+{# switch判断 #}
+实现函数可以传入不定量参数
+{# function sum() {
+	result = 0;
+	for(var i = 0; i < arguments.length; i++) {
+		result += arguments[i];
+	}
+	return result;
+} #}
+获取非行间样式的兼容解决(IE下没有cunrrentStyle)
+{# 非IE下currentStyle为undefind类型，利用此做条件控制 #}
+使用splice向数组插入元素
+{# array.splice(x,0,z...):从位置x开始删除0个元素并插入z... #}
+使用sort()对数字型数组排序
+{# array.sort(function(n1,n2) {
+	return n1-n2;
+})
+原理：sort会将数组的值分别代入进行比较，由正负值判断排序结果 #}
+将获得的时间数字空位补零并转成字符串
+{# 定义一个函数：
+	function toDub(n) {
+		if (n < 0) {
+			return '0' + n		
+		} else {
+			return '' + n
+		}
+	}
+将时分秒代入toDub就可以了 #}
+解决IE7以下string[i]兼容问题(string[i]会报错)
+{# 将string[i]换成string.charAt(i)就可以全兼容 #}
+解决childNodes在IE7以上兼容问题(文本节点被计算)
+{# IE7以上文本节点nodeType为3，元素节点nodeType为1，利用此做条件控制 #}
+点击隐藏按钮隐藏一行
+{# 将隐藏按钮写在父节点下，点击时隐藏当前的父节点：This.parentNode.style.display = none;
+ #}
+点击删除按钮删除一行
+{# 将删除按钮写在父节点下，点击时使用removeChild删除当前的父节点This.parentNode,removeChild方法需由父节点调用 #}
+解决firstChild在IE7以上兼容问题(IE7以上只认firstElementChild)
+{# 判断firstElementChild是否存在 #}
+解决insertBefore在IE下兼容问题(子元素集合中无元素报错)
+{# 判断list.length是否大于0，大于零直接执行appendChild() #}
+隔行色表格鼠标移入移出变色
+{# 循环添加事件，将原本颜色用一个变量储存起来，鼠标移入时改变颜色，鼠标移出时变回原本颜色 #}
+点击删除表格中的一行
+{# 必须是删除表格中的tBodies中删除一行，而不是直接从表格中:表格.tBodies[0].removeChild(This.parentNode.parentNode) #}
+为表格添加不重复id
+{# 行数即为id数，先用变量储存var id = tBodies[0].rows.length+1，每次添加时使用id++ #}
+搜索时不区分大小写
+{# 将条件两边都.toLowerCase() #}
+利用append()特性进行排序
+{# 从父级的子元素中取一个，再插入到末尾(删除原来的再插入)) #}
+利用append()特性对页面中的元素进行排序
+{# 从父级的子元素中取最小的一个，再插入到末尾，再从剩下的子元素中选最小的一个，再插入到末尾
+将元素集合类型变为数组类型(利用循环)，对数组使用sort方法，比较函数为：
+function (li1,li2) {
+	var n1 = parseInt(li1.innerHTML);
+	var n2 = parseInt(li2.innerHTML);
+	return n1 - n2;
+}
+循环取出排好序的数组中的元素(已经是从大到小了)，代入到append()方法中 #}
+实现div从左往右运动
+{# 定时一个div每隔一段时间div.left = div.offsetLeft + 10 + 'px',可以将10提取成一个变量，方便控制 #}
+解决多次点击按钮打开多个定时器问题(速度越来越快)
+{# 打开定时器之前先关闭一次定时器 #}
+解决匀速运动时无法停到指定位置
+{# 让offsetLeft大于等于目标距离时停止，并在最后让offsetLeft=目标距离 #}
+解决缓冲运动时无法停到指定位置
+{# 将speed做上舍入和下舍入(Math.ceil()和Math.floor()) #}
+解决div的position:fixed定位到页面中部时出现抖动的问题
+{# 加个parseInt()变成整数 #}
+解决计算机内部小数不精确问题(计算机算小数只能精确到有限位)
+{# 用Math.round()方法 #}
+通过事件委托优化页面
+{# DOM操作越多，浏览器性能越差，事件委托可以避免在子元素添加多个事件，以达到优化性能的效果，其核心原理就是当父元素添加事件时，所有子元素都会隐形添加相同事件
+例：
+将子元素的事件添加到父元素身上，利用事件冒泡机制传递子元素的事件(如点击)给父元素，让父元素执行事件，再用event.target().nodeName获取发生事件的事件源的节点名判断是否为子元素再执行函数(排除父元素触发事件) #}
+解决event对象在IE和FF下的兼容问题(FF只认ev)
+{# 取对象时用或命令(自动取为真的一项)：var a = event || ev; #}
+解决事件冒泡导致程序无法运行问题
+{# 取消事件冒泡：event.cancelBubble = true #}
+解决鼠标可视区坐标跟随滚动偏移问题
+{# 将可视区坐标加上scrollTop和scrollLeft:
+var scrollTop = document.documentElement.scrollTop||document.body.scrollTop
+var scrollLeft = document.documentElement.scrollLeft||document.body.scrollLeft #}
+设置右键菜单的出现位置
+{# 让div的左和上等于鼠标坐标：
+var oEvent = ev || event;
+left = oEvent.clientX+'px';
+top = oEvent.clientY+'px'; #}
+让文本框只能输入数字
+{# 让键盘事件的event的keyCode在数字(也可包括退格和左右光标)以外时返回false
+.onkeydown = function(ev) {
+	var oEvent = ev || event;
+	if(oEvent.keyCode < 48 || oEvent.keyCode > 57) {
+		return false;
+	}
+} #}
+窗口拖拽的实现原理
+{# 先求出：
+鼠标按下时到div的距离 = 鼠标按下时的坐标 - div的offsetLeft/offsetTop
+再求出：
+div的left/Top = 鼠标按下时的坐标 - 鼠标按下时到div的坐标
+鼠标按下事件设置在div上，鼠标移动事件放在按下事件中，在鼠标放开事件中将移动事件清空.onmousemove = null(同时顺便把onmouseup清空) #}
+解决鼠标拖动太快造成鼠标脱离DIV后拖动效果消失问题
+{# 将鼠标移动事件设置在document上 #}
+解决鼠标拖动移出浏览器窗口时放开鼠标无法取消拖动问题
+{# 将鼠标放开事件设置在document上 #}
+解决FF中拖动空div时出现第二个div兼容问题(非空div不会)
+{# 将鼠标按下事件的浏览器默认行为清空：return false; #}
+限制div被拖动出浏览器窗口范围
+{# 条件判断当div的left小于0时(div左边超出窗口)，执行left = 0;
+条件判断当div的top小于0时(div上边超出窗口)，执行top = 0;
+条件判断当div的left大于document.documentElemtn.clientWidth - div.offsetwidth时(div右边超出窗口)，执行left = document.documentElemtn.clientWidth - div.offsetwidth;
+条件判断当div的top大于document.documentElemtn.clientHeight - div.offsetHeight时(div右边超出窗口)，执行left = document.documentElemtn.clientHeight - div.offsetwidth;
+ #}
+解决拖动div时会选中页面文字问题(IE7以下浏览器出现)
+{# IE7下有事件捕获方法：
+object.setCapture()：事件捕获，IE独有，将整个document的事件捕获并绑定到当前object中(相当于整个页面中的事件都消失了)
+object.releaseCapture()：清除事件捕获(整个页面中的事件重新生效)
+条件判断其是否存在，然后调用 #}
+自定义滚动条控制样式
+{# 滚动条滑块的左边距离/(整体宽度减-滑块宽度)得出得比例乘于要控制样式的最终值 #}
+解决绑定同名事件时IE和FF/chrome不兼容问题
+{# FF/chrome下attachEvetn不存在，利用此做条件判断 #}
+计算距离今天指定天数后的日期
+{# Date对象的set类方法会自动计算并进位：
+var oDate = new Date();
+Date.setDate(32)表示将今天日期设置为32号(改变的是Date对象),输出日期会自动变为下个月1号(假设本月有31号)
+所以要计算100天后是几月几号：
+var oDate = new Date(); 默认日期为今天
+oDate.setDate(oDate.getDate() + 100); 将日期加上100
+alert(oDate.getMonth() + '-' + oDate.getDate());输出当前日期
+ #}
+封装类时设置属性默认值
+{# this.a = x || 默认值 #}
+
+
+
+
+
+div拖动
+<style>
+	.wrapper {
+		border: 1px solid #ccc;
+		width: 200px;
+		height: 200px;
+		position: absolute;
+	}
+</style>
+<script>
+	window.onload = function() {
+		var wrapper = document.getElementById('wrapper')
+
+		wrapper.addEventListener('mousedown',function(ev) {
+			var oEv = ev || event;
+
+			var innerX = oEv.clientX - wrapper.offsetLeft
+			var innerY = oEv.clientY - wrapper.offsetTop
+
+			document.addEventListener('mousemove',function move(ev) {
+				var oEv = ev || event;
+				var l = oEv.clientX - innerX;
+				var t = oEv.clientY - innerY
+
+				if(l < 0) {
+					l = 0
+				} else if(l > document.documentElement.clientWidth - wrapper.offsetWidth) {
+					l = document.documentElement.clientWidth - wrapper.offsetWidth
+				}
+				if(t < 0) {
+					t = 0
+				} else if(t > document.documentElement.clientHeight - wrapper.offsetWidth) {
+					t = document.documentElement.clientHeight - wrapper.offsetHeight
+				}
+
+				wrapper.style.left = l + 'px'
+				wrapper.style.top = t + 'px'
+
+
+
+				document.addEventListener('mouseup',function() {
+					document.removeEventListener('mousemove',move)
+				})
+			})
+			//阻止默认行为，防止拖动时页面文字被选中
+			return false
+		})
+	}
+</script>
+<html>
+	<div class="wrapper" id="wrapper"></div>
+</html>
+
+
+选项卡
+1.选项卡的本质是什么？
+点击相应按钮跳转到相应div，获取div集合，为每个按钮添加index,将被点击的按钮的index(this.index)做为div的下标，将该div的样式改变
+
+延时提示框
+1.延时提示框本质是什么？
+鼠标移出时等待1秒关闭，鼠标入框中清除定时器，鼠标移出框外重新开启定时器
+
+无缝滚动
+1.无缝滚动的本质是什么？
+不建议使用offset...,会有bug，换成width等
+两段相同的图片在到达终点时快速切换到头部，offsetLeft获取物体的左边距(同理也有offsetTop，offsetWidth，offsetHight),将关键部分抽取出来储存成变量，用于控制左右滚动,
+
+轮播图
+1.轮播的本质是什么？
+图片的显示和消失
+
+2.如何 控制图片的显示和消失？
+控制路径中的文件名或控制每张图片的display,事件源是小圆点盒子
+
+3.如何 控制路劲中的文件名？
+把文件名改成'images/'+ 当前下标 +'.jpg'，然后控制当前下标
+
+4.如何 控制每张图片的display?
+为每张图片添加事件，this.display控制图片
+
+轮播图自动播放
+1.轮播图自动播放的本质是是什么？
+每隔一段时间运行一次跳转到下一张的函数
+
+2.1跳转函数的本质是什么？
+该函数让当前图片的display变为block，其他图片变为none
+
+3.如何确认当前图片？
+为每张图片添加id = i,然后getElementById(i)
+
+4.如何实现跳转函数？
+初始化时让i为1，并让所有图片的display变为none，让id为i的图片display变为block,然后用循环让索引自增
+
+5.如何实现定时跳转函数？
+用js的间隔定时器setInterval()，一种可以设置事件的高级循环语句，将跳转函数代入其中设置时间
+
+轮播图点击小圆点切换
+1.点击小圆点的时候停止轮播图自动播放的本质是什么？
+点击小圆点时清除了定时器
+
+2.如何实现点击小圆点时清除定时器？
+为小圆点添加点击事件，用变量获取setInterval()返回值，用clearInterval()清除
+
+轮播图定时播放
+1.长时间不点击重新开始自动播放的本质是什么？
+点击事件清除定时器时马上开始计时，计时结束如果没有点击将重新添加自动播放程序，如果有点击则重置定时器
+
+2.如何实现点击事件清除定时器时马上开始计时?
+点击事件处理函数中添加setTimeout()
+
+3.如何实现计时结束没有点击重新添加自动播放程序？
+直接在上一步的执行函数中添加自动播放函数
+
+4.如何实现有点击重置定时器？
+事件源是小圆点，事件是点击，事件函数是重置定时器
+
+5.如何实现重置定时器？
+
+5.1重置定时器的本质是什么？
+清除setTimeout()，然后再一次设置setTimeout()
+
+5.2如何实现重置定时器？
+清除setTimeout(),再次设置setTimeout()
+
+下拉提示框
+1.下拉提示框的本质是什么？
+一个隐藏的ul，未知数量的li,由服务器返回的数据决定li的数量,异步处理
+
+2.如何异步处理服务器返回的数据？
+用ajax的XMLHttpRequest对象请求服务器数据，将返回的json解析，填充到页面中
+
+3.如何用XMLHttpRequest对象请求服务器数据？
+var ajax = new XMLHttpRequest()
+ajax.onreadystatechange() {
+	if (readystate==4) {
+		if(status==200) {
+			var data = responseText
+			data1 = eval(data)
+			Var dad = document.getElementById(id)
+			for(var i = 0; i < data1.length; i++) {
+				var a = document.createElement('li')
+				var html;
+				html += '<li>' + data1.history + '</li>';
+				a.innerHTML = html
+				dad.append(a)
+				
+			}
+		}
+	}
+}
+ajax.open('get','url')
+ajax.send(null)
+
+3.如何创建已知数量的li？
+for循环createElement,长度等于data1.length
+
+广告跑马文字
+1.跑马灯效果的本质是什么？
+将文字剪切成两段，第一段包含首字符，第二段为剩下的字符
+
+输出金字塔div
+1.金字塔的本质是什么？
+从左到右排列的div,下一层比上一层少一个div,一直到一个div
+
+2.如何在页面中添加div?
+var div = document.createElement('div')
+div.className = 'box'
+父元素.append(div)
+
+3.如何让下一层div比上一层少一个？
+两层for循环,用一个额外的变量控制第二层的次数
+
+倒计时效果
+1.倒计时的本质是什么？
+获取当前时间戳和指定时间戳相减后转化为时间
+
+2.如何获取当前时间戳和指定时间戳？
+var oTime = new Date(2018/12/12,00:00:00)
+var oendTime = new Date()
+Time = oTime.getTime() - oendTime.getTime()
+
+div循环变大变小
+1.循环变大变小的div本质是什么？
+div的宽高不断的循环变大变小
+
+2.如何实现？
+定时器运行改变div大小的函数
+
+机器人聊天室
+1.聊天室点击发送按钮追加页面内容的本质是什么？
+发送按钮上有个事件，触发后会让当前输入框的内容添加到页面中
+
+2.如何实现？
+将input的value值，生成的子元素innerHTML中，再插入到父元素中
+
+原型遍历继承
+<script>
+	var obj = {
+		sayHi: function() {
+			console.log('Hi!')
+		}
+	}
+	
+
+	function Person(name) {
+		this.name = name
+	}
+
+	//拷贝一份原型
+	for(var k in obj){
+	    // 将obj里面的所有属性遍历添加到构造函数 Person 的原型中
+	    Person.prototype[k] = obj[k];
+	}
+	//替换一个原型，注意新的对象是没有constructor属性的，需要手动指向该构造函数
+	obj.constructor = Person
+	Person.prototype = obj
+
+	//ES6新方法Object.assign
+	Person.prototype = {}
+	Object.assign(Person.prototype,obj)
+	
+</script>
+
+使用流程图判断布尔值代码非常好用，通过画流程图，可以得知每个步骤的前提条件，从而可以完整写出逻辑代码，不会遗漏
+
+记录一次内存溢出
+在使用头部圆圈组件的时候，没有对传入的值进行检验，有一次像后台请求圆圈内的数字时，错误将数字传入作为数组遍历，而恰好该数字非常大，造成遍历时浏览器瞬间卡死并崩溃
+
+打包部署问题
+说明：打包后部署到tomcat上会出现路径问题，需要在config下的index.js中修改生产配置项
+<script>
+	build: {
+	  // Template for index.html
+	  index: path.resolve(__dirname, '../dist/index.html'),
+
+	  // Paths
+	  assetsRoot: path.resolve(__dirname, '../dist'),
+	  assetsSubDirectory: 'static',
+	  assetsPublicPath: './', //这里前面要加一个点
+	}
+</script>
+
+打包后图片找不到
+解决：如果配置了"assetsPublicPath: './'"还是找不到，先查看其他图片是否能够显示，如果部分图片能够显示，可能因为图片的路径前面有url()等字段，会被webpack识别为字符串，正常情况下，assetsPublicPath: './' 会在所有的资源路径前面加上根目录，但是如果不能识别为路径，就不会自动加路径，所以会有一部分显示，一部分不显示的问题
+解决方法：将'url(../../static/img.png)'类的字符串路径修改为另一种形式
+<script>
+	aaa.img = 'url()'
+	//改变为
+	let src = require('../../static/img.png')
+	aaa.img = 'url(' + src + ')'
+</script>

@@ -1,0 +1,1247 @@
+语句和表达式
+语句是为了进行某种操作
+表达式式为了得到返回值，表达式一定会返回一个值
+
+变量赋值的原理：声明 + 赋值
+<script>
+	var a = 1;
+	//上面的语句其实是两个操作，变量的声明和赋值
+	var a;
+	a = 1;
+	//只声明而没赋值，变量的值是 undefined ，即未定义
+</script>
+
+变量提升
+JavaScript 引擎的工作方式是，先解析代码，获取所有被声明的变量，然后再一行一行地运行这造成的结果，就是所有的变量的声明语句，都会被提升到代码的头部，这就叫做变量提升（hoisting）
+<script>
+	console.log(a);
+	var a = 1;
+	//输出undefined
+	//因为变量会最先执行，但是赋值操作会按顺序，所以打印的是申明了但是未赋值的变量
+</script>
+函数提升
+原理跟变量提升类似，如果同时存在变量提升和函数提升，变量提升优先于函数
+
+if的条件语句中，可以将常量写在 == 前面，这样如果不小心写了 = ，也会有报错提示
+<script>
+	if(x == 2) {...}
+	//如果不小心写成 x = 2 不会报错
+	if(2 == x) {...}
+	//如果不小心写成 2 = x 就会报错
+</script>
+
+switch语句
+根据变量的值，选择执行相应的case，如果所有case都不符合，则执行最后的default，switch和case语句部分都可以使用表达式
+例：
+<script>
+	switch (2 === x) {
+	  case true:
+	    console.log('x 等于1');
+	    break;
+	  case false:
+	    console.log('x 等于2');
+	    break;
+	  default:
+	    console.log('x 等于其他值');
+	}
+</script>
+注1：每个case代码块内部的break语句不能少，否则会接下去执行下一个case代码块，而不是跳出switch结构
+注2：switch语句后面的表达式，与case语句后面的表示式比较运行结果时，采用的是严格相等运算符（===），而不是相等运算符（==），这意味着比较时不会发生类型转换
+
+while和for
+While语句包括一个循环条件和一段代码块，只要条件为真，就不断循环执行代码块
+for语句可以指定循环的起点、终点和终止条件
+
+do...while循环与while循环类似，唯一的区别就是先运行一次循环体，然后判断循环条件，不管条件是否为真，do...while循环至少运行一次，这是这种结构最大的特点，while语句后面的分号注意不要省略
+例：
+<script>
+	var x = 3;
+	var i = 0;
+
+	do {
+	  console.log(i);
+	  i++;
+	} while(i < x);
+</script>
+
+break和continue
+break语句用于跳出代码块或循环
+continue语句用于立即终止本轮循环，返回循环结构的头部，开始下一轮循环
+
+标签（label）
+JavaScript 语言允许语句的前面有标签（label），相当于定位符，用于跳转到程序的任意位置，通常与break语句和continue语句配合使用，跳出特定的循环或代码块
+例：
+<script>
+	top: //这里的top就是标签
+	  for (var i = 0; i < 3; i++){
+	    for (var j = 0; j < 3; j++){
+	      //break命令后面加上了top标签（top不用加引号）,满足条件时，直接跳出双层循环， continue 同理
+	      if (i === 1 && j === 1) break top; 
+	      console.log('i=' + i + ', j=' + j);
+	    }
+	  }
+</script>
+
+JavaScript的数据类型（六种sunbon）
+字符串（string）：文本（比如Hello World）
+布尔值（boolean）：表示真伪的两个特殊值，即true（真）和false（假）
+对象（object）：各种值组成的集合
+null：表示空值，即此处的值为空
+undefined：表示“未定义”或不存在，即由于目前没有定义，所以此处暂时没有任何值
+数值（number）：整数和小数（比如1和3.14）
+
+数值、字符串、布尔值合称为原始类型（primitive type）的值，即它们是最基本的数据类型，不能再细分了。
+对象称为合成类型（complex type）的值，因为一个对象往往由多个原始类型的值组成，可以看作一个容器。
+undefined和null，null表示空值，undefined表示“未定义”
+
+对象是最复杂的数据类型，其下有三个子类型
+狭义对象（object）
+数组（array）
+函数（function）
+JavaScript 把函数（function）当成一种数据类型，可以赋值给变量，这为编程带来了很大的灵活性，也为 JavaScript 的“函数式编程”奠定了基础。
+
+typeof运算符可以返回一个值的数据类型。
+例：
+<script>
+	//数值、字符串、布尔值分别返回相应值
+	typeof 123 // "number"
+	typeof '123' // "string"
+	typeof false // "boolean"
+
+	//函数返回function。
+	function f() {}
+	typeof f
+	//"function"
+	
+	//对象返回object。
+	typeof window // "object"
+	typeof {} // "object"
+	typeof [] // "object"
+
+	//instanceof运算符可以区分数组和对象
+	var o = {};
+	var a = [];
+	o instanceof Array // false
+	a instanceof Array // true
+
+	//undefined返回undefined。
+	typeof undefined //"undefined"
+
+	//基于历史原因，JS第一版只设计了五种数据类型，没有null，当时null类型归为了object
+	typeof null // "object"
+</script>
+
+null是一个表示“空”的对象，转为数值时为0，undefined是一个表示"此处无定义"的原始值，转为数值时为NaN(not a number)。
+返回undefined的典型场景：
+<script>
+	// 变量声明了，但没有赋值
+	var i;
+	i // undefined
+
+	// 调用函数时，应该提供的参数没有提供，该参数等于 undefined
+	function f(x) {
+	  return x;
+	}
+	f() // undefined
+
+	// 对象没有赋值的属性
+	var  o = new Object();
+	o.p // undefined
+
+	// 函数没有返回值时，默认返回 undefined
+	function f() {}
+	f() // undefined
+</script>
+
+布尔值为false的值（除此之外都返回true）：
+<script>
+	undefined
+	null
+	false
+	0
+	NaN
+	"",'' //（即空字符串）
+</script>
+注：空数组（[]）和空对象（{}）对应的布尔值，都是true。
+
+JavaScript 语言的底层根本没有整数，所有数字都是小数（64位浮点数）
+64位浮点数:
+第1位：符号位，0表示正数，1表示负数
+第2位到第12位（共11位）：指数部分
+第13位到第64位（共52位）：小数部分（即有效数字）
+例：0 00000000001 200000000...后52位
+
+由于浮点数不是精确的值，所以涉及小数的比较和运算要特别小心
+例：
+<script>
+	0.1 + 0.2 === 0.3
+	// false
+
+	0.3 / 0.1
+	// 2.9999999999999996
+
+	(0.3 - 0.2) === (0.2 - 0.1)
+	// false
+</script>
+结论：大于2的53次方的数值，都无法保持精度。由于2的53次方是一个16位的十进制数值，所以简单的法则就是，JavaScript 对15位的十进制数都可以精确处理。
+
+正零和负零
+JavaScript 的64位浮点数之中，有一个二进制位是符号位。这意味着，任何一个数都有一个对应的负值，就连0也不例外。
+JavaScript 内部实际上存在2个0：一个是+0，一个是-0，区别就是64位浮点数表示法的符号位不同，它们是等价的。
+几乎所有场合，正零和负零都会被当作正常的0，唯一有区别的场合是，+0或-0当作分母，返回的值是不相等的。
+<script>
+	(1 / +0) === (1 / -0) // false
+</script>
+除以正零得到+Infinity，除以负零得到-Infinity，这两者是不相等的
+
+NaN
+NaN是 JavaScript 的特殊值，表示“非数字”（Not a Number），主要出现在将字符串解析成数字出错的场合。
+注1：NaN不是独立的数据类型，而是一个特殊数值，它的数据类型依然属于Number
+注2：NaN不等于任何值，包括它本身。
+
+Infinity
+Infinity表示“无穷”，用来表示两种场景。一种是一个正的数值太大，或一个负的数值太小，无法表示，另一种是非0数值除以0，得到Infinity。
+Infinity大于一切数值（除了NaN），-Infinity小于一切数值（除了NaN）。
+Infinity与NaN比较，总是返回false。
+<script>
+	Infinity > 1000 // true
+	-Infinity < -1000 // true
+
+	Infinity > NaN // false
+	-Infinity > NaN // false
+
+	Infinity < NaN // false
+	-Infinity < NaN // false
+</script>
+
+与数值相关的全局方法
+parseInt()
+将字符串转为整数，如果字符串头部有空格，空格会被自动去除，parseInt的参数不是字符串，则会先转为字符串再转换，字符串转为整数的时候，是一个个字符依次转换，如果遇到不能转为数字的字符，就不再进行下去，返回已经转好的部分，如果字符串的第一个字符就不能转化为数字（后面跟着数字的正负号除外），返回NaN。
+<script>
+	parseInt(1.23) // 1
+	// 等同于
+	parseInt('1.23') // 1
+
+	parseInt('8a') // 8
+	parseInt('12**') // 12
+	parseInt('12.34') // 12
+	parseInt('15e2') // 15
+	parseInt('15px') // 15
+</script>
+
+字符串
+如果要在单引号字符串的内部，使用单引号，就必须在内部的单引号前面加上反斜杠用来转义，双引号字符串内部使用双引号同理
+
+对象
+对象的每一个键名又称为“属性”（property），它的“键值”可以是任何数据类型，如果一个属性的值为函数，通常把这个属性称为“方法”，它可以像函数那样调用，如果属性的值还是一个对象，就形成了链式引用。
+
+如果不同的变量名指向同一个对象，那么它们都是这个对象的引用，也就是说指向同一个内存地址，修改其中一个变量，会影响到其他所有变量。
+例：
+<script>
+	var o1 = {};
+	var o2 = o1;
+
+	//在o1中添加a: 1，o2也可以读到，其本质是往o1指向的{}中添加a: 1，所以o2可以看到
+	o1.a = 1;
+	o2.a // 1
+	//如果取消某一个变量对于原对象的引用(指向)，不会影响到另一个变量。
+	o1 = 1;
+	o2 // {a: 1}
+</script> 
+注：这种引用只局限于对象，如果两个变量指向同一个"原始类型"的值，变量指向的都是值的拷贝。
+例：
+<script>
+	var x = 1;
+	var y = x;
+
+	x = 2;
+	y // 1
+</script>
+
+对象采用大括号表示，这导致了一个问题：如果行首是一个大括号，它到底是{a:1}还是{要执行的代码}？
+为了避免这种歧义，JavaScript 引擎的做法是，如果遇到这种情况，无法确定是对象还是代码块，一律解释为代码块。
+书写时可以通过圆括号来避免歧义，没有圆括号，则理解为一个代码块，加上圆括号以后，就理解成一个对象
+<script>
+	({ foo: 123 }) // 正确
+	({ console.log(123) }) // 报错
+</script>
+读取对象的属性，有两种方法，一种是使用点运算符，还有一种是使用方括号运算符，注意，如果使用方括号运算符，键名必须加引号，否则会被当作变量处理，数字键可以不加引号，因为会自动转成字符串，数值键名不能使用点运算符（因为会被当成小数点），只能使用方括号运算符。
+
+查看一个对象本身的所有属性，可以使用Object.keys方法
+删除对象的属性，使用delete命令，删除成功后返回true
+<script>
+	var obj = {
+	  key1: 1,
+	  key2: 2
+	};
+
+	Object.keys(obj);
+	// ['key1', 'key2']
+
+	delete obj.key1 // true
+
+	Object.keys(obj);
+	// ['key2']
+</script>
+注1：删除一个不存在的属性，delete不报错，而且返回true。
+注2：delete命令只能删除对象本身的属性，无法删除继承的属性，即使delete后返回true
+
+for...in循环用来遍历一个对象的全部属性。
+<script>
+	var obj = {a: 1, b: 2, c: 3};
+
+	for (var i in obj) {
+	  console.log('键名：', i);
+	  console.log('键值：', obj[i]);
+	}
+	// 键名： a
+	// 键值： 1
+	// 键名： b
+	// 键值： 2
+	// 键名： c
+	// 键值： 3
+</script>
+注1：它遍历的是对象所有可遍历（enumerable）的属性，会跳过不可遍历的属性。
+注2：它不仅遍历对象自身的属性，还遍历继承的属性。
+
+如果继承的属性是可遍历的，那么就会被for...in循环遍历到。但一般情况下，都是只想遍历对象自身的属性，所以使用时应结合hasOwnProperty方法使用，在循环内部判断一下，某属性是否为其自身的属性。
+<script>
+	var person = { name: '老张' };
+
+	for (var key in person) {
+	  if (person.hasOwnProperty(key)) {
+	    console.log(key);
+	  }
+	}
+	// name
+</script>
+函数
+函数可以调用自身，这这种方式叫递归（recursion），注意递归一定要有停止条件
+例：计算斐波那契数列的代码
+<script>
+	function fib(num) {
+	  if (num === 0) return 0; //设置停止条件，不然就停不下来了，直到栈溢出
+	  if (num === 1) return 1; //设置停止条件，不然就停不下来了，直到栈溢出
+	  return fib(num - 2) + fib(num - 1); //return时调用自身
+	}
+	fib(6) // 8，斐波那契数列的第6个元素是8。
+</script>
+
+函数名的提升
+JavaScript 引擎将函数名视同变量名，所以采用function命令声明函数时，整个函数会像变量声明一样，被提升到代码头部。所以，下面的代码不会报错。
+<script>
+	f(); //先调用在声明也不报错
+
+	function f() {}
+</script>
+但是，如果采用赋值语句定义函数，JavaScript 就会报错
+<script>
+	f();
+	var f = function (){};
+	// TypeError: undefined is not a function
+
+	//上代码等同于
+	var f;
+	f(); //执行到这里时，f只是声明了，还没有赋值，f()调用undefind，所以会报错
+	f = function () {};
+</script>
+
+length属性
+函数的length属性返回函数预期传入的参数个数，即函数定义之中的参数个数。
+<script>
+	function f(a, b) {}
+	f.length // 2
+</script>
+
+toString方法
+函数的toString方法返回一个字符串，内容是函数的源码。
+<script>
+	function f() {
+	  a();
+	  b();
+	  c();
+	}
+
+	f.toString()
+	// function f() {
+	//  a();
+	//  b();
+	//  c();
+	// }
+</script>
+
+作用域
+作用域（scope）指的是变量存在的范围
+在 ES5 的规范中，JS中只有两种作用域：一种是全局作用域，变量在整个程序中一直存在，所有地方都可以读取，另一种是函数作用域，变量只在函数内部存在。
+ES6新增了块级作用域
+
+局部变量
+对于var命令来说，局部变量只能在函数内部声明，换句话说，只有在函数体内部声明的变量才是局部变量，在其他区块中声明，一律都是全局变量(如if() {...}中var的变量也是全局变量)
+
+与全局作用域一样，函数作用域内部也会产生“变量提升”现象。var命令声明的变量，不管在什么位置，变量声明都会被提升到函数体的头部。
+<script>
+	function foo(x) {
+	  if (x > 100) {
+	    var tmp = x - 100;
+	  }
+	}
+
+	// 等同于
+	function foo(x) {
+	  var tmp;  //var tmp被提升到头部
+	  if (x > 100) {
+	    tmp = x - 100;
+	  };
+	}
+</script>
+
+函数本身也是一个值，也有自己的作用域，它的作用域与变量一样，就是其声明时所在的作用域，与其运行时所在的作用域无关。
+<script>
+	var a = 1;
+	var x = function () {
+	  console.log(a);
+	};
+
+	function f() {
+	  var a = 2;
+	  x(); //x执行时在函数f内部，但x是在函数f的外部声明的，所以它的作用域绑定在外层，x里的变量a不会在函数f内取值
+	}
+
+	f() // 1
+</script>
+总结：函数在哪定义，其内部变量就引用哪声明的变量，在全局定义引用全局变量，在局部定义引用局部变量，只有在函数体内定义才叫局部定义
+
+传参
+传给函数的参数如果是"原始类型"的值（数值、字符串、布尔值），传递方式是传值传递（passes by value），即使在函数体内修改参数值，也不会影响到函数外部的变量，传值传递是数据的拷贝。
+传给函数的参数如果是"复合类型"的值（数组、对象、其他函数），传递方式是传址传递（pass by reference），即传入函数的是原始值的内存地址，因此在函数内部修改参数，将会影响到原始值，传址传递是把变量指向原始值的内存地址
+应用：
+比如在外部有一个共享的对象，被很多数据引用（例如购物车数组），我们就可以在函数内部直接修改购物车数组，这样一来所有引用该购物车数组的数据都会同步发生改变
+arguments对象
+JS允许函数有不定数目的参数（多传的参数会被省略），所以需要有方法在函数体内部读取所有参数，因此就有了arguments对象
+arguments对象包含传入函数内所有参数，arguments[0]是第一个参数，arguments[1]是第二个参数，以此类推，该对象只有在函数体内部才可使用
+注意：arguments是一个对象，并非数组，slice和forEach什么的，不能在arguments对象上直接使用，可以先将伪数组转化为真数组
+<script>
+	Array.prototype.slice.call(arguments) 
+	//数组方法slice可以复制一个数组，用call方法将调用slice的数组对象替换为arguments
+</script>
+
+闭包
+函数中变量的生命周期：函数中的变量，在函数被执行时创建，在函数执行完后被销毁
+JS作用域：js中作用域有两种，全局作用域和函数作用域（局部作用域），函数（内部）作用域可以读取外部作用域
+闭包本质
+闭包的本质是一个函数，是一个定义在函数作用域内的函数，这个函数调用（引用）了内部的变量（没引用不算闭包）
+闭包的产生
+函数声明语句被执行的时候，就是函数被创建的时候，闭包也是函数，什么时候产生就看它的声明语句什么时候被执行，当外部函数执行时，闭包函数（引用了内部变量的函数）的声明语句，因为函数提升而被执行，这时闭包（或者说闭包函数）就产生了
+闭包的消失
+1.外部函数运行时，闭包就产生了，但如果没有将该闭包返回到外部，该闭包也会随着外部函数的消亡而消失
+
+2.将闭包函数作为数据返回到外部，但如果外部没有将这个返回值存起来，即没有任何变量引用这个闭包，则它会被垃圾回收
+
+闭包应用
+将闭包作为返回值返回到外部，并赋值给一个变量，这样这个闭包函数就会一直存在（不会被垃圾回收），而且闭包引用的变量也会一直存在，不会因为函数执行完就被销毁
+<script>
+	function f1() {
+		var n = 999 //变量n声明在f1内部
+
+		//f2定义在f1内部，所以可以读取到n，这就是一个闭包
+		function f2() {
+		　　console.log(n)
+		}
+
+		f2()
+	}
+	f1() //会输出999，调用f1时执行了f2()，函数执行完后，n和闭包f2就一起消失了
+	console.log(n) //会报错，外部读取不到n，因为已经消失了，怎样才能读取到n呢？
+</script>
+<script>
+	function f1() {
+		var n = 999 //变量n声明在f1内部
+
+		//f2定义在f1内部，所以可以读取到n，这就是一个闭包
+		function f2() {
+		　　return n
+		}
+		//把闭包f2返回出去，并用一个变量存起来（否则会被垃圾回收）
+		return f2
+	}
+	var result = f1()
+	result() //返回n，即999
+
+	//result变量指向了闭包函数f2，因此f2不会被垃圾回收
+	//闭包函数引用了变量n，所以n也不会消失
+	//result()相当于执行了f2()，所以会返回n，即999
+</script>
+简化一些地方：
+<script>
+	function f1() {
+		var n = 999
+
+		//不用取名字，直接返回函数，然后在返回的函数里调用n执行操作或者直接返回到外面
+		return function() {
+		　　return n
+		}
+		
+	}
+	//result被赋值为闭包函数的名称，避免被垃圾回收
+	var result = f1()
+	console.log(result())
+</script>
+扩展
+JS语言拥有独特的"链式作用域"结构（chain scope），子对象会一级一级地向上寻找所有父对象的变量，即父对象的所有变量，对子对象都是可见的，而反之则不成立。
+
+闭包的另一个作用就是它可以“记住”诞生的环境，如f2记住了它诞生的环境f1，所以从f2可以得到f1的内部变量。
+<script>
+	function Increment(start) {
+		return function() {
+			return start++ //start = start + 1
+		}
+	}
+	//通过一个闭包可以将函数的内部和外部连接起来
+	//Increment里的闭包函数引用内部变量start，然后将闭包函数返回到外面，赋值给全局变量inc，
+	//那么，全局变量inc通过闭包函数引用着局部变量start，JS判断start还在被引用着，所以不会销毁它
+	var inc = Increment(5);
+	/*var inc = function(5) {
+		return start++ //start = start + 1
+	}*/
+	//通过inc()调用闭包函数时返回start的值，该值会加1后重新赋给start，start会一直存在并被赋予最新值
+	inc() // 5
+	inc() // 6
+	inc() // 7
+</script>
+
+私有属性和私有方法
+在对象内部，键对应的值为变量，则称其为属性，键对应的值为函数，则称其为方法
+通过闭包，可以为函数对象建立私有属性和私有方法，即声明在内部的属性和方法，但又不会消失，并且还可以被外部修改到，这就是初级的面向对象
+<script>
+	//创建一个函数Person
+	function Person(name) {
+		//在其内部定义一个属性_age
+		var _age;
+
+		//在其内部定义一个方法setAge
+		function setAge(n) {
+			_age = n;
+		}
+		//在其内部定义一个方法getAge
+		function getAge() {
+			return _age;
+		}
+		//把所有方法返回出去，这样外部就只能看见返回出去的方法，看不到内部变量
+		return {
+			getAge: getAge,
+			setAge: setAge
+		};
+	}
+	//外部通过调用闭包setAge和getAge，就可以修改或者获取内部私有属性_age，而_age一直被p1引用，也不会消失
+	var p1 = Person('张三');
+	p1.setAge(25);
+	p1.getAge() // 25
+</script>
+注：每次运行Person()，都会生成一个新的闭包，而这个闭包又会保留p1的内部变量，所以内存消耗很大，因此不能滥用闭包，或者在不需要时 p1 = null 清除掉，否则会造成网页的性能问题。
+
+圆括号
+在 JavaScript 中，圆括号()是一种运算符，跟在函数名之后，表示调用该函数，如print()就表示调用print函数
+但function(){...}()并不代表调用该函数，因为function这个关键字即可以当作语句，也可以当作表达式，JS看到function关键字出现在行首，一律会解释成语句
+解决方法就是不要让function出现在行首，或者将其放在一个圆括号里面，这就叫做“立即调用的函数表达式”（Immediately-Invoked Function Expression），简称 IIFE。
+即：
+<script>
+	(function(){...}());
+	// 或者
+	(function(){ /* code */ })();
+	//注意，两种写法最后的分号都是必须的,如果省略分号，遇到两个 IIFE连着，可能就会报错
+</script>
+
+通常情况下，只对匿名函数使用这种“立即执行的函数表达式”。目的有两个：一是不必为函数命名，避免了污染全局变量；二是 IIFE 内部形成了一个单独的作用域，可以封装一些外部无法读取的私有变量。
+<script>
+	// 写法一
+	var tmp = newData;
+	processData(tmp);
+	storeData(tmp);
+
+	// 写法二，避免了污染全局变量。
+	(function () {
+	  var tmp = newData;
+	  processData(tmp);
+	  storeData(tmp);
+	}());
+</script>
+
+自增++和自减--
+这两个运算符叫做一元运算符，++和--都会有返回值，返回值取决于它们是放在变量之前还是之后
+放在变量之后，会先返回变量操作前的值，再进行自增/自减操作
+放在变量之前，会先进行自增/自减操作，再返回变量操作后的值
+自增和自减运算符是仅有的两个具有副作用的运算符，即它们会改变原始变量，其他运算都会返回一个新的值
+<script>
+	var x = 1;
+	var y = 1;
+
+	x++ // 1，先返回1，再加1
+	++y // 2，加完1，再返回2
+</script>
+
+任何值与NaN的比较
+任何值（包括NaN本身）与NaN比较，返回的都是false，另外，正0等于负0。
+<script>
+	NaN === NaN  // false
+	+0 === -0 // true
+</script>
+复合类型的值比较
+两个复合类型（对象、数组、函数）的数据比较时，严格相等运算符比较的是地址，而大于或小于运算符比较的是值。
+undefined和null与自身严格相等
+<script>
+	//严格相等运算符比较的是地址
+	{} === {} // false
+	[] === [] // false
+	(function () {} === function () {}) // false
+
+	var obj1 = {};
+	var obj2 = {};
+
+	//大于或小于运算符比较的是值
+	obj1 > obj2 // false
+	obj1 < obj2 // false
+	obj1 === obj2 // false
+
+	//undefined和null与自身严格相等
+	undefined === undefined // true
+	null === null // true
+</script>
+
+!==
+严格相等运算符有一个对应的“严格不相等运算符”（!==），它的算法就是先求严格相等运算符的结果，然后返回相反值。
+!=
+相等运算符有一个对应的“不相等运算符”（!=），它的算法就是先求相等运算符的结果，然后返回相反值。
+<script>
+	1 !== '1' // true
+	// 等同于
+	!(1 === '1')
+
+
+	1 != '1' // false
+	// 等同于
+	!(1 == '1')
+</script>
+
+取反
+不管什么类型的值，经过两次取反运算后，变成了与Boolean函数结果相同的布尔值，所以，两次取反就是将一个值转为布尔值的简便写法
+<script>
+	//两次取反就是将一个值转为布尔值
+	!!x
+	// 等同于
+	Boolean(x)
+</script>
+
+&&
+如果第一个运算子的布尔值为true，则返回第二个运算子的值（注意是值，不是布尔值）
+如果第一个运算子的布尔值为false，则直接返回第一个运算子的值，且不再对第二个运算子求值
+且运算符可以多个连用，连用时会返回第一个布尔值为false的表达式的值，如果所有表达式都为true，则返回最后一个表达式的值
+<script>
+	true && 'foo' && '' && 4 && 'foo' && true
+	// ''
+</script>
+||
+如果第一个运算子的布尔值为true，则返回第一个运算子的值，且不再对第二个运算子求值
+如果第一个运算子的布尔值为false，则返回第二个运算子的值
+或运算符可以多个连用，连用时会返回第一个布尔值为true的表达式的值，如果所有表达式都为false，则返回最后一个表达式的值
+或运算符常用于为一个变量设置默认值
+<script>
+	false || 0 || '' || 4 || 'foo' || true
+	// 4
+
+	false || 0 || ''
+	// ''
+
+	function saveText(text) {
+	  //如果函数调用时没有提供参数，则该参数默认设置为空字符串。
+	  text = text || ''
+	  // ...
+	}
+
+	// 或者写成
+	saveText(this.text || '')
+</script>
+
+三元表达式与if...else之间的重大区别是
+if...else是语句，没有返回值
+三元条件表达式是表达式，具有返回值
+因此，在需要返回值的场合，只能使用三元条件表达式，不能使用if..else
+
+~~
+所有的位运算都只对整数有效，二进制否运算~遇到小数时，也会将小数部分舍去，只保留整数部分，所以，对一个小数连续进行两次二进制否运算，能达到取整效果，但是这样的取整是有局限性的，并且有代码不易读的隐患，建议不用
+
+想在点击<a>链接时执行f()并且页面不跳转
+<script>
+	function f() {
+	  console.log('Hello World');
+	}
+</script>
+<!-- 点击后会先执行onclick代码，由于onclick返回false，所以浏览器不会跳转到example.com -->
+<a href="http://example.com" onclick="f(); return false;">点击</a>
+
+void运算符
+void运算符的作用是执行一个表达式，然后不返回任何值，或者说返回undefined
+所以想在点击<a>链接时执行f()并且页面不跳转
+<script>
+	function f() {
+	  console.log('Hello World');
+	}
+</script>
+<!-- 点击后会执行href，因为void(f())返回undefind，所以浏览器不会跳转到example.com -->
+<a href="javascript: void(f())">文字</a>
+还可以用在提交表单上
+用户点击链接提交表单，但是不产生页面跳转
+<a href="javascript: void(document.form.submit())">提交</a>
+
+逗号运算符
+逗号运算符用于对两个表达式求值，并返回后一个表达式的值，在返回一个值之前，可以进行一些辅助操作
+<script>
+	var value = (console.log('Hi!'), true);
+	// Hi!
+
+	value // true
+</script>
+左结合与右结合
+大多数运算符计算顺序总是从左到右，这叫做运算符的“左结合”（left-to-right associativity），即从左边开始计算
+少数运算符的计算顺序是从右到左，这叫做运算符的“右结合”（right-to-left associativity）,即从右边开始计算
+其中，最主要的“右结合”是赋值运算符（=），三元条件运算符（?:）和指数运算符（**）
+<script>
+	w = x = y = z;
+	q = a ? b : c ? d : e ? f : g;
+	2 ** 3 ** 2
+
+	//相当于
+	w = (x = (y = z));
+	q = a ? b : (c ? d : (e ? f : g));
+	2 ** (3 ** 2)
+</script>
+
+错误
+SyntaxError：解析代码时发生的语法错误
+<script>
+	// 变量名错误
+	var 1a;
+	// Uncaught SyntaxError: Invalid or unexpected token
+
+	// 缺少括号
+	console.log 'hello');
+	// Uncaught SyntaxError: Unexpected string
+</script>
+ReferenceError：引用一个不存在的变量时发生的错误
+<script>
+	// 使用一个不存在的变量
+	unknownVariable
+	// Uncaught ReferenceError: unknownVariable is not defined
+
+	// 等号左侧不是变量
+	console.log() = 1
+	// Uncaught ReferenceError: Invalid left-hand side in assignment
+
+	// this 对象不能手动赋值
+	this = 1
+	// ReferenceError: Invalid left-hand side in assignment
+</script>
+RangeError：值超出有效范围时发生的错误。主要有几种情况，一是数组长度为负数，二是Number对象的方法参数超出范围，以及函数堆栈超过最大值。
+<script>
+	// 数组长度不得为负数
+	new Array(-1)
+	// Uncaught RangeError: Invalid array length
+</script>
+TypeError：变量或参数不是预期类型时发生的错误。比如，对字符串、布尔值、数值等原始类型的值使用new命令，就会抛出这种错误，因为new命令的参数应该是一个构造函数，调用对象不存在的方法，也会抛出TypeError错误，因为obj.unknownMethod的值是undefined，而不是一个函数。
+<script>
+	new 123
+	// Uncaught TypeError: number is not a func
+
+	var obj = {};
+	obj.unknownMethod()
+	// Uncaught TypeError: obj.unknownMethod is not a function
+</script>
+URIError： URI 相关函数的参数不正确时抛出的错误，主要涉及encodeURI()、decodeURI()、encodeURIComponent()、decodeURIComponent()、escape()和unescape()这六个函数
+<script>
+	decodeURI('%2')
+	// URIError: URI malformed
+</script>
+
+console.time()，console.timeEnd()
+这两个方法用于计时，可以算出一个操作所花费的准确时间
+<script>
+	//开始处用time
+	console.time('Array initialize');
+
+	var array= new Array(1000000);
+	for (var i = array.length - 1; i >= 0; i--) {
+	  array[i] = new Object();
+	};
+
+	//结束处用timeEnd
+	console.timeEnd('Array initialize');
+	// Array initialize: 1914.481ms
+</script>
+
+使用new命令时，它后面的函数会依次执行下面的步骤：
+1.创建一个空对象，作为将要返回的对象实例
+2.将这个空对象的原型，指向构造函数的prototype属性
+3.将这个空对象赋值给函数内部的this关键字
+4.开始执行构造函数内部的代码
+注：对普通函数（内部没有this关键字的函数）使用new命令，会返回一个空对象
+
+构造函数之所以叫“构造函数”，就是说该函数的用途，就是操作一个空对象（即this对象），将其“构造”为需要的样子
+构造函数内部如果有return语句，且return后面跟的是一个对象（object类型的数据），new命令会返回return语句指定的对象，否则，会忽略return语句，直接返回this对象
+<script>
+	var Vehicle = function () {
+	  this.price = 1000;
+	  return 1000;
+	};
+
+	//return返回的是Number类型的数据，所以被new忽略掉，直接返回this，this不等于1000
+	(new Vehicle()) === 1000
+	// false
+</script>
+
+注：如果return语句返回的是一个跟this无关的新对象，new命令会返回这个新对象，而不是this对象，只要返回的是对象格式的数据，return就会执行
+
+Object.create()创建实例对象
+构造函数作为模板，可以生成实例对象，但有时拿不到构造函数，只能拿到一个现有的对象，使用Object.create()方法，能以这个现有的对象作为模板，生成新的实例对象
+Object.create方法的实质是新建一个空的构造函数F，然后让F.prototype属性指向参数对象obj，最后返回一个F的实例
+<script>
+	var person1 = {
+	  name: '张三',
+	  age: 38,
+	  greeting: function() {
+	    console.log('Hi! I\'m ' + this.name + '.');
+	  }
+	};
+
+	var person2 = Object.create(person1);
+
+	person2.name // 张三
+	person2.greeting() // Hi! I'm 张三
+</script>
+
+prototype属性
+JSc规定，每个函数都有一个prototype属性，指向一个对象，对于普通函数来说，该属性基本无用，但对于构造函数来说，生成实例的时候，该属性会自动成为实例对象的原型
+在原型对象上添加一个属性，所有实例对象都会共享该属性，只要修改原型对象，变动就立刻会体现在所有实例对象上
+<script>
+	function Animal(name) {
+	  this.name = name;
+	}
+	//1.在原型上添加color属性
+	Animal.prototype.color = 'white';
+
+	var cat1 = new Animal('大毛');
+	var cat2 = new Animal('二毛');
+
+	//2.实例对象cat1和cat2都会共享到原型上的属性
+	cat1.color // 'white'
+	cat2.color // 'white'
+
+	//3.原型对象的color属性的值变为yellow
+	Animal.prototype.color = 'yellow';
+
+	//两个实例对象的color属性立刻跟着变化
+	cat1.color // "yellow"
+	cat2.color // "yellow"
+	//上述变化是因为实例对象其实自己没有color属性，都是读取原型对象的color属性
+</script>
+当实例对象本身没有某个属性或方法的时候，它会到原型对象去寻找该属性或方法
+总结：原型对象的作用，就是定义所有实例对象共享的属性和方法
+
+原型链
+原型对象也是对象，所以它也有自己的原型，因此，就会形成一个“原型链”（prototype chain）：对象到原型，再到原型的原型……
+所有对象的原型最终都可以上溯到Object.prototype，即Object构造函数的prototype属性，即所有对象都继承了Object.prototype的属性，valueOf和toString方法就是从Object.prototype继承的
+Object.prototype也是对象，Object.prototype的原型是null，null没有任何属性和方法，也没有自己的原型。因此，原型链的尽头就是null
+
+constructor属性
+prototype对象有一个constructor属性，默认指向prototype对象所在的构造函数
+constructor属性定义在prototype对象上面，意味着可以被所有实例对象继承
+constructor属性可以得知某个实例对象，到底是哪一个构造函数产生的
+constructor属性表示原型对象与构造函数之间的关联关系，如果修改了原型对象，一般会同时修改constructor属性，防止引用的时候出错
+<script>
+	//constructor属性，默认指向prototype对象所在的构造函数
+	function F() {};
+	var f = new F();
+
+	f.constructor === F // true
+
+	//修改原型对象时，一般要同时修改constructor属性的指向。
+	function Person(name) {
+	  this.name = name;
+	}
+
+	Person.prototype.constructor === Person // true
+
+	Person.prototype = {
+	  method: function () {}
+	};
+
+	Person.prototype.constructor === Person // false
+	Person.prototype.constructor === Object // true
+</script>
+
+构造函数的继承
+让一个构造函数继承另一个构造函数的所有，可分成两步
+第一步是在子类的构造函数中，调用父类的构造函数Super
+第二步是让子类的原型指向父类的原型，这样子类就可以继承父类原型，另外也同时修改constructor属性的指向
+<script>
+	//在子类的构造函数中，调用父类的构造函数Super
+	function Sub(value) {
+	  Super.call(this);
+	  this.prop = value;
+	}
+
+	//让子类的原型指向父类的原型
+	Sub.prototype = Object.create(Super.prototype);
+	Sub.prototype.constructor = Sub;
+	Sub.prototype.method = '...';
+</script>
+Object.create方法的实质是新建一个空的构造函数F，然后让F.prototype属性指向参数对象obj，最后返回一个F的实例
+Sub.prototype是子类的原型，要将它赋值为Object.create(Super.prototype)，而不是直接等于Super.prototype，否则后面两行对Sub.prototype的操作，会连父类的原型Super.prototype一起修改掉
+
+Object.getOwnPropertyNames()
+Object.getOwnPropertyNames方法返回一个数组，成员是参数对象本身的所有属性的键名（不管是否可以遍历），不包含继承的属性键名
+Object.keys方法返回一个数组，成员是所有属性的键名（只获取可以遍历的）
+<script>
+	Object.getOwnPropertyNames(Date)
+	// ["parse", "arguments", "UTC", "caller", "name", "prototype", "now", "length"]
+
+	Object.keys(Date) // []，Date里面没有可遍历的属性
+</script>
+
+属性描述对象
+JS提供了一个内部数据结构，用来描述对象的属性，控制它的行为，如该属性是否可写、可遍历等等，这个内部数据结构就叫"属性描述对象"（attributes object），每个属性都有自己对应的属性描述对象
+
+属性描述对象有6个种类（6大元属性）
+value：表示该属性的属性值，默认为undefined。
+writable：表示属性值（value）是否可改变（即是否可写），默认为true（可改变）
+enumerable：表示该属性是否可遍历，默认为true（可遍历），如果设为false，会让某些操作遍历操作如for...in循环、Object.keys()等跳过该属性
+configurable：表示可配置性，默认为true（可配置），如果设为false，将阻止某些操作改写该属性，如不能删除该属性，也不能改变该属性的属性描述对象（value属性除外），即，configurable属性控制了属性描述对象的可写性
+get：本质是一个函数，表示该属性的取值函数（getter），默认为undefined（不生效）
+set：本质是一个函数，表示该属性的存值函数（setter），默认为undefined（不生效）
+
+set和get
+分别表示存值函数和取值函数，合称存取器
+对目标属性定义了存取器后，每次发生存取行为的时候，都将执行对应的函数
+通过Object.defineProperty(object, propertyName, attributesObject)方法设置存取器
+Object.defineProperty方法参数：
+	object：属性所在的对象
+	propertyName：字符串，表示属性名
+	attributesObject：属性描述对象
+<script>
+	//定义存取器属性
+	var obj = Object.defineProperty({}, 'p', {
+	  get: function () {
+	    return 'getter';
+	  },
+	  set: function (value) {
+	    console.log('setter: ' + value);
+	  }
+	});
+
+	obj.p // "getter"，当发生读取行为时，调用get函数
+	obj.p = 123 // "setter: 123"，当发生写入行为时(赋值)，自动调用set函数
+
+	//简化写法，与上面等价
+	var obj = {
+	  get p() {
+	    return 'getter';
+	  },
+	  set p(value) {
+	    console.log('setter: ' + value);
+	  }
+	};
+</script>
+
+正则表达式
+主要跟字符串的方法配合
+String.prototype.split(re)：根据指定的字符串中的分隔符将字符串拆分成数组返回，不影响原字符串
+<script>
+	var str = 'a-b-c-d-e-f-g'
+
+	str.split('-')
+	//[a,b,c,d,e,f,g]
+</script>
+String.prototype.search(re)：根据指定的规则匹配相应的字符串，并返回它的下标，不存在返回-1
+<script>
+	var str = 'abcdefg'
+
+	str.search('b')
+	//1，返回第一个匹配的下标
+</script>
+String.prototype.match(re)：根据指定的规则匹配相应的字符串，返回匹配的字符串
+<script>
+	var str = '12 fff 87 er334 233 -=-=fa80'
+
+	str.match(/\d+/g)
+	//12,87,334,233,80
+</script>
+String.prototype.replace(re,'xxx')：根据指定的规则匹配相应的字符串，并替换成指定字符串
+<script>
+	var str = '12 fff 87 er334 233 -=-=fa80'
+
+	str.match(/\d+/g)
+	//12,87,334,233,80
+</script>
+正则的规则
+字面量字符和元字符
+大部分字符在正则表达式中，就是字面的含义，它们叫做“字面量字符”（literal characters），如/a/匹配a，/b/匹配b。
+部分字符有特殊含义，不代表字面的意思，它们叫做“元字符”（metacharacters），如点字符（.)，位置字符（^,$），选择符（|）
+<script>
+	//点"."，代表任意字符
+	var re = /./g //点"."，代表任意字符，尽量不用
+	var re = /<[^<>]+>/g //匹配html标签，<>中除了<>以外的任意字符
+
+	//^和$，行首和行尾
+	var re = /^\d+[a-z]$/ //以数字开头以英文结尾
+
+	//中文匹配，|是或的意思，主要用于敏感词过滤，加上g匹配全部
+	var re = /北京|淘宝|京东/g
+	var str = '.....'
+	str.replace(re,'****') //把敏感词替换成****
+</script>
+转义符
+正则表达式中那些有特殊含义的元字符，如果要匹配它们本身，就需要在它们前面要加上反斜杠。
+<script>
+	/1+1/.test('1+1')
+	// false
+
+	/1\+1/.test('1+1')
+	// true
+</script>
+字符类
+字符类（class）表示有一系列字符可供选择，只要匹配其中一个就可以了
+脱字符（^）：方括号内的第一个字符是[^]，则表示除了字符类之中的字符，其他字符都可以匹配。
+连字符（-）：方括号内的使用字符（-），表示字符的连续范围。
+<script>
+	//[...]和[^...]字符类
+	var re = /[abc]gf/g //匹配agf,bgf,cgf，加g匹配所有
+	var re = /[a-z]/ //匹配a到z的所有字符
+	var re = /[^0-9]/ //匹配除了0-9之外的字符
+	var re = /[^a-z0-9]/ //匹配除了a到z和0-9之外的字符
+</script>
+预定义
+指的是某些常见模式的简写方式
+\d 匹配0-9之间的任一数字，相当于[0-9]。
+\D 匹配所有0-9以外的字符，相当于[^0-9]。
+\w 匹配任意的字母、数字和下划线，相当于[A-Za-z0-9_]。
+\W 除所有字母、数字和下划线以外的字符，相当于[^A-Za-z0-9_]。
+\s 匹配空格（包括换行符、制表符、空格符等），相等于[ \t\r\n\v\f]。
+\S 匹配非空格的字符，相当于[^ \t\r\n\v\f]。
+\b 匹配词的边界。
+\B 匹配非词边界，即在词的内部
+<script>
+	//\d表示数字
+	var re = /\d/ //匹配一位数
+	var re = /\d\d\d/ //匹配三位数
+	var re = /\d+/ //匹配数字，不限位数
+
+	//\d,\D,\w,\W,\s,\S
+	var re = /\d/ //匹配数字,等价于[0-9]
+	var re = /\D/ //匹配除了数字以外的字符，等价于[^0-9]
+	var re = /\w/ //匹配英文，数字，下划线，等价于[a-z0-9_]
+	var re = /\W/ //匹配除了英文，数字，下划线以外的字符，等价于[^a-z0-9_]
+	var re = /\s/ //匹配空白字符，包括空格符，制表符，换行符等
+	var re = /\S/ //匹配非空字符
+
+	// \b 的例子
+	/\bworld/.test('hello world') // true
+	/\bworld/.test('hello-world') // true
+	/\bworld/.test('helloworld') // false
+
+	// \B 的例子
+	/\Bworld/.test('hello-world') // false
+	/\Bworld/.test('helloworld') // true
+</script>
+重复类
+{n}量词，表示多少位
+<script>
+	//{n}量词，表示多少位
+	var re = /\d{8}/ //匹配8位数字
+	var re = /{1,5}/ //匹配最少1位，最多5位
+	var re = /{1,}/ //匹配最少1位，最多不限
+</script>
+量词符
+量词符用来设定某个模式出现的次数。
+? 问号表示某个模式出现0次或1次，等同于{0, 1}。
+* 星号表示某个模式出现0次或多次，等同于{0,}，尽量不用
++ 加号表示某个模式出现1次或多次，等同于{1,}。
+<script>
+	//+和()?，+表示不限位数，?表示可有可无
+	var re = /\d+/ //匹配数字，不限位数
+	var re = /(\d)?aaa/ //匹配有可能以数字开头的aaa，问号前面代表可有可无
+
+	// t 出现0次或多次
+	/t*est/.test('test') // true
+	/t*est/.test('ttest') // true
+	/t*est/.test('tttest') // true
+	/t*est/.test('est') // true
+</script>
+贪婪模式和非贪婪模式
+贪婪模式：尽可能匹配多的字符，默认为此模式
+非贪婪模式：一旦条件满足，就不再往下匹配，在量词符后面加一个问号即可
+<script>
+	//贪婪模式
+	var s = 'aaa';
+	s.match(/a+/) // ["aaa"]
+
+	//非贪婪模式
+	var s = 'aaa';
+	s.match(/a+?/) // ["a"]
+
+	//匹配DOM标签
+	var str = '<p>asdfasdf<a href="">asfasf<span>asfasdfasdf<span>asdfasdf</span></span></a></p>'
+	
+	var re = /<.+>/g
+
+	str.replace(re,'')
+	//输出空字符，因为首尾的<>被当成了一对，.代表任意字符，应该使用/<[^<>]+>/g，表示<>中除了<>以外的任意字符
+</script>
+修饰符
+表示模式的附加规则，放在正则模式的最尾部。
+g 修饰符：表示全局匹配（global），加上它以后，正则对象将匹配全部符合条件的结果，主要用于搜索和替换
+i 修饰符：默认情况下，正则对象区分字母的大小写，加上i修饰符以后表示忽略大小写（ignoreCase）
+<script>
+	var regex = /b/g;
+	var str = 'abba';
+
+	regex.test(str); // true
+	regex.test(str); // true
+	regex.test(str); // false
+
+	/abc/.test('ABC') // false
+	/abc/i.test('ABC') // true
+</script>
+组匹配
+括号表示分组匹配，括号中的模式可以用来匹配分组的内容。
+<script>
+	/fred+/.test('fredd') // true
+	/(fred)+/.test('fredfred') // true
+	//第一个模式没有括号，结果+只表示重复字母d，第二个模式有括号，结果+就表示匹配fred这个词。
+</script>
+
+写正则的步骤
+将需要转换的字符串用中文写出来，再进行翻译
+<script>
+	//匹配邮箱
+	//一串英文或数字或下划线，@，一串英文或数字，. ，一串英文
+	//[\w+]                @   [a-z0-9]+     \.  [a-z]
+	//最后合起来就是：[\w+]@[a-z0-9]+\.[a-z]
+	var re = [\w+]@[a-z0-9]+\.[a-z]
+</script>
+正则的test方法：校验字符串是否符合自定义的正则规则
+注：test方法默认认为只要字符串中包含符合定义的正则串，就可以返回真
+<script>
+	var re = [\w+]@[a-z0-9]+\.[a-z]
+
+	re.test('leonard@163.com') //true，符合规则返回true
+	re.test('啊啊啊leonard@163.com') //true，只要字符串中包含符合定义的正则串，也返回true
+
+</script>
+
+创造对象
+1.创造构造函数，并添加属性
+<script>
+	//创建构造函数
+	function People(name) {
+		this.name = name
+	}
+</script>
+2.在构造函数的原型上添加方法
+<script>
+	//创建构造函数
+	function People(name) {
+		this.name = name
+	}
+	//在它的原型上添加方法
+	People.prototype.sayHi = function() {
+		console.log('Hi,I am ' + this.name)
+	}
+</script>
+对象的继承
+1.调用父类的构造函数
+<script>
+	//父类构造函数
+	function Animal(name,color) {
+		this.name = name
+		this.color = color
+	}
+
+	//子类构造函数引用父类的构造函数，这样子类构造函数创造出来的实例就跟父类创造出来的实例拥有一样的属性
+	function Dog(name,color,sound) {
+		Animal.call(this,name,color)
+		//子构造函数也可以添加自己的属性
+		this.sound = sound
+	}
+</script>
+2.拷贝父类的原型并赋值给子类的原型
+<script>
+	//父类构造函数
+	function Animal(name,color) {
+		this.name = name
+		this.color = color
+	}
+	//父类原型
+	Animal.prototype.walk = function() {
+		console.log(this.name + 'is walking now!')
+	}
+
+	//子类构造函数引用父类的构造函数，这样子类构造函数创造出来的实例就跟父类创造出来的实例拥有一样的属性
+	function Dog(name,color,sound) {
+		Animal.call(this,name,color)
+		//子构造函数也可以添加自己的属性
+		this.sound = sound
+	}
+
+	//拷贝父类的原型并赋值给子类的原型，这样子类构造函数创造出来的实例就跟父类创造出来的实例拥有一样的方法
+	Dog.prototype = Object.create(Animal.prototype)
+	//如果不拷贝，后续如果修改子类原型，也会同时修改到父类的原型，因为传址传递
+	Dog.prototype.sayHi = function() {
+		console.log(this.sound)
+	}
+</script>
+
+内存溢出
+加载的内存，超过可用内存空间，就会抛出内存溢出错误
+内存泄露
+1.意外的全局变量
+2.没有及时清理的计时器或回调函数
+3.没有清理的闭包
+内存泄漏多了，更容易造成内存溢出
+
+H5新API
+Worker对象，将复杂的计算工作交由另一个线程完成，并在计算完成后返回给主线程，因此不会阻塞主线程
+缺点：1.兼容性问题，2.慢（多了发送请求等操作），3.worker中不能访问DOM（因为看不到window）4.不能跨域加载js
+使用方法：
+<script>
+	//新建worker.js文件
+	//创建worker对象，并传入分线程模块的地址
+	var worker = new Worker('worker.js')
+	//向分线程发送主线程中获取的用于计算的数据，这里假设是number
+	Worker.postMessage(number)
+	//监听分线程的消息返回动作，当分线程返回消息时触发
+	Worker.onmessage = function(event) {
+		//event对象上包含data属性，该属性为分线程计算后返回的数据
+		console.log(event.data)
+	}
+	//
+	Worker.postMessage(x)
+</script>
+worker.js中：
+<script>
+	//分线程中的onmessage回调通过event.data获取从主线程传过来的数据
+	var onmessage = function(event) {
+		var a = event.data
+		//使用a进行计算...
+		var result = a++
+
+		//通过postMessage方法将结果传回主线程
+		//分线程模块中，全局对象是被特殊指定的一个全局对象DedicatedWorkerGlobalScope（好长哈哈）
+		//DedicatedWorkerGlobalScope对象上有postMessage方法，所以在分线程模块中可以直接调用
+		//而相对的，分线程模块中将无法调用window上的任何方法，因为在该模块中看不到window对象（更新界面）
+		postMessage(result)
+	}
+</script>
+
+浏览器内核模块
+主线程模块
+js引擎模块，html/css文档解析模块，DOM/css处理模块，布局/渲染模块
+分线程模块
+定时器模块，事件响应模块，网络请求模块

@@ -1,0 +1,52 @@
+常用移动端尺寸：
+宽360px
+iphone7/iphone8：宽375px
+iphone8plus：宽414px
+
+rem单位
+1rem=根元素html的font-size值。当页面中所有元素都使用rem单位时，只需要改变根元素font-size值(一般写在adapter.css文件中)，所有元素就会按比例放大或者缩小(弹性布局)
+
+vw单位
+1vw：屏幕宽度的百分之一(较常用)
+1vh：屏幕高度的百分之一
+
+让视口(viewport)和设备屏幕宽度相等
+在title前加上<meta name="viewport" content="width=device-width,initial-scale=1">
+说明：让网页占满屏幕，width(页面宽度)=device-width(设备宽度)，initail-scale=1(初始缩放比设置为1)
+
+弹性布局
+说明：通过rem和@media配合开发弹性布局
+1.将屏幕等分，计算出1rem的大小，一般分25份，这样不容易出现小数，而且一份不会小于12px(字号最小值)
+
+2.在adapter.css中使用媒体查询定义屏幕自适应
+说明：用屏幕宽度除以25，得出来的就是html的font-size大小
+例：
+	@media only srceen and(width: 360px) {
+		html {
+			font-size: 14.4px
+		}
+	}
+
+	@media only srceen and(width: 375px) {
+		html {
+			font-size: 15px
+		}
+	}
+
+	@media only srceen and(width: 414px) {
+		html {
+			font-size: 16.56px
+		}
+	}
+
+3.在网页中用实际像素处以当前页面的根元素font-size值就等于rem值
+例：
+	375宽的设备某处字体大小为14px(375的根元素font-size值为15px(25等分后))
+	14/15=0.93rem
+
+问题解决
+1.input输入框总有一边被margin或padding遮住
+解决：input输入框默认的border样式容易被遮挡，改成border: 1px solid #...;即可
+
+2.magin: 0 auto;无法居中
+解决：检查元素是不是block，有没有宽度(不能是被撑大的宽度)

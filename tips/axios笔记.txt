@@ -1,0 +1,266 @@
+axios
+说明：基于Promise管理的Ajax库
+
+安装axios
+npm install axios --save
+
+说明：axios库会提供很多实用方法(如get/post/head/delete/put/options...)，调用时使用axios.方法()格式
+
+发送get请求
+方法1：
+	axios.get('/user?name=12345')
+方法2：
+	axios.get('/user', {
+		params: {
+		  name: 12345
+		}
+	})
+
+发送post请求
+方法1：
+axios.post('/user', {
+	name: 'Wang',
+	age: 9
+})
+方法2：
+axios({
+	method: 'post',
+	url: '/user/12345',
+	data: {
+		firstName: 'Fred',
+		lastName: 'Flintstone'
+	}
+})
+
+返回结果为Promise对象，成功时会向then()传递response对象：
+	{
+	  data: {},			//'data'由服务器提供的响应
+	  status: 200,		//'status'来自服务器响应的 HTTP 状态码
+	  statusText:'OK',	//'statusText'来自服务器响应的 HTTP 状态信息
+	  headers: {},		//'headers'服务器响应的头
+	  config: 			//'config'是为请求提供的配置信息
+	}
+失败时会向catch()传递error对象
+
+调用then()和catch()方法时：
+Promise.then(function(response) {
+	response.data...
+}).catch(function(error) {
+	error...
+})
+
+例：
+let request1 = axios.get(...)
+let request2 = axios.post(...)
+
+request1.then(x => {
+	let {data} = x  //通过解构赋值获得data
+	return request2 //如果不return,默认返回undefine,如果return一个具体数值，则直接传递给y
+}).then(y => {
+	let {data} = y  //通过解构赋值获得data
+})
+
+说明： x为request1服务器响应对象，y为request2服务器响应对象
+服务器响应对象具有以下属性：
+	config：基于axios发请求时做的配置项(包含params等属性)
+	data：响应数据，
+	header：响应头，
+	request：创建的Ajax实例，
+	status：状态码，
+	statusText：状态码的描述
+
+all方法
+说明：等待所有请求完成后再执行指定语句
+<script>
+	let requestList = [
+		axios.get(...),
+		axios.post(...),
+		...
+	]
+	axios.all(requestList).then(result => {
+		console.log(result)
+	})
+</script>
+说明：所有的请求都成功才会执行then，返回的result是一个数组，里面有各个请求返回的对象(包含data等属性)
+
+初始化全局默认配置
+axios.defaults.baseURL = 'http://...'
+说明：设置基础URL，设置之后所有的url前面都会加上基础url
+axios.defaults.timeout = 3000
+说明：设置超时时间，单位毫秒，一般不定义公用，因为每个请求的延迟不一样
+
+步骤分解
+1.下载安装axios
+npm install axios --save
+
+2.发送请求
+发送get请求：
+	axios.get('/user?name=12345')
+发送post请求：
+	axios.post('/user', {
+		name: 'Wang',
+		age: 9
+	})
+
+3.调用then()或catch()方法，接收一个回调函数作为参数，并将Promise对象传递出来的response(或error)作为回调函数的参数
+	axios.get('/user?name=12345').then(function(response) {}).catch(function(error) {})
+
+4.通过response.data获取返回的数据，error可直接使用
+	axios.get('/user?name=12345').then(function(response) {
+		console.log(response.data)
+	}).catch(function(error) {
+		console.log(error)
+	})
+
+5.将对象转化为url
+基础理解：
+url的模样： https://www.baidu.com?a=1&b=2
+?号后为动态部分： 
+url = https://www.baidu.com + '?' + key1 + '=' + data[key1] + '&' + key2 '=' + data[key2]
+为了方便抽取遍历的部分，在最后加上一个&：
+url = https://www.baidu.com + '?' + key1 + '=' + data[key1] + '&' + key2 '=' + data[key2] + '&'
+
+1.假设要转化这样一个data对象
+	data = {a: 1,b: 2...}
+
+2.准备一个数组用于存放转化后的数据('a=1&b=2...')
+	data = {a: 1,b: 2...}
+	let dataStr = ''
+
+3.使用Object.keys(data)方法遍历data对象的key，该方法返回值为一个由所有key组成的数组([a,b,...])
+	data = {a: 1,b: 2...}
+	let dataStr = ''
+	Object.keys(data)
+
+4.使用forEach()方法迭代key数组，用每个key获得value(data[key])，并用&拼接每对key-value，最后存到dataStr中
+	data = {a: 1,b: 2...}
+	let dataStr = ''
+	Object.keys(data).forEach(function(key) {
+		dataStr = dataStr + key + '=' + data[key] + '&'
+	})
+
+5.获得的dataStr末尾会多一个&('a=1&b=2&')，使用lastIndexOf('&')获得最后一个'&'的下标(该方法返回数字)，使用substring()去掉最后的&，将最终的值赋给dataStr
+	data = {a: 1,b: 2...}
+	
+	let dataStr = ''
+	Object.keys(data).forEach(function(key) {
+		dataStr = dataStr + key + '=' + data[key] + '&'
+	})
+	
+	dataStr = dataStr.substring(0,dataStr.lastIndexof('&'))
+
+6.将得到的dataStr和url拼接起来，中间用?分隔，并赋值为新url
+	data = {a: 1,b: 2...}
+	
+	let dataStr = ''
+	Object.keys(data).forEach(function(key) {
+		dataStr = dataStr + key + '=' + data[key] + '&'
+	})
+	
+	dataStr = dataStr.substring(0,dataStr.lastIndexof('&'))
+	url = url + '?' + dataStr
+
+7.加上判断条件，dataStr为空时不执行拼接(不为空时才拼接)
+	data = {a: 1,b: 2...}
+	
+	let dataStr = ''
+	Object.keys(data).forEach(function(key) {
+		dataStr = dataStr + key + '=' + data[key] + '&'
+	})
+	if(dataStr ! == '') {
+		dataStr = dataStr.substring(0,dataStr.lastIndexof('&'))
+		url = url + '?' + dataStr
+	}
+	
+
+跨域请求
+1.拆分请求地址
+<script>
+	'http://44.104.93.58:8180' + '/traffic-portal/gate' + 参数
+
+	'http://44.104.93.58:8180' 放到代理的目标路径中
+	'/traffic-portal/gate' 正常写入请求中
+</script>
+
+2.在请求前加上标识（'/api'）
+<script>
+	import ajax from './ajax'
+
+	const BASE_URL = '/api'  //跨域请求标识
+
+	export const reqCameras = () => ajax(BASE_URL + '/traffic-portal/gate',{sid: 160005,serviceKey: SERVICE_KEY})
+</script>
+
+3.在config--index.js中配置代理
+<script>
+	dev: {
+	  // Paths
+	  assetsSubDirectory: 'static',
+	  assetsPublicPath: '/',
+	  proxyTable: {
+			'/api': { //匹配所有'/api'请求，处理后进行转发
+			  target: 'http://44.104.93.58:8180', //请求目标路径
+			  changeOrigin:true, //是否跨域
+			  pathRewrite: { //重写路径: 拦截到请求后，将路径中的'/api'转为'/'
+			      '^/api': ''
+			  }
+			},
+			'/ips': { //匹配所有'/ips'请求，处理后进行转发
+			    target: 'http://192.12.0.168:9091', //请求目标url的基础路径
+			    changeOrigin:true, //是否跨域
+			    pathRewrite: { //重写路径: 拦截到请求后，将路径中的'/ips'转为'/'
+			        '^/ips': ''
+			    }
+			}
+	  },
+
+	  .....
+	}
+</script>
+
+4.重启服务器，再次发送请求，问题解决
+
+后台无法接收axios参数
+解决：可能是参数格式不对，尝试使用 qs 库，将传给后台的参数格式，Request Payload转成Form Data，问题解决
+安装npm install qs --save-dev
+
+引入：
+<script>
+	import qs from 'qs'
+
+	let data = qs.stringify({
+		aaa: ...,
+		bbb: ...,
+		.....
+	})
+
+	//将data作为post的参数传入post请求中
+</script>
+
+取消请求：
+<script>
+	//获取 axios 里的 CancelToken 构造函数
+	let CancelToken = axios.CancelToken
+	//把this存起来
+	let self = _this
+	axios.get(url,{
+		//在配置里生成 CancelToken 对象，传入一个函数作为参数，该函数的回调参数是一个函数，执行这个函数，就会中断请求
+		CancelToken: new CancelToken(function executor(fn) {
+			//把获得的终止函数存到this上，就可以在外面调用它
+			self.fnName = fn
+			// 参数 fn 就是CancelToken构造函数里面自带的取消请求的函数
+		})
+	})
+
+	axios.post({
+		url: url,
+		method: 'post',
+		data: data,
+		//在配置里生成 CancelToken 对象，传入一个函数作为参数，该函数的回调参数是一个函数，执行这个函数，就会中断请求
+		CancelToken: new CancelToken(function executor(fn) {
+			//把获得的终止函数存到this上，就可以在外面调用它
+			self.fnName = fn
+			// 参数 fn 就是CancelToken构造函数里面自带的取消请求的函数
+		})
+	})
+</script>

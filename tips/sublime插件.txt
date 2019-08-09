@@ -1,0 +1,25 @@
+Emmet： 快捷输入css
+Color： Highlighter 颜色
+JavaScript Completions： js补全提示
+AutoFileName： 路径搜索
+CanIUse： 检查css和html是否可用，右键canIuse
+ColorPicker： 调色板颜色 ctrl+shift+c
+Bracket Highlighter： 匹配括号高亮 点击其中一个匹配
+JSFormat： 将压缩的js还原，js格式化，右键jsFormat
+jQuery： jq提示
+Doc​Blockr 生成优美注释，输入/*、/**然后回车
+Nodejs：Nodejs代码提示
+Trailing spaces：一键去除
+AllAutocomplete：会搜索所有打开的文件来寻找匹配的提示词
+stylus： stylus语法高亮；
+SASS-Build-SublimeText2-master： SASS语法高亮
+Clipboard History：粘贴板历史记录，Ctrl+alt+v：显示历史记录
+view in browser：修改打开的默认浏览器
+SideBarEnhancements：修改打开的默认浏览器
+HTML/CSS/JS Prettify：代码格式化插件
+
+弹出框解决
+找到Preferences -> Settings（设置用户）
+在最后一个花括号结尾（“｝”）前添加一句：
+"update_check":false
+然后请关闭Submine Text并重启，即不会再弹出更新提醒了

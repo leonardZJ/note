@@ -1,0 +1,193 @@
+1.划分组件
+在src目录下建立入口文件(main.js)，最外层作为一个大组件建立vue文件(App.vue)，内部根据功能划分各个子组件(父组件与子组件之间相互嵌套,跟div的原理一样)，建立components目录并根据不同组件建立不同.vue文件，在入口文件中实例化vue对象，并连接到index.html(el: '#id')，在index.html中引入外部css(如bootstrap)，生成的标签会自动插入到index.html中(vue在进行渲染时会检查是否有template，如果有则渲染template)
+
+2.引入和使用组件
+
+
+
+确定静态界面
+特点：数据固定，没有交互
+
+
+确定动态界面
+特点：动态的特点在两个方面：1.初始化2.交互
+
+创建相关文件
+说明：在src下创建入口文件(main.js)，App.vue，components文件夹等()
+
+组件化编写
+1.对页面进行组件划分，最外层作为根组件(App.vue)，内部根据功能划分各个子组件(跟div的原理一样)
+
+2.清空src文件夹，建立main.js(入口文件)，App.vue(根组件)，components(组件文件夹)及根据划分建立子组件(vue文件)
+
+3.在入口文件(main.js)引入Vue对象和根组件，新建vue实例并将根组件映射成模板标签，同时连接到index.html(el: '#app')，如果有外部css(如bootstrap)，在index.html中引入
+例：
+在main.js中：
+	import Vue from 'vue'
+	import App from 'App的路径'
+
+	export default {
+		el: '#app',
+		components: {
+			App
+		},
+		template: '<App/>'
+	}
+
+在index.html中：
+	<link rel="stylesheet" href="外部css路径">
+说明：vue在生命周期中会查看实例中是否有template，如果有则进行template渲染
+
+4.在父组件中引用子组件步骤:
+	1.在<script></script>中引入组件并映射成标签：
+		//引入组件
+		import 组件名(不用后缀) from 组件路径
+
+		export default {
+			components: { //将组件映射成标签(一般同名)
+				HelloWorld
+			}
+		}
+
+	2.在<template></template>中应用标签：
+		<template>
+			<div>
+				<img src="./assets/logo.png" alt="logo">
+				<HelloWorld/> //应用标签
+			</div>
+		</template>
+
+	3.写入相关样式
+		如果当前组件有样式，则写入<style></style>中
+
+5.动态组件(初始化和交互时)数据
+	1.先确定动态变化数据的名称和类型
+	2.确定数据存放在哪个组件中(放在哪个组件的data中)
+	说明：分析数据由单个还是多个组件使用，如果是单个则放在单个组件中，如果是多个则放在父级组件中
+	注：组件中的data必须是函数形式：
+		data() {
+			return {
+				...
+			}
+		}
+
+6.组件间通信
+props方法(父级一层一层往子级传递数据或函数)：
+	1.在父级的配置中建立数据(数据或函数)
+	2.在父级的子组件标签上添加v-bind:x="y"建立传递通道，x为data中数据key，y为子组件中数据key，一般x和y设置成同名
+	3.在子组件的配置中通过props: ['y'](接收数据key)或者props: { y: Object }(接收数据key和数据类型)接收数据，y为数据key
+自定义事件方法(自定义事件，允许父子级传递函数，无法多层传递)：
+	1.在父级的子组件标签上绑定事件@x="y"，x为自定义事件名，y为执行函数
+	2.在子级的methods中通过this.$emit('x',y)触发事件父级事件，x为父级自定义事件名，y为传给执行函数的参数(可不设置)
+	3.不需要用props配置接收，可通过.$emit('x',y)(分发事件)在子级直接触发父级中的自定义事件
+	另：还可使用.$on('x',y)方法绑定事件监听，x为自定义事件名，y为执行函数
+		1.为需要绑定事件的标签加上ref="aaa"，aaa为自定义标识名(可通过vm.$ref('aaa')取到标签)
+		2.在mounted配置中(挂载完后执行,该操作为异步，即不会阻塞页面渲染)添加this.$ref('aaa').$on('x',y)，x为自定义事件名，y为执行函数
+pubsub方法(使用pubsub-js库提供的方法，可以同层或跨层通讯(无位置要求))：
+	说明：订阅层在初始化时建立对发布层的监听(通过消息名x),发布层通过事件触发消息(消息名为x)发布出去
+	1.npm install --save pubsub-js(下载pubsub库,可通过npm info pubsub-js查看是否已经下载)
+	2.pubsub库提供subscribe(订阅消息)和publish(发布消息)两种方法，通过Pubsub对象调用
+	3.在订阅层中import Pubsub from 'pubsub-js'引入pubsub-js库
+	4.在订阅层的mounted中订阅消息：Pubsub.subscribe('x',function(msg,data) {...})，x为消息名，第二个参数是一个回调函数，msg就是x(实际作用不大)，data为发布层传递过来的数据，在这个回调函数里的this不是当前组件对象，而是Pubsub对象，需要利用箭头函数改写回调函数让this变为当前组件对象，从而调用组件里的数据
+	5.在发布层中import Pubsub from 'pubsub-js'引入pubsub-js库
+	6.在发布层的执行函数(定义在methods中的函数)中发布消息：Pubsub.publish('x',y)，x为父级消息名，y为订阅层回调函数需要的数据
+
+slot方法(使用slot插槽，该方法可传递编译好的标签，便于标签的复用(哪里需要往哪传))：
+	1.在父级的子组件标签内部定义好标签(包括样式指令等)，最后在标签中添加slot="x"属性，x为插槽名称
+	例：
+	<template>
+		<todoFooter>
+			<div slot="x"></div>
+		</todoFooter>	
+	</template>
+	2.在子级的相应位置定义插槽<slot name="x"></slot>，x为插槽名称
+	3.父级会将拥有slot属性的标签编译好，分别传递到子组件的插槽中
+
+
+
+7.交互式通信(用户提交数据进行添加)
+	1.使用v-model自动收集数据，同时建立data() {}
+	说明：
+	//data必须是函数
+	data() {
+		return {
+			name: '',
+			content: '',
+		}
+	}
+	//接收父组件传递过来的添加函数
+	porps: {
+		//可以指定属性名，属性值类型和是否必填
+		addComment: {
+			type: Function,
+			required: true
+		}
+	}
+
+
+	2.绑定事件监听(v-on)，同时建立回调函数methods: {}
+	说明：
+	回调函数add() {
+		//1.检查输入的合法性
+		let name = this.name.trim()
+		let content = this.content.trim()
+		
+		if(!name || !content) {
+			alert('...')
+			return //终止执行
+		}
+		//2.根据输入的数据，封装成一个数据对象
+		let comment = { name,content }
+		//3.将封装好的对象添加到原有的数据对象中，这一步调用的函数定义在父组件中(数据在哪，相关函数就在哪)
+		this.addComment(comment)
+		//4.清除输入
+		this.name = ''
+		this.content = ''
+	}
+
+8.存储数据(存：1.什么时候存2.存什么;读：1.什么时候读)
+	说明：利用localStorage进行存储，浏览器关闭数据也不丢失，使用watch进行深度监听(普通方法监听不到对象内部数据变动),当数据发生改变时调用回调函数
+	data() {
+		return {
+			items: JSON.parse(window.localStorage.getItem('items_key') || "[]")
+		}
+	},
+	watch: {
+		items：function(x) {
+			deep: true  //打开深度监视
+			return window.localStorage.setItem('items_key',JSON.stringify(x))
+		}
+	}
+	说明：x为data中数组
+
+9.封装工具类
+	1.创建util文件夹(常用于存放工具模块)
+	2.创建storageUtil.js文件(一个模块就是一个js文件)
+	3.模块一般向外暴露函数或对象作为接口，如果模块为单个功能则暴露函数，如果模块为多个功能则暴露对象
+	4.在export default {} 中定义方法(函数)，将同名字符串设定为常量，避免后期被更改
+	注：export default {...}代表匿名暴露一个对象，这个对象就叫工具类，该对象（类）被引用时可自由定义名称
+<script>
+	const ITEM_KEY = 'items_key'
+
+	export default {
+		saveTodo(items) {
+			return window.localStorage.setItem(ITEM_KEY,JSON.stringify(items))
+		},
+		getTodo() {
+			return JSON.parse(window.localStorage.getItem(ITEM_KEY) || '[]')
+		}
+	}
+</script>
+	5.在组件中引用模块import storageUitl from './uitl/storageUtil'
+	6.调用storageUitl对象中的方法：
+	storageUitl.saveTodo(items)
+	storageUitl.getTodo()
+
+10.与后台通信
+1.使用axios库发送Ajax请求
+2.安装axios库npm install axios -save
+3.在App.vue中引入axios库import axios from 'axios'
+4.在mounted: function() {...}钩子函数中发送请求(如果需要初始化时就发送)
+5.github提供的API：'https://api.github.com/search/repositories?q=v&sort=stars'
+5.axios请求返回的结果是Promise对象，可调用then()和catch()方法
+6.数据存储在result获取的服务器响应对象中的data对象中(result.data)

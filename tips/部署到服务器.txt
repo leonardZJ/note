@@ -1,0 +1,40 @@
+将项目部署到服务器（类似于tomcat）
+
+1.打开Filezilla
+
+2.顶部菜单第一个新建站点（前提是已经保存了账号密码）
+
+3.点击右侧下窗口一直返回到根目录（..）
+
+4.找到data文件夹进入，点击tomcat文件夹进入
+
+5.将打包好的项目文件复制到webapps文件夹里，如果已经有项目文件夹，就将打包好的项目文件夹里的所有文件复制到该文件夹下
+
+6.完成后访问：站点ip:8080/项目文件夹名/入口文件名.html
+例：
+44.104.93.90:8080/dist/index.html
+
+问题：
+1.访问时为空白页
+解决：路径问题，配置一下config下的index.js文件中的build
+<script>
+	build: {
+	  // Template for index.html
+	  index: path.resolve(__dirname, '../dist/index.html'),
+
+	  // Paths
+	  assetsRoot: path.resolve(__dirname, '../dist'),
+	  assetsSubDirectory: 'static',
+	  assetsPublicPath: './', //这里前面要加一个点，代表所有资源路径前加上跟目录名
+	}
+</script>
+
+2.访问没问题，图片找不到（404）
+解决：如果配置了"assetsPublicPath: './'"还是找不到，先查看其他图片是否能够显示，如果部分图片能够显示，可能因为图片的路径前面有url()等字段，会被webpack识别为字符串，正常情况下，assetsPublicPath: './' 会在所有的资源路径前面加上根目录，但是如果不能识别为路径，就不会自动加路径，所以会有一部分显示，一部分不显示的问题
+解决方法：将'url(../../static/img.png)'类的字符串路径修改为另一种形式
+<script>
+	aaa.img = 'url()'
+	//改变为
+	let src = required('../../static/img.png')
+	aaa.img = 'url(' + src + ')'
+</script>

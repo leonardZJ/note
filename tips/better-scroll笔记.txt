@@ -1,0 +1,179 @@
+demo
+<script>
+	import BScroll from 'better-scroll'
+
+	
+	this.$nextTick(() => {
+		//实现BScroll为单例
+		if(!this.netTraScroll) {
+			this.netTraScroll = new BScroll('.repoOutput',{
+				mouseWheel: true,
+				scrollbar: {
+					fade: true,
+					interactive: false
+				}
+			})
+		} else {
+			//让滚动条刷新，重新统计内容的高度
+			this.netTraScroll.refresh()
+		}
+	})
+</script>
+
+
+
+	1.下载安装better-scroll
+	npm install --save better-scroll
+
+	2.引入better-scroll滑动库，并通过new BScroll('.xxx')进行初始化，初始化时可以指定一个类名，拥有.xxx类名的标签将作为滑动块外层的包裹，即如果一个div被加上初始化时指定的类名.xxx，则这个div的第一个子元素会被赋予滑动效果(其他都会被忽略)，需要注意的是只有子元素超出外层包裹div时，滑动效果才会生效，注意.xxx类名可以加样式，不影响，如果需要多个滑动，则初始化多个BScroll
+	<template>
+		<div class="aaa">
+			<ul>
+				<li></li>
+				<li></li>
+				<li></li>
+			</ul>
+		</ul>
+	</template>
+	<script>
+		import BScroll from 'better-scroll'
+
+		new BScroll('.aaa')
+	</script>
+	3.初始化需要在数据获取之后，即列表数据已经有了，才可以进行初始化
+		方法1：(watch+$naxtTick)
+		通过watch监听列表数据，当其发生变化(从后台获取了数据)时，调用组件的this.$nextTick(function() {...})方法(当页面DOM渲染完成后执行括号中的回调函数)，初始化BScroll
+		<script>
+			watch: {
+				goods: function(value) {  //value是监视数据传回的最新值
+					this.$nextTick(function() {
+						new BScroll('.aaa')
+						})
+					})
+				}
+			}
+		</script>
+		方法2：(callback+$nextTick)
+		给调用的actions传递一个函数(调用actions时可以传参，函数也属于参数，所以可以传递给actions)，actions在获取到数据后执行参数(即传过去的函数)，这样一来写在该函数中的语句就可以在数据获得之后执行，这条语句就是初始化new BScroll('aaa')，当然，依然需要执行.$nextTick保证数据获取到之后才执行初始化
+		组件中：
+		<script>
+			mounted: function() {
+				//调用的actions传递一个函数
+				this.$store.dispatch('getGoods',function() {})
+			}
+		</script>
+		actions中：
+		<script>
+			getGoods: fucntion(commit,callback) {
+				//发送请求获取数据
+				reqShopGoods().then((result) => {
+					if(result.code===0) {
+						const goods = result.data
+						commit(RECEIVE_GOODS,goods)
+						//所有步骤完成后，执行回调函数callback
+						callback()
+					}
+				})
+			}
+		</script>
+		组件中：
+		<script>
+			mounted: function() {
+				//调用的actions传递一个函数
+				this.$store.dispatch('getGoods',() => {
+					//callback()被调用时开始执行初始化，当然，在nextTick之后执行
+					this.$nextTick(() => {
+						new BScroll('.aaa')
+					})
+				})
+			}
+		</script>
+		另外，如果不选择方法2，则callback参数不会传，如此便会造成报错问题，需要修改一下
+		actions中：
+		<script>
+			getGoods: fucntion(commit,callback) {
+				//发送请求获取数据
+				reqShopGoods().then((result) => {
+					if(result.code===0) {
+						const goods = result.data
+						commit(RECEIVE_GOODS,goods)
+						//所有步骤完成后，执行回调函数callback
+						callback && callback()  
+						//利用了JS中&&符号的一个小技巧，&&符号在前面为假时就不会执行后面的语句了
+					}
+				})
+			}
+		</script>
+		同理，初始化右侧的滑动
+		<script>
+			mounted: function() {
+				//调用的actions传递一个函数
+				this.$store.dispatch('getGoods',() => {
+					//callback()被调用时证明请求数据已经返回，开始执行初始化，当然，在nextTick之后执行
+					this.$nextTick(() => {
+						new BScroll('.aaa') //初始化左侧滑动
+						new BScroll('.bbb') //初始化右侧滑动
+					})
+				})
+			}
+		</script>
+
+59.在滑动过程中收集scrollY，通过监听BScroll对象的行为即可
+基础理解：
+BScroll对象有.on(type,() => {...})方法可以监听自定义事件(行为)，type为自定义事件的类型(具体看文档)，这里选择监听scroll行为，fn为回调执行函数，当监听的行为是scroll时，括号中会接收scroll传回来的{x,y}，即当前的坐标值，因此可以通过回调函数收集scrollY
+什么时候才会触发scroll事件从而传回{x,y}呢?这需要BScroll对象的一个配置来处理：probeType
+probeType有4个值：0，1，2，3，0代表不派发，1代表滑动超过一定距离(避免滑动太小也触发)时派发事件(从而触发事件)，2代表滑动时立即派发事件(但是惯性滑动时不派发，即手指离开屏幕后)，3代表任何滑动都会派发事件(包括惯性滑动)，这里选择2模式即可
+1.调用on方法
+<script>
+	mounted: function() {
+		//调用的actions传递一个函数
+		this.$store.dispatch('getGoods',() => {
+			//callback()被调用时证明请求数据已经返回，开始执行初始化，当然，在nextTick之后执行
+			this.$nextTick(() => {
+				//初始化左侧滑动
+				new BScroll('.aaa')
+
+				//初始化右侧滑动
+				const foodsBScroll = new BScroll('.bbb',{
+					probeType: 2, //选择第2个模式
+				}) 
+
+				foodsBScroll.on('scroll',({x,y}) => {
+
+				})
+			})
+		})
+	}
+</script>
+2.将获取到的y值储存到data中，因为是向下滑动，所以y是负值，先abs一下
+<script>
+	date() {
+		return {
+			scrollY: 0, //滑动时的y值
+		}
+	},
+	mounted: function() {
+		//调用的actions传递一个函数
+		this.$store.dispatch('getGoods',() => {
+			//callback()被调用时证明请求数据已经返回，开始执行初始化，当然，在nextTick之后执行
+			this.$nextTick(() => {
+				//初始化左侧滑动
+				new BScroll('.aaa')
+
+				//初始化右侧滑动
+				const foodsBScroll = new BScroll('.bbb',{
+					probeType: 2, //选择第2个模式
+				}) 
+
+				foodsBScroll.on('scroll',({x,y}) => {
+					this.scrollY = Math.abs(y)
+				})
+			})
+		})
+	}
+</script>
+
+
+问题：
+滚动条显示超过容器
+解决：滚动条是用position定位的，可能是因为定位到外层div上了，将wrapper的div加上 position: relative; 即可

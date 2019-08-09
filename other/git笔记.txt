@@ -1,0 +1,107 @@
+﻿tips: .git文件在哪个文件夹，哪个文件夹就是仓库
+
+初始化流程：
+1.初始化一个仓库(创建一个git仓库)
+说明：在项目文件夹下运行git init，会创建.git文件，git会认定有.git文件的文件夹为git仓库
+
+2.添加文件到暂存区
+说明：在仓库内修改后运行git add .,会将所有文件添加到暂存区，git会跟踪这些文件的修改
+
+3.提交到仓库
+说明：在仓库内运行git commit -m ‘备注’，会将暂存区修改提交到仓库(创建后悔药)
+
+4.建立远程库连接
+说明：需要先在远程端建立仓库，然后运行git remote add 取个远程库名 远程库地址
+
+5.推送到远程
+说明：建立过连接后，在仓库内运行git push -u 仓库名 分支名，会将仓库的内容跟远程库进行同步(云保存)
+
+6.同步远程库与本地库(远程库与本地库不同步时)
+git pull --rebase 远程库 master
+
+
+常用命令
+创建了多少后悔药？查看提交历史：git log
+吃一颗后悔药：checkout commit的id
+仓库有哪些修改没创建后悔药？查看仓库状态：git status
+每次修改跟上一次有什么区别？查看提交历史详情：git log -p
+哪些文件被修改过？查看修改：git diff filename.txt
+另一台电脑没有仓库？克隆远程库到本地：git clone+远程库地址
+自己刚刚干了什么？查看命令历史（可查commitID）：git reflog
+
+
+
+高级命令(通过标签tag管理后悔药)
+1.为当前commit创建标签
+说明：为当前后悔药创建标签，运行git tag -a 标签名 -m '备注'
+
+2.查看打过标签的commit
+说明：快速找到重要的后悔药，运行git tag
+
+3.看看某个标签的详细信息：git show 标签名
+
+4.为指定commit创建标签(在最后加个commit的id即可)
+说明：为其中一颗后悔药创建标签，运行git tag -a 标签名 -m '备注' 指定commit的id
+
+5.吃一颗后悔药：checkout commit的id
+
+
+
+其他命令	
+强制合并(会导致远程修改丢失)： git push -u origin master -f
+
+创建/删除关联远程库：git remote add/rm origin+远程库地址
+
+返回上次记录：git reset --hard HEAD^
+返回上上次：git reset --hard HEAD^^
+返回上100次：git reset --hard HEAD~100
+返回到某id：git reset --hard b7c92c
+
+丢弃工作区的修改：git checkout -- filename.txt
+
+把暂存区的修改撤销，重新放回工作区：git reset HEAD filename.txt，其实是用版本库里的版本替换工作区的版本，无论工作区是修改还是删除，都可以“一键还原”。
+
+创建并切换分支：git checkout -b 分支名
+
+查看当前分支：git branch，带*为当前分支
+
+切换分支：git checkout 分支名
+
+合并指定分支到当前分支：git merge 指定分支名
+
+删除分支：git branch -d 分支名
+
+查看分支合并情况：git log --graph --pretty=oneline --abbrev-commit
+
+合并分支时，加上--no-ff参数(禁用fast forward)，就可以查看合并历史：git merge --no-ff -m "merge with no-ff" 指定分支名 
+
+储存临时工作现场：git stash
+
+回到临时工作现场：git stash pop，回到并删除刚刚的工作现场。
+
+查看远程库信息：git remote，-v表示详细信息。
+
+创建远程origin的dev分支到本地：git checkout -b dev origin/dev
+
+抓取远程分支信息(为了在本地解决冲突)：git pull
+
+创建与远程仓库的链接关系：git branch --set-upstream-to <branch-name> origin/<branch-name>
+
+整理远程分支：git rebase
+
+打标签：git tag -a v0.9 -m‘说明’<commit id>,-a指定标签名，不加commit id默指定最新的提交
+
+查看标签：git tag
+
+查看标签信息：git <tagname>
+
+删除标签：git tag -d v0.1
+
+推送标签到远程：git push origin <tagname>
+
+推送所有标签到远程：git push origin --tags
+
+删除远程标签分两步：git tag -d v0.9
+                   git push origin :refs/tags/v0.9
+
+配置别名：git config --global alias.<新名> <旧名>

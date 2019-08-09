@@ -1,0 +1,164 @@
+1.写表单是顺便写验证
+2.接收完用户数据后，清空输入框
+3.jQuery写插件的时候，在最前面加个分号，为了避免加载时前后连接出现歧义
+4.for (var i = 0, j=arr.length; i < j; i++) {} 这样的方式去用循环是比较好的，只会访问一次 Dom 层
+5.对象尽量静态化，添加新属性使用 Object.assign(target, ...sources)
+6.使用扩展运算符拷贝对象而不是 Object.assign
+<script>
+	const foo = {a: 0, b: 1}
+	const bar = {...foo, c: 2} 
+</script>
+7.遍历对象时，优先使用 Map 结构
+<script>
+	const myMap = new Map([]) 
+	for (let [key, value] of myMap.entries()) {
+	     // ... 
+	} 
+</script>
+8.组件名字始终以 “页名-页面中的组件” 命名，下拉框或表格等基础组件始终以一个特定前缀开头，区别与其他业务组件。 
+<script>
+	├── index.html 
+	├── main.js 
+	└── components 
+	|   ├── page-header 
+	|   ├── page-article 
+	|   └── page-header 
+	└── base     
+	├── mazey-button     
+	├── mazey-select     
+	└── mazey-table 
+</script>
+9.引入组件时使用驼峰写法，写入html时使用“-”连接符写法
+<template>
+	<home-header></home-header>
+</template>
+<script>
+	import homeHeader from 'home-header.vue'
+	export default {
+		components: {
+			homeHeader
+		}
+	}
+</script>
+10.每个css选择器和声明都要独立新行
+<style>
+	html,
+	body {
+		...
+	}
+</style>
+11.避免使用 table 做页面布局，因为同样的布局使用 table 要多几倍的渲 染时间，做表格时除外
+12.注释
+<script>
+//@param声明函数参数
+//@method声明函数或类方法
+//@for表示该函数属于某个类的方法，没有@for时函数为全局或模块顶层函数
+//@static表明函数为静态函数
+//@param表示函数参数
+//@return表示函数返回值
+	/**
+	 * 方法说明
+	 * @method 方法名
+	 * @for 所属类名
+	 * @param {参数类型} 参数名 参数说明
+	 * @return {返回值类型} 返回值说明
+	 */
+	 //例：
+	 /**
+	  * 返回当前集合中指定位置的元素 --> 函数说明
+	  * @method
+	  * @for NodeList --> 属于哪个类
+	  * @param {Number} [i=0] 位置下标 --> 参数类型，默认值，说明
+	  * @return {Element} 指定元素 --> 返回值
+	  */
+//@property声明类属性
+	/**
+	 * 属性说明
+	 * @property {属性类型} 属性名
+	 */
+//@module声明模块
+	/**
+	 * 模块说明
+	 * @module 模块名
+	 */
+//声明类（构造函数）
+	/**
+	 * 类说明
+	 * @class 类名
+	 * @constructor 表示非静态类
+	 * @param {参数}
+	 */
+
+</script>
+
+
+
+1、IE浏览器内核：Trident内核，也是俗称的IE内核；
+2、Chrome谷歌浏览器内核：统称为Chromium内核或Chrome内核，以前是Webkit内核，现在是Blink内核；
+3、Firefox火狐浏览器内核：Gecko内核，俗称Firefox内核；
+4、Safari苹果浏览器内核：Webkit内核；
+5、Opera欧朋浏览器内核：最初是自己的Presto内核，后来加入谷歌大军，从Webkit又到了Blink内核；
+
+兼容问题
+1.图片间隙：图片为行内元素，网页中的英文字符沿着默认基线排列，而有些小写字符会突到基线下面，所以下面的3个像素是留给类似j,g等字母的，这就导致了图片在div中显示时最下方会带了一条3像素的间隙
+解决：一开始写上img {display:block;}转成块元素
+2.双倍浮向：在IE6下浮动元素时，会错误的把浮向边界加倍显示
+解决：给浮动元素加上 _display:inline;转成行内元素,下划线代表针对IE6处理
+3.默认高度：IE6下盒子元素会有默认高度(留给写文字的最小高度，一般为16px)
+解决：加上声明 overflow:hidden;(推荐)或font-size:0;(不推荐)
+4.表单元素行高不一致：IE6下input里输入的文字跟submit按钮上文字不对齐
+解决：在两个input里加上style="float:left;"
+5.各浏览器下按钮样式不同
+解决：
+1.统一用<a></a>模拟出按钮 2.在input上写按钮的样式，要把input的边框去掉 3.用图片作为按钮的背景图
+6.百分比：IE6下使用浮动效果和宽50%时，会因为四舍五入导致两个50%无法显示在同一行(IE6认为50%+50%>100%)
+解决:给右边的浮动元素添加clear:right;
+7.鼠标指针：IE6下修改鼠标指针样式为hand，无法识别
+解决：添加声明：cursor:pointer;
+8.透明属性：IE6下透明属性不显示
+解决：使用过滤器filter:alpha(opacity=50),另外，使用opacity会传递给子元素
+9.IE6不识别min-height,直接用height即可
+10.低版本浏览器和火狐不能直接用id,要先声明
+解决：在属性前加上document.getElementById('id').
+11.ie7获取字符串某位时，必须用charAt
+12.拖拽bug
+	鼠标快速移动脱离div后，div不再动，在可视区外抬起鼠标，事件不取消
+	解决：将事件都加在document身上，取消也在document身上取消
+	火狐拖动无内容div时会出现div的拷贝
+	解决：阻止默认事件，return false
+	拖动时会选中文字
+	解决：阻止默认事件，return false
+
+过滤器(filter)
+1.下划线属性过滤器：只有IE6以下版本可以读取
+2.属性！important：针对高版本浏览器，！important前面的属性为最高优先级
+3.*属性：只有IE7(vista)可以读取的属性
+
+
+布局选择
+1.如果只做pc端，那么静态布局（定宽度）是最好的选择；
+2.如果做移动端，且设计对高度和元素间距要求不高，那么弹性布局（rem+js）是最好的选择，一份css+一份js调节font-size搞定；
+3.如果pc，移动要兼容，而且要求很高那么响应式布局还是最好的选择，前提是设计根据不同的高宽做不同的设计，响应式根据媒体查询做不同的布局。
+
+操作思路：
+1.轮询
+开个定时器不断if某条件，条件变为真时清除定时器
+2.css模块侦测，判断某属性是否可用
+<script>
+	function isPropertySupported(property) {
+	  if (property in document.body.style) return true;
+	  var prefixes = ['Moz', 'Webkit', 'O', 'ms', 'Khtml'];
+	  var prefProperty = property.charAt(0).toUpperCase() + property.substr(1);
+
+	  for(var i = 0; i < prefixes.length; i++){
+	    if((prefixes[i] + prefProperty) in document.body.style) return true;
+	  }
+
+	  return false;
+	}
+
+	isPropertySupported('background-clip')
+	// true
+</script>
+3.限制div拖动超出页面范围
+说明：在赋值前判断位置

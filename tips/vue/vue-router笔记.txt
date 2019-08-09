@@ -1,0 +1,409 @@
+路由器
+说明：用于管理路由的代码块
+路由
+说明：本质是键值对(key-value)，即映射关系，key是path，value分为前台路由和后台路由，前台路由为组件，后台路由为处理请求的回调函数
+
+SPA(单页应用)
+说明：现代主流应用类型，真实页面只有一个，其他功能页面以路由组件形式存在，可以通过路由链接调用，点击路由链接不会向后台发送请求，所以不会刷新页面，而路由组件内部则向后台发送AJAX请求，动态获取数据
+
+下载vue-router
+npm install vue-router --save
+
+新建好各路由组件
+说明：新建views(或者pages)文件夹，路由组件和非路由组件一般会分开，路由组件放views(或者pages)文件夹，非路由组件放components文件夹
+
+注册路由(将路由组件映射成路由)
+	1.新建router文件夹，在其中新建index.js文件，作为路由器配置模块
+	2.在index.js路由器模块中创建路由器并配置路由：
+	<script>
+		import Vue from 'vue'
+		import VueRouter from 'vue-router'
+
+		//引入路由组件
+		import About from '../views/About.vue'
+		import Home from '../views/Home.vue'
+
+		Vue.use(VueRouter)
+
+		export default new VueRouter({
+			//配置路由组件
+			routes: [
+				{
+					path: '/about',
+					component: About
+				},
+				{
+					path: '/home',
+					component: Home
+				}
+			]
+		})
+	</script>
+		
+	3.在main.js中注册路由器模块:
+	<script>
+		//引入路由器模块
+		import router from './router'
+
+		new Vue({
+			router
+		})
+	</script>
+
+路由组件标签
+1.router-link: 用于生成路由链接，将<router-link to=".../">点击</router-link>写在<template></template>中需要显示按钮的位置，会渲染出一个a链接，可以加样式(相当于给a标签加样式)，点击该连接，会跳转到to=".../"链接的路由，并自动寻找页面中的<router-view></router-view>，将连接到的路由组件渲染到<router-view></router-view>中
+例：
+<router-link to=".../">跳转到...</router-link>，如果to后是变化的，to也可以使用v-bind和`${...}`绑定动态值
+
+2.router-view: 用于渲染连接到的路由组件(点击了哪个<router-link to="...">就显示哪个路由组件)，将<router-view></router-view>写在<template></template>中需要显示组件的位置，会渲染出连接到的组件
+例：
+<router-link to=".../">
+<router-view></router-view>
+
+3.router-view的name属性：通过name属性，为一个页面中不同的router-view渲染不同的组件，默认情况下router-view不需要name属性，因为大多数情况下会使用一个router-view标签来渲染多个router-link指向的不同的路由组件，当需要多个router-view标签时，则需要给router-view标签命名，指定其渲染某个router-link指向的路由组件，name后的值写routes中componet的值
+例：
+组件中：
+<template>
+	<router-link to="/aaa"></router-link>
+	<router-view name="Aaa"></router-view>
+</template>
+路由器中:
+<script>
+	export default new VueRouter({
+		routes: [
+			{
+				path: '/aaa',
+				component: Aaa
+			}
+		]
+	})
+</script>
+说明：component原本可以写成component: { default: Aaa}，router-view如果没写name属性则默认渲染default指向的组件，即component中的Aaa
+
+4.keep-alive标签: 在组件切换过程中将状态保留在内存中，防止重复渲染DOM，用<keep-alive></keep-alive>包裹<router-view></router-view>标签，可以让相同内容的组件不再渲染
+
+5.keep-alive标签的include="..."属性: 将缓存name为...的router-view组件
+
+6.keep-alive标签的exclude="..."属性: 将缓存除了name为...以外的router-view组件
+
+在页面打开时默认显示某个路由页面
+使用重定向方法，在注册路由(routes)时加上根链接的重定向：
+<script>
+	export default new VueRouter({
+		//配置路由组件
+		routes: [
+			{
+				path: '/about',
+				component: About
+			},
+			{
+				path: '/home',
+				component: Home
+			},
+			{   //可以将根链接重定向到/about
+				path: '/',
+				redirect: '/about'
+			},
+		]
+	})
+</script>
+
+让被激活的链接拥有不同的样式
+方法1：被激活的链接会自动拥有类名router-link-active，可以为这个类名添加样式(写在index.html主文件中，可以加上！important覆盖其他样式)
+注：如果首个激活标签的激活样式一直存在，可以在该标签上添加exact解决
+<template>
+	<router-link to="..." exact ></router-link>
+</template>
+<style>
+	.router-link-active {
+		color: #aaa!important;
+	}
+</style>
+方法2：在配置路由器(new VueRoutes({}))时加上配置linkActiveClass:'active'，可更改被激活路由链接的class名
+<script>
+	//router-index.js中
+	export default new Router({
+		linkActiveClass:'routerActive', //可以自定义类名
+		routes: [
+			{
+			  path: '/',
+			  name: 'Home',
+			  component: Home
+			},
+		],
+	})
+</script>
+
+嵌套路由
+说明：当路由组件中包含其他路由组件链接时，需要进行路由嵌套
+
+1.新建好各子路由组件
+说明：子路由组件也放在views(或者pages)文件夹中
+
+2.注册子路由
+说明：在index.js路由模块中引入子路由，子路由注册在父路由的children配置中
+例：
+//引入子路由
+<script>
+	import News from './News.vue'
+	import Messages from './Messages.vue'
+
+	//注册子路由
+	export default new VueRouter({
+					routes: [
+						{
+							path: '/about',
+							component: About
+						},
+						{
+							path: '/home',
+							component: Home,
+							children: [
+								{
+									path: '/home/news',
+									component: News
+								},
+								{   //简化写法(相当于/home/Messages)
+									path: 'messages',
+									component: Messages
+								},
+								{   //默认显示的重定向
+									path: '',
+									redirect: '/home/news'
+								}
+							]
+						},
+					]
+				})
+</script>
+
+3.使用子路由标签
+<router-link to="/...">生成链接
+<router-view>显示组件
+
+缓存路由组件
+将要缓存的组件写在<keep-alive></keep-alive>中
+例：
+<keep-alive>
+	<router-link to="/..."><router-link>
+</keep-alive>
+
+
+编程式路由导航
+说明：不通过<a></a>标签，通过js代码实现页面跳转(window.location = .../a.html)，被称为编程式路由导航
+<script>
+	//不使用<router-link :to="">，直接在js代码中通过this.$router.push()/.replace()等方法进行路由跳转
+	methods: {
+		aaa() {
+			this.$router.push('/')
+		}
+	}
+</script>
+
+路由的原理
+路由的出现是为了能够方便的管理历史纪录，因为通过url能够直接找到对应的路由组件(通过key-value方式即哈希值实现)，路由的
+方式一：浏览器通过不同路径的哈希值实现历史纪录的保存，同时可以监视哈希值的改变，并通过哈希值找到对应的路径，从而找到对应的路由组件
+方式二：h5出现新的浏览器API会按照栈的方式管理浏览过的url，在vue-router中路由组件(this)拥有$router对象(注意区分$route)，$router拥有push(),replace(),back(),go()等方法：
+$router.push()：该方法浏览的url可以回退到上一步(后进先出)，括号传入url
+$router.replace()：该方法浏览的url会直接替换掉上一步的url,因此只能回退到前一步，括号传入url
+$router.back()：该方法可以返回上一个记录路由，不需要传参数
+$router.go()：该方法可以通过传入参数(-1或1)控制返回或前进一个记录路由(不常用)
+说明：这四个方法一般配合点击事件使用
+例：
+<button @click="pushShow(massage.id)">push形式查看</button>
+<button @click="replaceShow(massage.id)">replace形式查看</button>
+<button @click="$router.back()">回退</button>
+
+methods: {
+	pushShow: function(id) {
+		this.$router.push(`/home/message/detail/${id}`)
+	},
+	replace: function(id) {
+		this.$router.replace(`/home/message/detail/${id}`)
+	}
+}
+
+路由组件懒加载
+基础理解：
+通过npm run bulid打包时，会将自己写的js打包成一个包，引用的第三方库一个包(最大，vendor开头)，webpack类一个包(manifest开头)，
+路由组件懒加载即点击用到哪个路由组件，就加载哪个组件的代码，避免第一次加载就直接加载所有组件代码
+其原理本质是代码分割，即将自己写的打包好的包进行代码分割，避免其一次性加载出来
+路由组件懒加载可以优化首次加载时间，前提是代码已经进行了分割打包，但也会消耗请求数，所以一般小路由就不需要这样
+具体步骤：
+在router--index.js中引用路由组件时，通过函数进行引入，函数未被调用时不会引入
+<script>
+	//import Home from '../pages/Home/Home.vue'
+	//import Order from '../pages/Order/Order.vue'
+	//import Profile from '../pages/Profile/Profile.vue'
+	//import Search from '../pages/Search/Search.vue'
+
+	//通过函数进行引入，函数未被调用时不会引入
+	const Home = () => import('../pages/Home/Home.vue')
+	const Order = () => import('../pages/Order/Order.vue')
+	const Profile = () => import('../pages/Profile/Profile.vue')
+	const Search = () => import('../pages/Search/Search.vue')
+
+	export default {
+		routes: [
+		  {
+		    path: '/home',
+		    //现在Home变为一个返回路由组件的函数，当component被调用时(请求路由时)，才加载(引入)路由组件
+		    component: Home, 
+		    meta: {
+		      showFooter: true
+		    }
+		  }
+		]
+	}
+</script>
+
+组件样式发生冲突
+解决：如果是.vue后缀的组件，可以在style标签上加一个无值属性scoped
+<style scoped>
+	/* 组件样式 */
+</style>
+
+路由通信（路由传参）
+说明：路由传参的方式有两种类型，params（post方法）和 query（get方法）,声明式导航和编程式导航都有这两类方法
+1.声明式导航（通过<router-link :to="">方式跳转） params 传参（post）
+<template>
+	<router-link :to="`/home/massage/detail/${massage.id}`">
+</template>
+<script>
+	//路由中通过v-bind绑定动态值
+	//路由链接只要符合'/home/massage/detail/.......'形式，都可以跳转到MessageDetail组件，传参不影响跳转
+	{
+		path: '/home/massage/detail/:id',
+		component: MessageDetail
+	}
+</script>
+<script>
+	//MessageDetail页中通过this.$route.params.id获取传递的参数
+	methods: {
+		aaa() {
+			console.log(this.$route.params.id)
+		}
+	}
+	//注：动态url的路由链接被激活一次后即使url中的动态值改变，也不会重新生成组件(可能影响到mouted钩子的执行)，因此可以使用watch监视$route的变化
+	watch:{
+		$route: function(newValue) {  //newValue为最新的$route值
+			console.log(newValue.params.id)
+			//重新获取id，注意$route.params.id获取的id可能为字符串，可以通过*1的方式转化成数字
+			...
+		}
+	}
+</script>
+2.声明式导航（通过<router-link :to="">方式跳转） query 传参（get）
+<template>
+	<!-- 相当于变量名已经在标签中声明了，所以路由中不用再绑定 -->
+	<router-link :to="`/home/massage/detail/?id=${massage.id}`">
+</template>
+<script>
+	//路由中不用再通过v-bind绑定变量名，不需要做任何改动
+	{
+		path: '/home/massage/detail',
+		component: MessageDetail
+	}
+</script>
+<script>
+	//同样通过this.$route.query.id获取传递的参数
+	methods: {
+		aaa() {
+			console.log(this.$route.query.id)
+		}
+	}
+	//注：动态url的路由链接被激活一次后即使url中的动态值改变，也不会重新生成组件(可能影响到mouted钩子的执行)，因此可以使用watch监视$route的变化
+	watch:{
+		$route: function(newValue) {  //newValue为最新的$route值
+			console.log(newValue.query.id)
+			//重新获取id，注意$route.query.id获取的id可能为字符串，可以通过*1的方式转化成数字
+			...
+		}
+	}
+</script>
+3.编程式导航（通过 this.$router.push('/home')方式跳转） params 传参（get）
+<script>
+	//在跳转到的地址中加参数（平常的写法是简化写法）
+	//注：params编程式传参不能有path项，如果提供了path项，params项会被忽略（即使写了也会失效）
+	//解决方法是通过name项提供路由的name（需要给路由命名）或者直接手写完整的带有参数的 path
+	methods: {
+		aaa() {
+			this.$router.push({
+				name: 'user', //通过name提供跳转路由的name，需要给路由命名
+				params: {userId: 123}
+			})
+		}
+		//或者
+		aaa() {
+			//手写完整的带有参数的 path
+			this.$router.push({path: `/user/${userId}`})
+		}
+	}
+</script>
+<script>
+	//同样通过this.$route.params.id获取传递的参数
+	methods: {
+		aaa() {
+			console.log(this.$route.params.id)
+		}
+	}
+	//注：动态url的路由链接被激活一次后即使url中的动态值改变，也不会重新生成组件(可能影响到mouted钩子的执行)，因此可以使用watch监视$route的变化
+	watch:{
+		$route: function(newValue) {  //newValue为最新的$route值
+			console.log(newValue.params.id)
+			//重新获取id，注意$route.params.id获取的id可能为字符串，可以通过*1的方式转化成数字
+			...
+		}
+	}
+</script>
+4.编程式导航（通过 this.$router.push('/home')方式跳转） query 传参（get）
+<script>
+	//在跳转到的地址中加参数（平常的写法是简化写法）
+	methods: {
+		aaa() {
+			this.$router.push({
+				path: 'register',
+				query: {plan: 'private'}
+			})
+		}
+	}
+</script>
+<script>
+	//同样通过this.$route.query.id获取传递的参数
+	methods: {
+		aaa() {
+			console.log(this.$route.query.id)
+		}
+	}
+	//注：动态url的路由链接被激活一次后即使url中的动态值改变，也不会重新生成组件(可能影响到mouted钩子的执行)，因此可以使用watch监视$route的变化
+	watch:{
+		$route: function(newValue) {  //newValue为最新的$route值
+			console.log(newValue.query.id)
+			//重新获取id，注意$route.query.id获取的id可能为字符串，可以通过*1的方式转化成数字
+			...
+		}
+	}
+</script>
+
+组件式传参(通过<router-view></router-view>标签传递)
+说明：<router-view></router-view>也可以看作一般标签，所以可以在上面用v-bind绑定值，然后在组件中通过props接收，所有<router-view></router-view>导航到的组件都可以接收到这个绑定值，在需要的组件中props即可，在需要大量传递相同数据时很好用
+<template>
+	<router-view :msg="xxx"></router-view>
+</template>
+<script>
+	//导航到的组件中
+	props: {
+		msg: [String,Array.....]
+	}
+</script>
+
+在组件里监听路由变化
+<script>
+	watch: {
+		//to表示将要跳转到的地方，里面有params等数据
+		//from表示从哪里跳转的，里面有params等数据
+		$route(to,from) {
+			console.log(to.params.id)
+		}
+	}
+</script>

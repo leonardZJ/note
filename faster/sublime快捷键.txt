@@ -1,0 +1,39 @@
+在每一行两端添加html标签对：alt+shift+w
+整行往上/下移动：Ctrl+Shift+上/下
+Ctrl+Y：恢复撤销
+自动排版：edit-->line-->reindent
+alt+shift+w给多行加相同标签先选中多行
+垂直选择用滚轮拖动
+anaconda插件弹窗错误：preferences-->package settings-->anaconda-->settings default：
+swallow_startup_errors'设置成'true'
+#开头的表示的id选择器
+.开头的表示的是类名选择器
+内嵌样式：<p style font-size:20pt></p>
+内部样式：写在html网页的<head><style></style></head>标签之间,所有行最末尾
+models快捷创建：输入大写M
+创建gitignore文件：www.gitignore.io(已收藏)，在文件夹下创建.gitignore文件
+Ctrl + Shift + T： 恢复刚刚关闭的标签。 
+隐藏input输入框：type='hidden'
+httpGET请求的带参数：在url后面加？，每个参数之间用&分隔
+shift+tab：退缩进
+ctrl+d：选中所有一样的
+ctrl+shift+/：多行 /* */ 注释
+ctrl+/：多行 // 注释
+Ctrl+Shift+[：折叠代码
+Ctrl+Shift+]：展开代码
+Shift+鼠标右键：多行光标连续选择
+Ctrl+鼠标左键：多行光标非连续选择
+分屏：View-->layout
+快速打开侧边栏：Alt+v+回车*2
+快速分栏：Alt+Shift+数字
+格式化按钮：Edit  ->  Line  ->  Reindent
+数字增加减少：Ctrl+上下键
+第一次选中内容，第二次选中内容的容器（包括内容），第三次选中内容的父容器（包括前面）：ctrl+shift+a
+alt+tab切换任务标签，顺序是从左至右
+fn+上下：快速上下浏览，没鼠标的时候好用
+alt+shift+tab切换任务标签，顺序是从右至左
+按住shift,点选两个位置，会选中两个光标之间的内容
+sublime出现红色下画线，按F6可以取消
+按住右键加滚轮，可以切换tab
+
+Ctrl + P：列出当前打开的文件（或者是当前文件夹的文件），输入文件名然后 Enter 跳转至该文件，输入@symbol跳转到symbol符号所在的位置，输入#keyword跳转到keyword所在的位置，输入:n跳转到文件的第n行 

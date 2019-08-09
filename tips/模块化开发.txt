@@ -1,0 +1,235 @@
+好处：
+1.避免变量污染，命名冲突
+2.提高代码复用率
+3.提高维护性
+4.依赖关系的管理
+
+1.函数封装
+缺点：污染了全局变量，且不能保证和其他模块起冲突
+<script>
+	function m1(){
+	　　//...
+	}
+
+	function m2(){
+	　　//...
+	}	
+</script>
+2.对象封装
+缺点：暴露了全部的成员，外部可以随意修改内部属性
+<script>
+	let module = new Object({
+
+	   _count: 0,
+
+	   m1: function (){...},
+
+	   m2: function (){...}
+	})
+</script>
+使用时：
+<script>
+	module.m1()
+	module.m2()
+	//但同时也可以直接修改_count属性，极其不安全
+	module._count = 10
+</script>
+3.使用函数封装私有属性
+缺点：引入模块后，还需要执行一次myModule()，才能获得返回值
+<script>
+	var myModule = funtion() {
+		let _count = 5;
+		 
+		let m1 = function (){...};
+
+		let m2 = function (){...};
+
+		return {
+			m1: m1,
+			m2: m2
+		}
+	}
+	//该函数被立即执行，外部会看到一个module = {m1: m1, m2: m2}
+	//通过module.m1，就可以调用module对象中的函数
+	//通过module.m1()，圆括号代表执行，即执行获取到的函数
+</script>
+4.使用IIFE
+<script>
+	;(funtion(window) {
+		let _count = 5;
+		 
+		let m1 = function (){...};
+
+		let m2 = function (){...};
+
+		window.myModule = {
+			m1: m1,
+			m2: m2
+		}
+	})(window)
+	//模块被引用时立即被执行并将封装的内部函数对象方法到window上
+	//调用时可以直接使用myModule.m1()，因为myModule成为了一个全局对象
+	//引入模块时，可以打印一下window对象看看有没有同名的全局变量
+	//其实不传入window也可以，但是在代码压缩时，window将不会被压缩，所以传入window会比较好
+</script>
+5.如果模块有依赖库
+缺点：如果依赖过多，可能因为记不住顺序而报错，并且多个script也会造成请求过多，消耗资源
+<script>
+	(funtion(window,$) {
+		let _count = 5;
+		 
+		let m1 = function (){
+			$('...').html(...)
+		};
+
+		let m2 = function (){...};
+
+		window.myModule = {
+			m1: m1,
+			m2: m2
+		}
+	})(window,jQuery)
+	//将依赖库对象通过参数传入
+	//使用时需先引入依赖库，再引入自定义模块，顺序不能错
+</script>
+6.ES6的模块化
+CommonJS 和 AMD 模块都只能在运行时加载对象，并获取它的所有方法，这种加载称为“运行时加载”
+ES6模块不是对象，而是通过export命令显式指定输出的代码，再通过import命令输入，这种加载称为“编译时加载”或者“静态加载”，即 ES6 可以在编译时就完成模块加载，效率要比 CommonJS 模块的加载方式高。
+注1：大部分浏览器暂不支持直接使用ES6语法，所以需要使用webpack进行重新打包
+注2：如果浏览器支持ES6，需要在标签上加上：<script type="module"></script>
+<script>
+	import { stat, exists, readFile } from 'fs';
+	//上面代码的实质是从fs模块加载3个方法，其他方法不加载
+</script>
+模块化编写：
+<script>
+	//输出变量
+	//方法1
+	export var firstName = 'Michael';
+	export var lastName = 'Jackson';
+	export var year = 1958;
+
+	//方法2，优先使用方法2
+	var firstName = 'Michael';
+	var lastName = 'Jackson';
+	var year = 1958;
+
+	export {firstName, lastName, year};
+
+	//输出函数，外部可通过import {multiply} from '模块名'获取到multiply
+	export function multiply(x, y) {
+	  return x * y;
+	};
+</script>
+
+对象继承模块化
+创建对象后放到一个js文件中，就是一个模块，使用时可以通过其他模块继承出一个子类，可以稍作做修改后引入到页面中，注意引入时父类必须在子类前面
+a.js:
+<script>
+	//创建对象A并添加属性和方法
+	function A(data) {
+		this.data = data
+	}
+	A.prototype.fn = function() {
+		...
+	}
+</script>
+b.js:
+<script>
+	//创建B子类继承A类
+	function B(data,name) {
+		A.call(this,data)
+		//B添加自己的属性
+		this.name = name
+	}
+	B.prototype = Object.create(A.prototype)
+	//B添加自己的方法
+	B.prototype.bFn = function() {
+		...
+	}
+</script>
+在页面中引入时注意顺序
+<html>
+	<script src="a.js"></script>
+	<script src="b.js"></script>
+	<script>
+		window.onload = function() {
+			var b = new B(12,'aaa')
+			b.fn()
+			b.bFn()
+		}
+	</script>
+</html>
+
+
+使用webpack打包依赖文件
+1.安装
+全局安装：cnpm i webpack -g
+局部安装：cnpm i webpack --save-dev，可以绑定webpack版本，避免移动项目时重新下载webpack不兼容
+webpack 4.0以上需要独立安装webpack-cli  cnpm i webpack-cli -D
+
+2.先初始化配置文件（package.json）
+npm init -y
+说明：会产生package.json文件，包含配置信息，即使项目移动，也可根据这个文件下载依赖（npm install）
+
+3.新建main.js文件
+说明：该文件作为入口文件，当前页面所有依赖文件都通过这个文件引入，webpack通过这个入口文件进行打包，页面直接引入打包好的文件（bundle.js）即可
+
+4.在main.js中引入依赖库
+	下载依赖库，下载完默认创建node_modules文件夹，以jQuery为例
+	npm install jQuery
+	
+	引入依赖库
+	<script>
+		import '$' from 'jQuery'
+		...
+	</script>
+
+5.使用webpack进行打包
+webpack 入口文件路径 出口文件路径
+例：
+webpack ./src/main.js ./dist/bundle.js
+
+6.在页面中引入bundle.js即可
+
+webpack配置
+在项目文件中新建webpack.config.js文件，该文件为webpack的配置文件
+1.可以指定文件的入口和出口，这样就不用写长长的'webpack ./src/main.js ./dist/bundle.js'了
+配置：
+<script>
+	//通过node语法，向外暴露一个配置对象
+	module.export = {
+		//入口文件路径
+		entry: './src/',
+		//出口文件路径
+		output: {
+			filename: 'bundle.js',
+			path: './dist'
+		}
+	}
+</script>
+2.这样需要打包时，直接运行webpack命令即可
+说明：webpack发现命令没有指定入口出口文件时，会到项目根目录去查找webpack.config.js文件并执行，由此生成bundle.js文件
+
+webpack-dev-server工具
+说明：可实现自动打包编译，不用每次都手动webpack
+注：webpack-dev-server依赖于webpack，所以项目必须局部安装webpack
+
+1.安装webpack-dev-server
+局部安装：npm install webpack-dev-server -D
+
+2.在package.json中配置脚本命令
+<script>
+	"scripts": {
+		"dev": "webpack-dev-server --open --port 8080 --contentBase src --hot"
+		//--open表示自动打开浏览器
+		//--port 8080表示设置端口
+		//--contentBase src表示进入的默认路径
+		//--hot表示热重载，不需要重新打包生成一个完整的bundle.js文件，新增一个补丁即可，页面更新速度更快并且页面无刷新
+	} 
+</script>
+
+3.运行webpack-dev-server：npm run dev
+注：页面引入的'./src/dist/bundle.js'需要改成根目录下的'/bundle.js'
+说明：该脚本会启动一个本地服务器，并在项目根目录中建立虚拟的bundle.js文件，只存在于内存中，可以看作在根目录下有一个bundle.js文件，通过localhost...可以访问该服务器，进入src文件夹，可看到页面效果，且每次保存入口文件修改，都会自动刷新页面效果
+

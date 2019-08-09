@@ -1,0 +1,889 @@
+MVVM概念
+view：视图，html中被控制的区域
+Model：模板，vue实例中的data
+viewmodel：视图模板，vue对象实例
+在HTML页面中，将负责渲染的区域称为view层(元素标签的区域)，负责存放相关数据的区域称为Model层(如data: {name: 'a'...}等)，负责在两个层之间进行调度的称为VM层(Vue对象的实例就是调度者)，这样分层的好处是让逻辑更加清晰
+
+安装vue
+在bootcdn上查找vue,将后缀为vue.js的连接导入HTML,或者down下来放到站点目录保存为vue.js，然后再进行导入(记得vue.js要优先导入之后再导入自己写的js),导入vue.js之后，页面中就多了一个Vue的构造函数，所以可以使用new Vue()创建Vue对象
+
+Tips：
+回调函数
+说明：1.自定义2.未主动调用3.在某种条件下自动执行4.回调函数的this都是window
+定义回调函数需要关注
+说明：1.在什么情况下执行？2.用来做什么？
+!(非)的常用情形
+说明：用于切换布尔值真假(let a = true; a=!a)，这样a的值就会在真和假之间来回切换
+moment.js库
+说明：一款好用的用于格式化时间日期的库，可通过CDN引入(倒数第二行)
+format
+说明：做名词时为格式，做动词时为格式化
+plugin
+说明：插件
+function(x) {...}(123)
+说明：表示函数创建时将123作为参数传入并立即执行
+组件化
+将页面拆分成一个个局部功能界面，一个功能模块，包含了HTML,css,js,img等相关资源
+localStorage
+说明：持久保存客户端数据(直到通过JS删除或清除缓存)，使用JSON.parse(window.localStorage.getItem('key'))获取数据(数据以字符串形式存储在localStorage中，格式为key-value),使用window.localStorage.setItem('key',JSON.stringify(value))储存数据(存入的数据也要保持字符串形式，格式为key-value)
+
+
+
+创建vue对象
+new Vue({el：..., data: {...},method: function (){...}...})
+说明： data里存属性，methods和computed里存方法
+常用配置
+el：存放选择器，后接可接#id/.class，表示将要操控的元素
+data:存放普通属性，{}中存放属性，key值为固定值
+computed:存放计算属性，{}中存放属性，key值为函数且有return值，该函数会在初始化和相关属性变化时触发执行
+methods:存放方法，{}中存放方法，key值为为函数，该函数数被调用时触发执行
+注：computed和methods的区别在于，computed会将结果缓存且当相关属性不变时不会再次执行(直接调用缓存)，method则每次调用时都会重新执行一次，资源消耗比较大
+watch：存放监听回调函数，监听某个数据，如果属性发生变化，则执行回调函数，当属性发生变化时会返回两个值并传给回调函数(function(x,y) {...}，x为数据最新值，y为旧值，可以单独设置x不设置y)
+实现属性监听的方法
+<script>
+	//方法1：在watch括号里写回调函数(a为被监视属性，x为a最新值，y为旧值(可以不设置y单独设置x))：
+	watch: {
+		a: function(x,y) {
+			deep: true //可以设置deep值，为true则表示进行深度监视
+			immediate: true,
+			handler(newName, oldName) {
+		    	this.fullName = newName + ' ' + this.lastName;
+		    },
+		}
+	}
+	//方法2：在vue实例外部使用$watch方法调用(a为被监视属性，vm为实例对象)：
+	vm.$watch(a,function(x,y) {
+		...
+	})
+	//方法3(双向监听)：使用computed执行get和set方法(computed里的函数会在相关属性发生改变时触发执行)：
+	computed: {
+		fullName: {
+			get() { 
+				return this.firstName + '' + this.lastName
+			},
+			set(x) {
+				const names = a.split(' ')
+				this.firstName = names[0]
+				this.lastName = names[1]
+			}
+		}
+	}
+</script>
+
+说明：get和set都是属性自带的方法(回调函数)，当前属性(fullName)的相关属性(data里的firstName或lastName)发生改变时调用get(用户通过修改firstName或lastName来间接修改fullName)，当前属性本身(fullName)发生改变时调用set(用户直接修改fullName)，双向监听就是一个循环，get监听当前属性的相关属性，发生变化时计算出当前属性值，set监听当前属性本身，如果用户直接修改set监听的属性就会触发set，给set设置一个回调函数，当set被触发时将当前属性反映到相关属性中，这时get监听到相关属性的变化，立即被调用，准备根据相关属性的变化来修改当前属性的值，突然发现当前属性的值跟即将要修改成的值一样，但get还是会再修改一遍，只是值相同(看起来就好像没改过一样)，而v-model只能监听单一属性，无法跟其他属性建立联系(某个数据变动引起其他数据改变)
+
+在Vue对象实例之外调用它的属性和方法
+vm.x：调用属性，中间可以不用加data和computed，x为data和computed里的key
+vm.x()：调用方法，中间可以不用加methods，x为methods里的key
+例：
+<script>
+var vm = new Vue ({
+	el: '#app',
+	data: {
+		name: 'abc'
+	}
+
+	computed: { 
+		fn: function() {
+			return this.name.split('').reverse().join('')
+		}
+	}
+});
+vm.name //输出abc
+vm.fn() //调用fn方法
+;
+</script>
+
+插值表达式
+{{x}}：，在V层被el选中的区域中引用M层的数据，x为M层数据key,括号中可写单个表达式(js中对象的方法可以使用)的写法，但是不支持声明或判断等高级语句(可以使用三元表达式)
+
+
+常用指令
+说明：直接添加到元素行间即可发挥作用(类似添加属性)
+v-once：让元素中的插值只更新一次
+v-html="x"：将x的值当做HTML渲染后插入到元素间,x为M层数据key
+
+v-bind(将属性的值绑定为js表达式，缩写为:号)
+v-bind:y="x"：将x的值指向M层数据，x为M层数据key,y为绑定的属性
+绑定class属性
+v-bind:class="x":将x的值指向M层数据，x为M层数据key,让所有类名列在M层，该指令可以跟行间普通类名同时存在(即同时存在class="..."和v-bind:class="...")
+v-bind:class="{y1: x1,y2: x2}"：将x的值作为判断y类是否添加的条件(可以有多个y:x,用逗号分隔)
+v-bind:class="[x,y,z...]":将x,y,z...的值指向M层数据(即通过数组给:class传入多个对象)
+v-bind:class="[isTrue? x : y]":通过三元表达式判断使用哪个类,将x,y指向M层数据
+v-bind:class="[{x:y},z]":x,y,z都可以指向M层数据库，x做为y的判断条件，z不做条件控制
+绑定style属性
+v-bind:style="x":将x指向M层数据，让所有样式列在M层
+v-bind:style="{a: x,b: y + 'px'}":x,y指向M层,a和b为样式名称(如果样式中带-，则需要加''或者写成驼峰格式(如'padding-left'或paddingLeft))
+v-bind:style="[x,y,z...]":将x,y,z指向M层数据(即通过数组给:style传入多个对象)
+(当v-bind:style使用需要添加浏览器引擎前缀的CSS属性时,如 transform,Vue.js会自动侦测并添加相应的前缀)
+
+v-on(绑定事件监听，缩写为@符)
+v-on:y="x"：将x指向M层函数，x可以为M层函数名，也可带上括号传参(可以传入确定值，也可以传入M层定义好的变量)，y为绑定的事件，v-on被触发后会返回$event对象(包含target等属性)，可以通过传参传递到M层，也可以直接使用($event.属性)
+v-on事件修饰符
+说明：通过点方法调用，写在等号前面，可以串联使用(可链式调用)
+.stop：阻止事件继续传播
+.prevent：不重载页面
+.capture：使用事件捕获模式(由外而内)
+.self：发生在当前元素自身的事件才会被触发
+.once：让事件只被触发一次
+.passive：以{passive: true}模式执行(不阻止默认行为)，能够提升移动端性能(监听是否阻止默认事件会很耗资源)
+按键事件别名
+说明：按键事件一般在keyup和keydown后面+.数字来监听，现在可以用.按键别名来监听
+.enter：回车
+.tab：制表符
+.delete：删除和退格
+.esc：回退
+.space：空格
+.up：上
+.down：下
+.left：左
+.right：右
+按住的按键事件别名
+.ctrl
+.alt
+.shift
+.meta：Mac的command，window的win
+精准修饰符
+.exact：必须严格符合条件才会触发事件
+鼠标事件别名
+说明：鼠标事件一般在mouseup和mousedown后+.数字来监听，现在可以用.按键别名来监听
+.left
+.right
+.middle
+
+v-if,v-show和v-for
+v-if="x"：条件判断，根据x值的真假判断是否插入元素，为真则插入，为假则移除，x可以为M层数据key
+v-else-if：同条件判断，作用为条件语句的else-if块，可以连续使用
+v-else：同条件判断，作用为条件语句的else块
+<template v-if="x">
+	<h1></h1>
+	<div></div>
+	<p></p>
+</template>			：切换多个元素,把v-if加在虚拟template元素中(在渲染时不会出现)，并包裹想要切换的标签即可
+key="x"：给元素添加代表唯一的key,Vue会尽可能高效地渲染元素，通常会复用已有元素而不是重新渲染。这么做会使Vue变得非常快，还可以保留之前的信息(如input里的内容),添加了key后将不会复用(变成每次都重新渲染)，x为自由取的名
+v-show="x"：同条件判断，根据x值的真假判断是否插入元素，为真则插入，为假则移除，x可以为M层数据key
+注：v-if在切换过程中真正删除掉了元素，v-if如果在初始渲染时条件为假，则不插入元素(事实上它什么都不做)——直到条件第一次变为真后开始渲染，v-show不管初始条件是什么，元素一定会被渲染，之后切换时只是简单地基于CSS进行切换(display:none以及如非全页面刷新不再渲染),v-if 有更高的切换开销，v-show有更高的初始渲染开销
+所以：需要非常频繁地切换使用v-show，运行时条件很少改变使用v-if
+v-for="i in x"：迭代数组数据，将x指向M层数组(x:[{a:1},{b:2}...]),i数组元素的key
+v-for="(i,index) in x"：迭代数组数据，将x指向M层数组(x:[{a:1},{b:2}]),i为数组元素的key,index为数组元素的索引
+v-for="v in x"：迭代json数据，将x指向M层json(x:{a: 1,b: 2...}),i为json的value
+v-for="(v,k) in x"：迭代json数据，将x指向M层json(x:{a: 1,b: 2...}),i为json的value,k为json的key
+v-for="(v,k,index) in x"：迭代json数据，将x指向M层json(x:{a: 1,b: 2...}),i为json的value,k为json的key,index为json索引
+注：尽可能在使用v-for时提供key，动态提供时需用v-bind绑定(当Vue渲染已经渲染过的元素列表时，默认就地复用，如果数据项的顺序被改变，Vue不会移动DOM元素来匹配数据项的顺序)
+v-for="i in 10"：迭代指定次数，10相当于模板被渲染的次数，且i动态变化(可插入页面中使用)
+<template v-for="i in x">
+	<h1></h1>
+	<div></div>
+	<p></p>
+</template>			：渲染多个元素,把v-for加在虚拟template元素中(在渲染时不会出现)，并包裹想要切换的标签即可
+
+v-for="i in x"和v-if="x"同在一个节点：v-for和v-if同时存在，v-for会先执行，v-if再做判断是否保留此次循环中的元素
+v-if="x"在外层元素上，v-for="i in x"在内层元素：v-if先判断是否执行此次循环，v-for再执行
+变异方法()
+.push(),.pop(),.shift(),unshift(),.splice(),.sort(),.reverse()
+说明：变异方法会改变原数组，会触发视图更新
+非变异方法
+.filter(),.concat(),.slice()
+说明：非变异方法不会改变原数组
+注1：在vue中返回的新数组会替换原来的数组，但会最大化的复用数组已经渲染好的元素，使性能得到提升
+深浅监听
+说明：Vue无法检测到以下方法对数组的改动：
+			1.用[]更改数组某个元素(list[x]=y)  #动态的y可以被检测到，即y可以为被监听对象
+			解决：
+				1.用全局方法Vue.set(x,y,z)代替，x为要修改的数组，y为数组索引(index)，z为新值
+				2.用全局方法x.$set(x,y,z)代替，x为要修改的数组，y为数组索引(index)，z为新值
+				3.用变异方法x.splice(x,1,y)代替，x为要修改的数组，y为新值
+			2.修改数组的长度(list.length=x)
+			解决：用变异方法x.splice(x)代替，x为新length
+
+
+
+
+
+v-model
+说明：v-model="x"会忽略表单中的value，checked，selected等的初始值(文本域插值也不会有效果)，自动收集x的值，可以在M层data中设置初始值，如需指定收集数据，可以写在value中(text/textarea除外)
+在text和textarea中 v-model="x"：绑定文本框，将x的值指向M层数据，x为M层数据key,M层默认收集x的值(文本框内容)
+在radio中 v-model="x"：绑定单选框，将x指向M层数据，M层默认收集x的值(true和false)，如需指定加上value="y",y为指定值(如果是变量加上v-bind)
+在checkbox中 v-model="x"：绑定复选框，将x指向M层数据，M层默认收集x的值(true和false)，如需指定加上value="y",y为指定值(如果是变量加上v-bind)
+在select中 v-model="x"：绑定下拉选框，将x指向M层数据，M层默认收集x的值(option文本值)，如需指定加上value="y",y为指定值(如果是变量加上v-bind)
+v-model修饰符	
+.lazy：修改input文本更新方式为change时更新，即等输入完成后再改变M层数据(默认input的文本和M层同时变化）
+.number：自动将用户输入值转为数值类型(原理是parseFloat())，如果输入值无法解析会返回原始值
+.trim：自动过滤用户时输入的首尾空白字符
+
+组件
+说明：类似自定义元素，定义出来的元素会包含既定的初始内容，可以像元素一样在控制区域使用，让HTML页面变得非常简洁
+定义组件
+Vue.componet('myButton',{
+	data: function() {
+		return {
+			count: 0,
+		}
+	},
+
+	template: '<button v-on:click="count++">你按了{{ count }}下.</button>'
+})
+new Vue({ el:'#id' })
+说明：定义好的组件可以直接在控制区域插入(<mybutton></mybutton>),这样就直接创建了一个自定义按钮(自带功能)，并且可以多次复用(添加多个<mybutton></mybutton>按钮)
+注1：每次复用组件，都会创建新实例(确保相互独立不受影响)
+注2：定义组件时data通过函数设定数据(闭包问题)
+
+Vue相关插件
+vue-cli：vue脚手架
+vue-resource(axios)：ajax请求，官方推荐axios
+vue-router：路由
+vuex：状态管理
+vue-lazyload：图片懒加载
+vue-scroller：页面滑动相关
+mint-ui：基于vue的UI组件库(移动端)
+element-ui：基于vue的UI组件库(PC端)
+
+实例的生命周期
+vm实例会经历三大生命阶段，分别是初始化，更新，销毁，
+实例的生命周期钩子
+说明：本质为回调函数，在实例生命周期中的各个阶段被调用，可以使用生命周期钩子为实例添加代码(在各个生命阶段为实例添加新方法)
+注：如果使用钩子调用箭头函数，this的指向会一直是定义时的外部对象vm(箭头函数没有自己的this，内部的this就是外层代码块的this)
+例：
+let vm = new Vue({
+	el: "#id",
+	data: {
+		a: 1
+	},
+	create: () => {
+		console.log(this) //此时的this指向vm
+	}
+})
+各阶段钩子
+在调用new Vue()后进入初始化阶段
+beforeCreate ：在new Vue()执行后，在实例初始化之前，数据观测(data observer)和event/watcher事件配置之前被调用。
+created ：在实例创建完成后，数据观测(data observer)和event/watcher事件配置之后被调用(挂载阶段未开始，$el属性不可见)
+
+初始化阶段完成后进入挂载阶段(在内存中编译好之后渲染到页面中)
+beforeMount ：模板在内存中编译好之后被调用，相关的render函数首次被调用，页面渲染未开始，该钩子在服务器端渲染期间不被调用。
+mounted ：页面渲染完成后被调用(数据挂载已完成)
+
+当data数据发生改变时进入更新阶段
+beforeUpdata ：当页面发生改变之前被调用
+updated ：当页面发生改变之后被调用
+
+在调用vm.$destroy时进入销毁阶段
+beforeDestroy ：在对象销毁前调用
+destroyed ：在对象销毁后调用
+<script>
+	beforeCreate() {
+
+	},
+	created() {
+
+	},
+	beforeMount() {
+
+	},
+	mounted() {
+
+	},
+	beforeDestroy() {
+
+	},
+	destroyed() {
+
+	},
+</script>
+route父子组件生命周期渲染顺序
+父子组件的渲染顺序是，父created ---> 子created ---> 子mounted ---> 父mounted，所以在created生命周期里校验route参数，确保组件render以后有正确的数据显示。
+
+
+
+
+
+
+
+
+
+动画
+说明：本质上是对css动画的封装(不用写兼容前缀)
+vue中动画被分为三个阶段(显示和消失原理相同)：进入前(消失前)，进入中(消失中)，进入后(消失后)
+方法1
+将需要设置动画效果的元素包裹在<transition name="xxx"></transition>中，然后为进入中(即过渡阶段)设置动画时间,为隐藏时(进入前和消失后)设置样式(变动后的模样)
+<style>
+	// .xxx-enter-active,.xxx-leave-active：过渡时(常用)
+	// .xxx-enter,.xxx-leave-to：进入前/消失后(常用)
+	// .xxx-enter-to,.xxx-leave：进入后/消失前(不常用)
+
+	/* 过渡时的样式和时间 */
+	.xxx-enter-active, .xxx-leave-active {
+		transition: all 2s;
+	}
+	/* 进入前/消失后的样式 */
+	.xxx-enter, .xxx-leave-to {
+		opacity: 0;
+		transform: translateY(10%);
+	}
+</style>
+注：transition需要与如下情景中的任一种一起使用：
+v-if（条件渲染）
+v-show（条件展示）
+动态组件
+在组建的根节点上，并且被vue实例DOM方法触发，如appendTo方法把组件添加到某个根节点上
+
+
+方法2
+先创建动画
+@keyframes bigAndsmall {
+	0% {transform: scale(0)}
+	50% {transform: scale(1.5)}
+	100% {transform: scale(1)}
+}
+再将动画设置在过渡时
+.xxx-enter-active {
+    animation: bigAndsmall-in 1s;
+}
+.xxx-leave-active {
+    animation: bigAndsmall 1s reverse;
+}
+说明：reverse表示动画倒着放
+
+过滤器
+说明：将数据过滤成某种格式
+使用方法：
+在main.js里定义过滤器（全局注册）
+Vue.filter('x',function(y) {
+	return ...y...
+})
+说明：x为过滤器名称，y为参数，如果想传入更多参数，可以定义function(y,z...)
+注：一定要写在new Vue({...})的前面，生成的实例才会有该过滤器
+调用过滤器
+<div>{{ y | x }}</div>
+说明：ｘ为过滤器名称，y为参数，如果在定义时有多个参数，可以这样调用{{ y | x(z) }}
+
+ref和.$refs
+ref="x"：用于指定唯一标识，x相当于给dom元素指定了键名，该元素会被自动添加到vm的$refs对象中，vm对象通过$refs属性访问这个元素对象
+.$refs：每一个vue对象都有.$refs属性(vm.$refs)，一开始.$refs是空对象，而当页面中每存在一个ref="x"标识符时，$refs属性里就会多出来一个元素(格式为x: dom)，所以可以通过vm.$refs.x访问到dom元素(通常是this.$refs.x.innerHTML)并进行操作
+
+自定义指令
+说明： 可以自定义全局指令和局部指令，全局指令可以被全局使用，自定义指令只能在定义的vue实例控制的区域有效
+定义指令：全局指令和局部指令的定义区别只在于定义的位置，全局写在vue外部Vue.directive()中,局部写在vue内部的directives: {}里面
+例：
+自定义全局指令
+Vue.directive('x',function(el,binding) {
+	...
+})
+说明：el为目标dom对象(当指令被插入到行间的时候自动传进来)，binding为包含指令信息的相关对象(包含了如等号后面的M层键名，M层键的值，指令的名称等等)
+自定义局部指令
+new Vue({
+	el: "#id",
+	data: {
+		...
+	},
+	directives: {
+		x: function(el,binding) {
+			...
+		}
+	}
+})
+说明：x为指令名，el和binding同上
+
+插件开发
+1.新建一个js文件，命名为vue-x.js，放到utils文件夹下
+{# 2.用匿名函数自调用把插件包裹起来
+(function() {所有插件})() #}
+3.定义向外暴露的插件对象
+const MyPlugin = {}
+
+1.新建一个js文件，命名为vue-x.js，放到utils文件夹下
+2.Vue对外公开install方法用于插件开发
+<script>
+	export default {
+		//第一个参数是 Vue 构造器，第二个参数是一个可选的选项对象
+		install: function(Vue,options) {
+			//添加全局方法或属性(即vm对象的属性或方法)，这种添加是给Vue对象使用的，在外面通过Vue实例，如Vue.myGlobalMethod()来调用
+			Vue.myGlobalMethod = function() {
+				...
+			}
+
+			//定义全局指令，可以在任何组件中使用v-x
+			Vue.directive('x',function(el,binding) {
+				el.xxx = binding.xxx.
+			})
+
+			//注入组件
+			Vue.mixin({
+				created: function() {
+
+				}
+			})
+
+			//添加实例的方法(为了区分对象方法和实例方法，习惯在实例方法前加$)，在组件里通过this.$myMethod()来调用，相当于Methods里定义的方法
+			Vue.prototype.$myMethod = function() {
+				...
+			}
+		}
+	}
+</script>
+
+插件注册
+script引入(必须在vue.js后面)
+<script src="../.../vue-x.js"></script>
+
+import引入(写在new Vue({....})后面)
+<script>
+	import MyPlugin from './utils/MyPlugin.js'
+
+	Vue.use(MyPlugin) //内部会调用MyPlugin.install(Vue)
+
+	new Vue({....}) 
+</script>
+
+调用方法
+全局方法通过Vue.myGlobalMethod调用
+全局指令直接写在元素标签中
+实例方法则通过vm.$myMethod调用
+
+
+
+
+
+1.v-cloak:v-cloak指令会在元素上保留直到编译结束(利用这个特性可以解决如网速慢的时候，网页会显示出{{...}}的问题(配合属性选择器))
+例：
+	<style>
+		/* 属性选择器 */
+		[v-cloak] {
+			display: none;
+		}
+	</style>
+	<div v-cloak></div>
+
+2.v-text:相当于在页面中引用了M层的数据，类似于插值表达式{{}}，v-text不存在网速慢会显示出{{}}代码的问题不过会覆盖掉标签中原本的内容，插值表达式则可以和原本内容共存
+例：
+	<h4 v-text="msg">aaa</h4> ==> msg的值
+	<h4>{{ msg }}aaa</h4> ==> msg值aaa 
+
+
+3.v-html:输出HTML，两者在输出内容时，都会以文本方式输出(如果msg中有标签，也当作文本输出)，v-html则会按照HTML渲染输出，v-html也会覆盖标签中原本的内容
+例：
+	<h4 v-html="msg">aaa</h4> ==> msg的值
+	<h4>{{ msg }}aaa</h4> ==> msg值aaa
+
+4.v-bind:用于绑定属性，被绑定的属性的值会被当做js表达式执行(甚至可以拼接字符串),在data中定义属性的值，使用变量进行传递，可以缩写 :属性
+例：
+	一般情况：
+	<input type="button" value='按钮' title='123'>  ==>title为123
+	使用v-bind:
+	<input type="button" value='按钮' v-bine:title='msg'>  ==>title为msg的值
+	直接在绑定的属性后拼接字符串：
+	<input type="button" value='按钮' v-bine:title="msg+'123'"> ==>title为msg的值123
+
+
+5.v-on:用于绑定事件，被绑定的事件的值会被当做js表达式执行，在methods中定义事件的执行函数，使用变量进行传递，可以缩写成  @属性
+例：
+	<input type="button" value='按钮' v-on:click="show">
+	<script>
+		var vm = new Vue({
+			el: "#id",
+			methods: {
+				show: function() {
+					alert('a')
+				},
+			}
+		});
+	</script>
+6.v-on的事件修饰符：
+.stop：可以阻止事件冒泡
+.prevent：阻止默认行为(例如a标签和表单的submit会默认刷新页面)
+.capture：添加事件监听器时使用事件捕获模式(如果内外层盒子有相同事件，默认会从外至内触发，捕获模式则是从内至外触发	)
+.self：只有事件发生在自己身上时才触发事件(排除掉冒泡和捕获情况)，与stop效果相同(都会阻止冒泡)，不过self只负责自己的事件行为(如果冒泡遇到self会跳过)
+.once：只触发一次事件处理函数，事件修饰符可以串联使用(例如.prevent.once表示prevent只触发一次)
+
+
+7.v-model:实现M层和V层的双向数据绑定(同时发生变化)，是vue中唯一一个双向绑定的指令
+例：
+	<input type="text" value="123" v-model="msg">
+	<script>
+		var vue = new Vue({
+			el: '#id',
+			data: {
+				msg: 'aaa'
+			}
+		});
+	</script>
+说明：这时候改变input的value值，vue中的msg值也会发生变化，相当于将input中的msg和vue中的msg连接了起来(注：v-model智能)
+
+
+8.v-bind绑定的类样式
+单个对象(类名)：<div v-bind:class="['dd']"></div>
+单个对象(变量)：<div v-bind:class="dd1"></div>
+单个对象(表达式)：<div v-bind:class="{'cc':flag}"></div>
+数组对象：<div v-bind:class="['aa',dd1,{'cc':flag}]"></div>
+说明：绑定样式的类样式通过数组传递(数组中的对象可以是'类名'，变量，{表达式})，其中变量和{表达式}可以单独传入(不需要通过数组)
+
+
+9.v-bind绑定的行间样式
+单个对象(样式)：<div v-bind:style="{color: #0f0}"></div> //注意当样式名中包含-需要加上''(如text-align)
+单个对象(data中的变量)：<div v-bind:style="dd1"></div>
+数组对象：<div v-bind:style="[{color: #0f0},dd1]"></div>
+
+
+10.v-for循环
+循环普通数组
+data: {  list: [1,2,3,4,5,6]  }
+<p v-for="item in list">{{ item }}</p>
+说明：用<p v-for="(item,i) in list">{{ item }}{{ i }}</p>可以获得索引i
+循环对象数组
+data: {  list:[{id: 1,name: 'zs1'},{id: 2,name: 'zs2'}]  }
+<p v-for="item in list">{{ item.id }}{{ item.name }}</p>
+说明：用<p v-for="(item,i) in list">{{ item.id }}{{ item.name }}{{ i }}</p>可以获得索引i
+循环对象
+data: {  list: {id: 1,name: 'zs',gender: '男	'}  }
+<p v-for="(val,key) in list">{{ val }}{{ key }}</p>
+说明：用<p v-for="(val,key,i) in list">{{ val }}{{ key }}{{ i }}</p></p>可以获得索引i
+迭代数字
+<p v-for="item in 10"></p>
+说明：迭代从1开始
+
+
+
+
+
+
+
+
+
+
+
+
+注意点：
+1.Vue对象会监听自己身上data所有数据，如果发生改变，则将改变应用到当前页面中
+2.在Vue实例中如果想获取data中的数据或调用methods中的方法，必须通过this.数据属性名或this.方法名来进行访问，这里的this代表Vue实例对象本身
+例：
+<script>
+	var vue = new Vue({
+		el: '#id',
+		data: {
+			msg: 'aaa'
+		}
+		methods: {
+			lang: function() {
+				alert(this.msg)
+			}
+		}
+	});
+</script>
+3.如果methods里的函数还有一层函数，则需要通过变量传递this，或者用箭头函数
+例：
+<script>
+	methods: {
+		var _this = this
+		lang: function() {
+			setInterval(function() {
+				alert(_this.msg)
+			},1000)
+		}
+	};
+</script>
+
+
+
+
+v-show="属性"：如果当前属性存在，则显示该条标签(display变为block)，并刷新属性值
+v-if="属性"：如果当前属性存在，则显示该条标签，并刷新属性值，否则删除该标签(该标签将不存在)
+v-for="i in foodlist"：迭代指令，将foodlist迭代入food中，用{{ i }}调用，会在当前页面中循环创建同类标签，另外还可以在{{}}中添加运算法则和三元运算，例：
+js：
+	var app = new Vue({
+		el:'#app',
+		data: {
+			foodlist:[
+			{
+				name:'葱',
+				price:10,
+				discount:.5,
+			},
+			{
+				name:'姜',
+				price:10,
+				discount:.8,
+			},
+			{
+				name:'蒜',
+				price:10,
+			},
+			]
+		}
+	})
+
+	html:
+	<v-for="food in foodlist">
+	普通调用
+	{{ food.name }} : ￥{{ food.price }}
+	运算调用：
+	{{ food.name }} : ￥{{ food.price * food.discount}}
+	三元调用：
+	{{ food.name }} : ￥{{food.discount ? food.price * food.discount : food.price}}
+	说明：表示如果问号前面的属性存在，则运行问号后面的语句，否则运行冒号后面的语句(三元运算符:条件表达式？表达式1：表达式2)
+
+v-bind:属性="值的变量":用于绑定数据及元素属性，也可直接写成  :属性="变量"  
+例：
+	html:
+	<a v-bind:class="{klass: isActive}" v-bind:href="url">
+		<img v-bind:src="img" alt="">
+	</a>
+	js:
+	var app = new Vue({
+		el: '#id',
+		data: {
+			url: 'http://www.baidu.com'，
+			img: 'img/1.jpg',
+			klass: 'btn btn-default',
+			isActive: true,
+		}
+	})
+	说明：添加类名时可以直接添加，也可以按条件添加上例中v-bind:class="{klass: isActive}",当isActive为真的时候才添加类名
+
+v-on:事件="执行函数的变量"：用于绑定事件,也可以绑定多个事件:v-on:{事件1: 执行函数的变量1,事件2: 执行函数的变量2}，所有事件前不用再加on,v-on也支持简写，将v-on:替换为@即可
+常用方法：  
+
+v-on:事件.enter="执行函数的变量"，表示当事件为enter的时候，代入执行函数的变量
+
+例：
+	html:
+	<button v-on:click="onClick"></button>
+	js:
+	var app = new Vue({
+		el: '#id',
+		methods: {
+			onClick: function() {
+				console.log('clicked');
+			}
+		}
+	})
+
+v-model="属性变量"：将当前属性的值刷新在页面当中
+v-model.lazy="属性变量"：当change事件被触发时，代入属性变量
+v-model.trim="属性变量"：去掉所有空格
+v-model.number="属性变量"：将属性值变为数字类型
+
+
+
+条件判断
+v-if="属性==值"/v-else-if="属性==值"/v-else="属性==值"
+
+例：
+	<div v-if="属性==值">
+		语句1
+	</div>
+	<div v-else-if="属性==值">
+		语句2
+	</div>
+	<div v-else="属性==值">
+		语句3
+	</div>
+
+
+计算属性
+在{{}}中可以直接运用加减乘除等运算符
+也可在js文件中用函数封装，需要写在computed中，例：
+var app = new Vue({
+	el: "#id",
+	data: {
+		math: 90,
+		english: 70,
+		physics: 80,
+	},
+})
+computed: {
+	sum： function() {
+		return this.math + this.english +this.physics;
+	}
+	average: function() {
+		return Math.round(this.sum/3);
+	}
+}
+说明： Math.round()为四舍五入函数，computed和methods的区别是computed会将计算结果缓存，当程序不变时可以直接从缓存取结果
+
+组件自定义
+说明：可以自定义含有执行语句的html标签
+用法1：
+js:
+Vue.component('标签名'，{
+	//设置生成的样式，同样也可按照html标签进行处理(如绑定事件等等)
+	template: '<button @onclick="on_click">按钮</button>',
+	//为上一步设置事件处理函数
+	methods: {
+		alert('Yo.');
+	}
+})
+//定义一个域，上面定义的标签之能在定义的域里面使用
+new Vue({
+	el: "#id"
+})
+html:
+直接写<alert></alert>就可以了
+
+用法2：
+var div_component = {
+	<!-- 设置生成的样式，同样也可按照html标签进行处理(如绑定事件等等) -->
+	template: '<button @onclick="on_click">按钮</button>',
+	<!-- 为上一步设置事件处理函数 -->
+	methods: {
+		alert('Yo.');
+	}
+}
+
+new Vue({
+	el: "#id",
+	component: div_component
+})
+html:
+直接写<alert></alert>就可以了
+
+$emit('x')方法：发布消息，触发在其他组件中的自定义事件
+说明：通过$emit触发括号中的函数，x为其他组件中的自定义事件名
+例：
+可以，也可以
+方法1：
+<template>
+	<!-- 在事件中直接发布消息 -->
+	<div @click="$emit('myAlert')"></div>
+</template>
+方法2：
+<template>
+	<!-- 在事件中直接触发函数 -->
+	<div @click="AAA"></div>
+</template>
+<script>
+	export default {
+		AAA: function() { //再通过事件函数发布消息
+			this.$emit('myAlert')，触发的是
+		}
+	}
+</script>
+另一个组件：
+<template>
+	<!-- 另一个组件中的自定义事件名 -->
+	<div @myAlert="BBB"></div>
+</template>
+<script>
+	export default {
+		BBB: function() { //一般建议取相同名字的执行函数(即myAlert)
+			//执行相关操作
+		}
+	}
+</script>
+说明：这样可以让 A组件中的事件(通过$emit('myAlert')) 触发 B组件中的执行函数(通过@myAlert="...")
+
+组件间样式污染
+解决：在冲突的样式前加上各自的外包wrapper作为区分
+
+获取唯一id
+解决：使用uuid，vue-cli自带，直接引入
+<script>
+	import uuidv1 from 'uuid/v1' //v1是基于时间戳生成uuid
+	import uuidv4 from 'uuid/v4' //v4是随机生成uuid
+
+	export default {
+		data() {
+			return {
+				uuid: ''
+			}
+		},
+		created() {
+			this.uuid = uuidv1() //获取时间戳uuid
+		}
+	}
+</script>
+
+this.$nextTick([callback])
+页面DOM渲染完成后执行括号中的回调函数
+<script>
+	watch: {
+		categorys: function(value) {
+			this.$nextTick(() => {
+				
+			})
+		}
+	}
+</script>
+
+props多种类型，和默认值
+<script>
+	// 多种类型
+	props: {
+		aaa: [String, Number],
+	}
+	//默认值
+	props: {
+		aaa: {
+			type: Number,
+			default: 111
+		}
+	}
+</script>
+
+传入子组件的值需要处理
+解决：计算属性可以拿到props的值
+
+出现：Error in callback for watcher "chart"...的错误
+解决：很可能是拼写错误，上一次是handler拼成handle
+
+子组件获取父组件的数据
+解决：通过this.$parent
+
+filter不生效
+解决：看看你的'|'有没有写成'||'
+
+生产打包后图片不显示的问题，开发环境下正常，主要是打包后static变成根路径的原因
+解决：
+
+生产打包后icon图标不显示
+解决：
+1.样式引用的问题，将样式引用放组件引用的后面即可
+<script>
+	import {...} from 'element-ui'
+	import 'element-theme-chalk'
+	import 'element-ui/lib/theme-chalk/index.css'
+</script>
+2.打包后static变成根路径，icon会找不到，在build--utils.js中的if(options.extract)里添加：publicPath: "../../"即可
+<script>
+	if (options.extract) {
+	  return ExtractTextPlugin.extract({
+	    use: loaders,
+	    publicPath: "../../", //解决打包后图片不显示
+	    fallback: 'vue-style-loader'
+	  })
+	} else {
+	  return ['vue-style-loader'].concat(loaders)
+	}
+</script>
+
+
+vue资源文件夹 assets和static的区别
+解决：webpack在打包时，会将图片，css等视为模块依赖（当作模块一样来处理），当然，不是直接像模块一样去引用（又不是js）,webpack是通过相关的loader去引用它们的（vue-cli已经有了这些loader了），所以，最好是将资源放到/src下跟代码放到一起（即assets文件夹，就像管理模块一样管理它们，当然也可以放到各个组件自己的文件夹中）
+static下的文件不会被webpack处理，而是直接被复制到最终路径中，然后引用，所以引用这个文件夹中的文件时必须使用绝对路径，不然就得配置build下的util.js文件了
+assets里面的会被webpack打包进你的代码里（打包，压缩等等）
+
+总结：static里放一些类库的文件，assets里放项目的文件，即static放别人家的，assets放自己家的
+
+"export 'default' (imported as 'reqIdxSort') was not found in '@/api/index.js'
+原因：意思是在index.js中没有找到导出名字叫reqIdxSort的export，所以会报警告
+解决：如果确认没有写错导出名字，很可能是忘了加{}
+<script>
+	//import reqIdxSort from '@/api/index.js'  //报错
+	import {reqIdxSort} from '@/api/index.js'  //不报错
+</script>
+
+全局拖拽指令
+<script>
+	//全局拖拽指令
+	Vue.directive('drag', function(el, bindings) {
+		el.onmousedown = function(e) {
+			let disx = e.pageX - el.parentNode.offsetLeft;
+			let disy = e.pageY - el.parentNode.offsetTop;
+			document.onmousemove = function(e) {
+				el.parentNode.style.left = e.pageX - disx + 'px';
+				el.parentNode.style.top = e.pageY - disy + 'px';
+			}
+			document.onmouseup = function() {
+				document.onmousemove = document.onmouseup = null;
+			}
+		}
+	})
+</script>

@@ -1,0 +1,89 @@
+Ajax
+说明：用于异步读取服务器数据
+
+使用步骤
+1.创建Ajax对象  
+var oAjax = new xmlHttpRequeset();
+#只兼容非IE6浏览器，IE6使用var oAjax = new ActiveXObeject("Microsoft.XMLHTTP")
+变量和属性
+alert(a)相当于window.alert(window.a) 全局变量a是属于window的一个属性
+在js中如果使用未定义变量会报错，但如果使用未定义属性则不会报错
+所以alert(a)会报错，alert(window.a)不会
+兼容性写法：
+	if(window.XMLHttpRequest){
+		var oAjax=new XMLHttpRequset();
+	}
+	else
+	{
+		var oAjax=new ActiveXObject("Microsoft.XMLHTTP");  #IE6方法	
+	}
+
+2.连接到服务器open('请求方式','文件名','异步传输')
+文件名后加时间戳可以避免缓存：a.txt?t='+new Date().getTime()
+例：
+	oAjax.open('get','a.txt?t='+new Date().getTime(),'true')
+
+3.向服务器发送请求oAjax.send()
+例：
+	oAjax.send()
+
+4.接收服务器返回值
+接收服务器返回值：oAjax.onreadystatechange,类似事件调用
+服务器进行到哪一步：oAjax.readyState：0 (未初始化)还没调用open()方法
+									1 (载入)已调用send()方法，正在发送请求
+				  					2 (载入完成)send()方法完成，已收到全部响应内容
+				  					3 (解析)正在解析响应内容
+				  					4 (完成)响应内容解析完成，可以在客户端调用了,但完成不代表成功，读取出错也算完成
+HTTP状态码：aAjax.status(如200,404等)
+响应文本：aAjax.responseText
+例：
+oAjax.onreadystatechange=function(){
+	if(oAjax.readyState==4){
+		if(oAjax.status==200){
+			alert('oAjax.responseText')
+		}
+		else{
+			alert('失败'+oAjax.status)
+		};
+	};
+};
+
+
+封装Ajax函数
+<script>
+	function ajax(url,fnSucc,fnFaild){
+		/* 创建Ajax对象，包含IE6兼容性写法 */
+		if(window.XMLHttpRequest){
+			var oAjax=new XMLHttpRequset();
+		}
+		else
+		{
+			var oAjax=new ActiveXObject('Microsoft.XMLHTTP');
+		}
+		//解决跨域问题
+		oAjax.withCredentials = true
+		/* 连接服务器 */
+		oAjax.open('GET',url+'?t='+new Date().getTime(),'true')
+		/* 发送请求 */
+		oAjax.send()
+		/* 接受返回值，onreadystatechange表示当readyState发生改变的时候执行自定函数 */
+		oAjax.onreadystatechange=function(){
+			if(oAjax.readyState==4){
+				if(oAjax.status==200){
+					fnSucc('oAjax.responseText');
+				}
+				else
+				{
+					if(fnFaild){
+						fnFaild('oAjax.status');
+					};
+				};
+			};
+		};
+	};
+</script>
+
+
+回调地狱问题
+说明：Ajax请求为异步特性，假如页面中有两个或以上Ajax请求，各个请求不会按顺序一个接一个发送，而会在上一个请求尚未返回结果时就发出，而实际工作中，往往需要通过返回的情况(成功与否)来判断是否执行下一个请求，如此一来就必须将下一个请求写在上一个请求的回调函数中，如果这种情况非常多，就会造成回调函数中不断嵌套回调函数的情况，即臭名昭著的回调地狱(代码变得难以维护)
+解决：通过Promise或axios库(基于Promise构建)解决

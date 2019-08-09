@@ -1,0 +1,545 @@
+安装
+npm install echarts --save
+
+引入
+import * as echarts from 'echarts';
+
+CommonJS：
+var echarts = require('echarts')
+
+简单绘图例子
+1.在绘图前我们需要为 ECharts 准备一个具备高宽的 DOM 容器
+<body>
+    <!-- 为 ECharts 准备一个具备大小（宽高）的 DOM -->
+    <div id="main" style="width: 600px;height:400px;"></div>
+</body>
+
+2.通过 echarts.init 方法初始化一个 echarts 实例并通过 setOption 方法生成一个简单的柱状图
+在浏览器端项目中使用？
+<body>
+    <!-- 为 ECharts 准备一个具备大小（宽高）的 DOM -->
+    <div id="main" style="width: 600px;height:400px;"></div>
+</body>
+<script type="text/javascript">
+    // 基于准备好的dom，初始化echarts实例
+    var myChart = echarts.init(document.getElementById('main'));
+
+    // 指定图表的配置项和数据
+    var option = {
+        title: {
+        	//标题
+            text: 'ECharts 入门示例'
+        },
+        tooltip: {},
+        //y轴
+        legend: {
+            data: ['销量']
+        },
+        //x轴
+        xAxis: {
+            data: ["衬衫","羊毛衫","雪纺衫","裤子","高跟鞋","袜子"]
+        },
+        yAxis: {},
+        //数据
+        series: [{
+            name: '销量',
+            //类型，'bar'：柱状图，'line'：曲线图，'pie'：饼图
+            type: 'bar',
+            data: [5, 20, 36, 10, 10, 20]
+        }]
+    };
+
+    // 使用刚指定的配置项和数据显示图表。
+    myChart.setOption(option);
+</script>
+
+按需引入
+创建一个入口文件，可以命名为 myProject/echarts.custom.js，在文件里引用所需要的 echarts 模块：
+<script>
+	// 引入 echarts 主模块。
+	export * from 'echarts/src/echarts';
+	// 引入所需模块，这里选择饼图
+	import 'echarts/src/chart/pie';
+	// 在这个场景下，可以引用 `echarts/src` 或者 `echarts/lib` 下的文件（但是不可混用）
+	// 使用构建脚本 echarts/build/build.js 打包 bundle时，优先使用 echarts/src/** 可以获得稍微小一些的文件体积
+	//允许被引用的模块，全部声明在 myProject/node_module/echarts/echarts.all.js 和 myProject/node_module/echarts/src/export.js 中
+</script>
+
+目录下使用命令行，打包一个小的echarts.custom.min.js文件（echarts自带打包工具）
+node node_modules/echarts/build/build.js --min -i echarts.custom.js -o lib/echarts.custom.min.js
+
+将生成的echarts.custom.min.js直接引入页面中即可使用
+或者组件中import '../../lib/echarts.custom.min.js'，不用import echarts from '../../lib/echarts.custom.min.js'
+绘制饼图
+<head>
+    <!-- 引入 lib/echarts.custom.min.js -->
+    <script src="lib/echarts.custom.min.js"></script>
+</head>
+<div id="main" style="width: 600px;height:400px;"></div>
+<script>
+    // 绘制图表。
+    echarts.init(document.getElementById('main')).setOption({
+    	//数据
+        series: {
+            type: 'pie',
+            data: [
+            	//name为每块名字，value为值
+                {name: 'A', value: 1212},
+                {name: 'B', value: 2323},
+                {name: 'C', value: 1919}
+            ]
+        }
+    });
+</script>
+
+每种图的数据格式
+<script>
+	//柱状图
+	series: [{
+	    name: '销量',
+	    //类型，'bar'：柱状图，'line'：曲线图，'pie'：饼图
+	    type: 'bar',
+	    //每个数据是柱状图的数值（高度）
+	    data: [5, 20, 36, 10, 10, 20]
+	}]
+	//饼图
+	series: {
+	    type: 'pie',
+	    data: [
+	    	//name为每块扇形的名字，value为值
+	        {name: 'A', value: 1212},
+	        {name: 'B', value: 2323},
+	        {name: 'C', value: 1919}
+	    ]
+	}
+	//曲线图
+	series: [{
+        type: 'line',
+        smooth: true,
+        //每个子数组是构建曲线的每个坐标
+        data: [[12, 5], [24, 20], [36, 36], [48, 10], [60, 10], [72, 20]]
+    }]
+</script>
+
+ECharts 提供丰富的自定义配置选项，能从全局、系列、数据三个层级设置数据图形的样式
+<script>
+	//全局样式写在setOption下，系列样式写在itemStyle下，数据样式写在data下每一项的itemStyle中
+	echarts.init(document.getElementById('main')).setOption({
+		//背景色
+		backgroundColor: '#2c343c',
+		//文本样式
+		textStyle: {
+	        color: 'rgba(255, 255, 255, 0.3)'
+	    },
+		//系列样式
+		itemStyle: {
+			// 设置扇形的颜色
+		    shadowBlur: 200,
+		    shadowColor: 'rgba(0, 0, 0, 0.5)'
+			//每个系列也有文本样式
+			textStyle: {
+		        color: 'rgba(255, 255, 255, 0.3)'
+		    },
+		    // 阴影的大小
+		    shadowBlur: 200,
+		    // 阴影水平方向上的偏移
+		    shadowOffsetX: 0,
+		    // 阴影垂直方向上的偏移
+		    shadowOffsetY: 0,
+		    // 阴影颜色
+		    shadowColor: 'rgba(0, 0, 0, 0.5)',
+		    //鼠标 hover 时候的高亮样式
+		    emphasis: {
+	            shadowBlur: 200,
+	            shadowColor: 'rgba(0, 0, 0, 0.5)'
+	        },
+	        //文字
+	        label: {
+                normal: {
+                    textStyle: {
+                        color: 'rgba(255, 0, 255, 0.3)'
+                    }
+                }
+            },
+            //视觉引导线样式，饼图
+            labelLine: {
+                normal: {
+                    lineStyle: {
+                        color: 'rgba(0, 255, 0, 0.3)'
+                    }
+                }
+            },
+		},
+		//生成特殊风格的图，'angle'：饼图的南丁格尔图（通过半径表示数据的大小）
+		roseType: 'angle',
+		//数据
+	    series: {
+	        type: 'pie',
+	        data: [
+	            {
+	            	//每块扇形名字
+	            	name: 'A', 
+	            	//每块扇形的值
+	            	value: 1212,
+	            	//每块扇形颜色
+	            	itemStyle: {
+            	        color: '#c23531'
+            	    }
+	            },
+	            {
+	            	name: 'B',
+	            	value: 2323
+	            	itemStyle: {
+            	        color: '#c23531'
+            	    }
+	            },
+	            {
+	            	name: 'C', 
+	            	value: 1919
+	            	itemStyle: {
+            	        color: '#c23531'
+            	    }
+	            }
+	        ]
+	    }
+	});
+</script>
+
+视觉映射组件 visualMap
+说明：将数据映射到视觉元素（视觉通道），例如做出明暗渐变效果
+<script>
+option = {
+	visualMap: {
+		//可定义为分段型continuous或连续型piecewise
+		type: 'continuous', 
+	    // 不显示 visualMap 渐变条
+	    show: false,
+	    // 映射的最小值为 80
+	    min: 80,
+	    // 映射的最大值为 600
+	    max: 600,
+	    inRange: {
+	        // 明暗度的范围是 0 到 1
+	        colorLightness: [0, 1]
+	    }
+	}
+}
+
+visualMap=[                                     
+//视觉映射组件，用于进行『视觉编码』，也就是将数据映射到视觉元素。
+//视觉元素可以是
+//symbol: 图元的图形类别
+//symbolSize: 图元的大小
+//color: 图元的颜色
+// colorAlpha: 图元的颜色的透明度
+//opacity: 图元以及其附属物（如文字标签）的透明度
+//colorLightness: 颜色的明暗度
+//colorSaturation: 颜色的饱和度
+//colorHue: 颜色的色调。
+    {
+        show:true,                              //是否显示 visualMap-continuous 组件。如果设置为 false，不会显示，但是数据映射的功能还存在
+        type: 'continuous',                     //定义为连续型 viusalMap
+        min:10,                                 //指定 visualMapContinuous 组件的允许的最小值
+        max:100,                                //指定 visualMapContinuous 组件的允许的最大值
+        range:[15, 40],                         //指定手柄对应数值的位置。range 应在 min max 范围内
+        calculable:true,                        //是否显示拖拽用的手柄（手柄能拖拽调整选中范围）
+        realtime:true,                          //拖拽时，是否实时更新
+        inverse:false,                          //是否反转 visualMap 组件
+        precision:0,                            //数据展示的小数精度，默认为0，无小数点
+        itemWidth:20,                           //图形的宽度，即长条的宽度。
+        itemHeight:140,                         //图形的高度，即长条的高度。
+        align:"auto",                           //指定组件中手柄和文字的摆放位置.可选值为：'auto' 自动决定。'left' 手柄和label在右。'right' 手柄和label在左。'top' 手柄和label在下。'bottom' 手柄和label在上。
+        text:['High', 'Low'],                   //两端的文本
+        textGap:10,                             //两端文字主体之间的距离，单位为px
+        dimension:2,                            //指定用数据的『哪个维度』，映射到视觉元素上。『数据』即 series.data。 可以把 series.data 理解成一个二维数组,其中每个列是一个维度,默认取 data 中最后一个维度
+        seriesIndex:1,                          //指定取哪个系列的数据，即哪个系列的 series.data,默认取所有系列
+        hoverLink:true,                         //鼠标悬浮到 visualMap 组件上时，鼠标位置对应的数值 在 图表中对应的图形元素，会高亮
+        inRange:{                               //定义 在选中范围中 的视觉元素
+            color: ['#121122', 'rgba(3,4,5,0.4)', 'red'],
+            symbolSize: [30, 100]
+        },
+        outOfRange:{  //定义 在选中范围外 的视觉元素。
+            color: ['#121122', 'rgba(3,4,5,0.4)', 'red'],
+            symbolSize: [30, 100]
+        },
+        zlevel:0,  //所属图形的Canvas分层，zlevel 大的 Canvas 会放在 zlevel 小的 Canvas 的上面
+        z:2,                                        //所属组件的z分层，z值小的图形会被z值大的图形覆盖
+        left:"center",                              //组件离容器左侧的距离,'left', 'center', 'right','20%'
+        top:"top",                                  //组件离容器上侧的距离,'top', 'middle', 'bottom','20%'
+        right:"auto",                               //组件离容器右侧的距离,'20%'
+        bottom:"auto",                              //组件离容器下侧的距离,'20%'
+        orient:"vertical",                          //图例排列方向
+        padding:5,                                  //图例内边距，单位px  5  [5, 10]  [5,10,5,10]
+        backgroundColor:"transparent",              //标题背景色
+        borderColor:"#ccc",                         //边框颜色
+        borderWidth:0,                              //边框线宽
+        textStyle:mytextStyle,                      //文本样式
+        formatter: function (value) {               //标签的格式化工具。
+            return 'aaaa' + value;                  //范围标签显示内容。
+        }
+    },
+    {
+        show:true,//是否显示 visualMap-continuous 组件。如果设置为 false，不会显示，但是数据映射的功能还存在
+        type: 'piecewise',                  //定义为分段型 visualMap
+        splitNumber:5,                      //对于连续型数据，自动平均切分成几段。默认为5段
+        pieces: [ //自定义分段式视觉映射组件的每一段的范围，以及每一段的文字，以及每一段的特别的样式
+            {min: 1500},                     // 不指定 max，表示 max 为无限大（Infinity）
+            {min: 900, max: 1500},
+            {min: 310, max: 1000},
+            {min: 200, max: 300},
+            {min: 10, max: 200, label: '10 到 200（自定义label）'},
+            {value: 123, label: '123（自定义特殊颜色）', color: 'grey'}, // 表示 value 等于 123 的情况。
+            {max: 5}                        // 不指定 min，表示 min 为无限大（-Infinity）。
+        ],
+        categories:['严重污染', '重度污染', '中度污染', '轻度污染', '良', '优'],  //用于表示离散型数据（或可以称为类别型数据、枚举型数据）的全集
+        min:10,                             //指定 visualMapContinuous 组件的允许的最小值
+        max:100,                            //指定 visualMapContinuous 组件的允许的最大值
+        minOpen:true,                       //界面上会额外多出一个『< min』的选块
+        maxOpen:true,                       //界面上会额外多出一个『> max』的选块。
+        selectedMode:"multiple",           	//选择模式，可以是：'multiple'（多选）。'single'（单选）。
+        inverse:false,                      //是否反转 visualMap 组件
+        precision:0,                        //数据展示的小数精度，默认为0，无小数点
+        itemWidth:20,                       //图形的宽度，即长条的宽度。
+        itemHeight:140,                     //图形的高度，即长条的高度。
+        align:"auto", 						//指定组件中手柄和文字的摆放位置.可选值为：'auto' 自动决定。'left' 手柄和label在右。'right' 手柄和label在左。'top' 手柄和label在下。'bottom' 手柄和label在上。
+        text:['High', 'Low'],               //两端的文本
+        textGap:10,                          //两端文字主体之间的距离，单位为px
+        showLabel:true,                     //是否显示每项的文本标签
+        itemGap:10,                          //每两个图元之间的间隔距离，单位为px
+        itemSymbol:"roundRect",             //默认的图形。可选值为： 'circle', 'rect', 'roundRect', 'triangle', 'diamond', 'pin', 'arrow'
+        dimension:2,                          //指定用数据的『哪个维度』，映射到视觉元素上。『数据』即 series.data。 可以把 series.data 理解成一个二维数组,其中每个列是一个维度,默认取 data 中最后一个维度
+        seriesIndex:1,                        //指定取哪个系列的数据，即哪个系列的 series.data,默认取所有系列
+        hoverLink:true,                      //鼠标悬浮到 visualMap 组件上时，鼠标位置对应的数值 在 图表中对应的图形元素，会高亮
+        inRange:{                             //定义 在选中范围中 的视觉元素
+            color: ['#121122', 'rgba(3,4,5,0.4)', 'red'],
+            symbolSize: [30, 100]
+        },
+        outOfRange:{                            //定义 在选中范围外 的视觉元素。
+            color: ['#121122', 'rgba(3,4,5,0.4)', 'red'],
+            symbolSize: [30, 100]
+        },
+        zlevel:0,                                   //所属图形的Canvas分层，zlevel 大的 Canvas 会放在 zlevel 小的 Canvas 的上面
+        z:2,                                         //所属组件的z分层，z值小的图形会被z值大的图形覆盖
+        left:"center",                              //组件离容器左侧的距离,'left', 'center', 'right','20%'
+        top:"top",                                   //组件离容器上侧的距离,'top', 'middle', 'bottom','20%'
+        right:"auto",                               //组件离容器右侧的距离,'20%'
+        bottom:"auto",                              //组件离容器下侧的距离,'20%'
+        orient:"vertical",                        //图例排列方向
+        padding:5,                                   //图例内边距，单位px  5  [5, 10]  [5,10,5,10]
+        backgroundColor:"transparent",            //标题背景色
+        borderColor:"#ccc",                         //边框颜色
+        borderWidth:0,                               //边框线宽
+        textStyle:mytextStyle,                      //文本样式
+        formatter: function (value) {                //标签的格式化工具。
+            return 'aaaa' + value;                   // 范围标签显示内容。
+        }
+    }
+];
+</script>
+如果 series 中某个数据项需要避开 visualMap 映射：
+<script>
+	series: {
+	    type: '...',
+	    data: [
+	        {name: 'Shanghai', value: 251},
+	        {name: 'Haikou', value: 21},
+	        //设置`visualMap: false`时
+	        //visualMap不对此项进行控制，此时该系列可使用自身的视觉参数控制此项的显示
+	        {name: 'Beijing', value: 821, visualMap: false},
+	        ...
+	    ]
+	}
+</script>
+
+ECharts4 开始内置了两套颜色主题，分别为 'light' 和 'dark'，其他主题可以通过主题构建工具生成并引入
+<script>
+	//内置颜色主题直接写在init的第二个参数引入
+	var chart = echarts.init(dom, 'light')
+</script>
+
+调色盘
+给定一组颜色，图形、系列会自动从其中选择颜色
+<script>
+	option = {
+	    // 全局调色盘
+	    color: ['#c23531','#2f4554', '#61a0a8', '#d48265', '#91c7ae','#749f83',  '#ca8622', '#bda29a','#6e7074', '#546570', '#c4ccd3'],
+
+	    //系列渐变效果
+	    series: [{
+	        name: '销量',
+	        //类型，'bar'：柱状图，'line'：折线图，'pie'：饼图
+	        type: 'line',
+	        data: [5, 20, 36, 10, 10, 20],
+	        lineStyle:{
+	        	//线宽
+	            width: 8,
+	            color: {
+	            	//线性渐变linear，径向渐变radial
+	                type: 'linear',
+	                //基准线两端坐标
+	                x: 0,
+	                y: 0,
+	                x2: 1,
+	                y2: 0,
+	                colorStops: [
+		                {
+		                    offset: 0.1, color: 'red' // 0% 处的颜色
+		                },
+		                {
+		                    offset: 0.2, color: 'orange' // 20% 处的颜色
+		                },
+		                {
+		                    offset: 0.3, color: 'yellow' // 30% 处的颜色
+		                },
+		                {
+		                    offset: 0.4, color: 'green' // 40% 处的颜色
+		                },
+		                {
+		                    offset: 0.5, color: 'cyan' // 50% 处的颜色
+		                },
+		                {
+		                    offset: 0.6, color: 'blue' // 60% 处的颜色
+		                },
+		                {
+		                    offset: 0.7, color: 'purple' // 70% 处的颜色
+		                }
+	                ],
+	                global: false // 缺省为 false
+	            }
+	        }
+	    }]
+	}
+</script>
+
+直接的样式设置 itemStyle, lineStyle, areaStyle, label, ...
+说明：可以直接设置图形元素的颜色、线宽、点的大小、标签的文字样式等等
+
+高亮的样式：emphasis
+说明：鼠标悬浮到图形元素上时，一般会出现高亮的样式。
+注：高亮的样式默认是根据普通样式自动生成的，但高亮的样式也可以通过emphasis自定义
+
+饼图例不显示
+图例里的data名必须和series里data的name一致，图例才会显示
+
+饼图文字放在视觉引导线上方
+label里normal的formatter项的值后面加上'\n\n'
+<script>
+    label: {
+        normal: {
+            show: true,
+            formatter: '{b} {d}% \n\n',
+        },
+    },  
+</script>
+
+axisPointer(坐标轴提示器)不显示
+说明：
+axisPointer必须写在tooltip里
+axisPointer必须在trigger的值为'axis'时才有效
+trigger：触发类型，'item'图形触发，'axis'坐标轴触发，'none'什么都不触发
+<script>
+    tooltip: {
+        //触发类型，'item'图形触发，'axis'坐标轴触发，'none'什么都不触发
+        trigger: 'axis',
+        axisPointer: {
+          type: 'line',
+          axis: 'x',
+          snap: true,
+          lineStyle: {
+            color: '#fff'
+          }
+        },
+    },
+</script>
+控制x轴和y轴的 axisPointer 显示隐藏
+解决：x轴和y轴也可以设置 axisPointer ，且优先级很高
+<script>
+    xAxis: {
+        axisPointer: {
+            show: false,
+        },
+    }
+</script>
+axisPointer 类型为 cross 时显示白框
+解决：类型为cross时会自动显示 axisPointer 的文字框，不需要的话设置 label 为 false 即可
+<script>
+    tooltip: {
+        //触发类型，'item'图形触发，'axis'坐标轴触发，'none'什么都不触发
+        axisPointer: {
+          type: 'cross',
+          label: {
+            show: false
+          },
+        },
+    },
+</script>
+
+在隐藏标签里的echarts图表切换到显示时无法获得宽高，造成显示问题
+解决：将v-show换成v-if，v-show不会重新渲染，可能造成echarts无法获得隐藏div的高度，v-if会重新渲染
+
+饼图的label文字无法通过padding调整位置
+解决：引入按需打包的min.js就会出现这种情况，完整引入echarts包就好了
+
+formatter用法
+注：param.marker可以获得symbol标记
+<script>
+    formatter: function(params) {
+        //console.log(params) //当toolTip显示时会打印出params对象
+        let res = ''
+        for(let i=0,j=params.length;i<j;i++) {
+            res += `<div style="margin: 5px 0;">发生时间：${params[i].data[0]}<br/>到达时间：${params[i].data[1]}</div>`
+        }
+        //最后返回的必须是字符串，该字符串会显示在toolTip中
+        return  res
+    },
+</script>
+
+lable换行
+解决：'/n'
+
+时间和数值相关的散点图必须是坐标格式，第一位为x轴，第二位为y轴
+解决：
+<script>
+    seriesData: [
+        {
+            name: '互联网警情',
+            type: 'scatter',
+            symbolSize: 10,
+            data: [[1,2],[1,2],[1,2],[1,2],[1,2],[1,2],[1,2]]
+        },
+        {
+            name: '122警情',
+            type: 'scatter',
+            symbolSize: 10,
+            data: [[1,2],[1,2],[1,2],[1,2],[1,2],[1,2],[1,2]]
+        },
+    ]
+</script>
+x轴和y轴自定义跨度
+解决：如果坐标轴类型为 category ，则在 xAxis/yAxis 里写data来控制跨度，如果类型为非 category ，则在 xAxis/yAxis 里写 min/max 来控制跨度
+<script>
+    //非 category 类型
+    xAxis: {
+        type: 'value',
+        min: 10,
+        max: 5,
+    }
+    xAxis: {
+        type: 'time',
+        min: new Date(new Date(new Date().toLocaleDateString()).getTime()), //00:00
+        max: new Date(new Date(new Date().toLocaleDateString()).getTime()+24*60*60*1000-1), //23:00
+        axisLabel: { //格式化时间
+            rotate: -90,
+            formatter: function (params) {
+                let t_date = new Date(params)
+                let hours = t_date.getHours()<10 ? '0' + t_date.getHours(): t_date.getHours()
+                return hours + ':00'
+            }
+        }
+    }
+    // category 类型
+    xAxis: {
+        type: 'value',
+        data: ['00:00' ... '23:00']
+    }
+</script>

@@ -1,0 +1,47 @@
+HTML
+<script>
+	//参数必须是字符串，可以解析html标签
+	document.write('<h1>aaa</h1>')
+
+	//可以解析html标签，值必须是字符串
+	document.getElementById('aaa').innerHTML = '<h1>aaa</h1>'
+
+	//可以直接改属性，值必须是字符串
+	document.getElementById('aaa').src = 'bbb'
+
+	//可以通过style改样式，值必须是字符串
+	document.getElementById('aaa').style.backgroundcolor = '#0f0'
+
+</script>
+事件
+<script>
+	//可以添加点击事件，this指向发生事件的DOM元素
+	document.getElementById('aaa').onclick = function() {
+		this.style.backgroundColor = '#0f0'
+	}
+
+	onload 页面加载完成后触发
+	onunload 
+	onchange 输入框数据改变并且失去焦点后触发
+	oninput 输入框数据改变时触发（用户尝试改变输入框数据时）
+</script>
+Object方法：
+Object.assign：用于对象的合并，将源对象（source）的所有可枚举属性，复制到目标对象（target）
+<script>
+	const target = { a: 1 }
+
+	const source1 = { b: 2 }
+	const source2 = { c: 3 }
+
+	Object.assign(target, source1, source2)
+	target // {a:1, b:2, c:3}
+
+//Object.values
+	
+</script>
+Object.values：返回一个对象的键值（第一层），返回一个数组
+<script>
+	const obj = { 100: {a: 'a'}, 2: 'b', 7: 'c' };
+	Object.values(obj)
+	//[{a: 'a'},'b','c']
+</script>

@@ -1,0 +1,116 @@
+@supports(display:flow-root){}优雅降级
+@@supports not (display:flow-root){}渐进增强
+
+
+shape-outside 属性指定使用下面的值来定义浮动元素的浮动区域。这个浮动区域决定了行内内容（浮动元素）所包裹的形状。
+不兼容Edge和Internet Explorer
+```css
+shape-outside: none;
+shape-outside: margin-box;
+shape-outside: content-box;
+shape-outside: border-box;
+shape-outside: padding-box;
+```
+none
+该浮动区域不产生影响，行内元素以默认的方式包裹着该元素的margin box。
+<shape-box>
+根据浮动元素的边缘（通过 CSS box model 来定义）形状计算出浮动的区域。可能是 margin-box, border-box, padding-box, 或者 content-box。这个形状包括了由 border-radius 属性制造出来的弧度（与 background-clip 的表现类似）。
+margin-box
+定义一个由外边距的外边缘封闭形成的形状。这个形状的角的半径由相应的border-radius 和margin 的值决定。如果 border-radius / margin 的比率大于等于 1 , 那么这个 margin box 的角的弧度就是 border-radius + margin ；如果比率小于 1，那么这个 margin box 的角的弧度就是 border-radius + (margin * (1 + (ratio-1)^3)) 。
+border-box
+定义一个由边界的外边缘封闭形成的形状。 这个形状遵循正常的边界外部圆角的形成规则。
+
+padding-box
+定义一个由内边距的外边缘封闭形成的形状。这个形状遵循正常的边界内部圆角的形成规则。
+
+content-box
+定义一个由内容区域的外边缘封闭形成的形状（译者：表述的不太好，就是被padding包裹的区域，在chrome控制台中的盒子模型图中的蓝色区域。）。每一个角的弧度取 0 或 border-radius - border-width - padding 中的较大值。
+
+<basic-shape>
+基于 inset()， circle()， ellipse()， 或者 polygon()其中一个创造出来的形状计算出浮动区域。如果同时存在 <shape-box> ，那么会为 <basic-shape> 方法定义一个参考盒，这个参考盒默认为 margin-box 。
+<image>
+提取并且计算指定 <image> 的alpha通道得出浮动区域（译者：即根据图片的非透明区域进行包裹）。就跟通过 shape-image-threshold来定义一样。
+
+负边距
+```css
+margin-left: -30px;
+margin-right: -30px;
+```
+左负边距会左移，右负边距会把右边的div往左拉
+
+BFC 全称为 块格式化上下文 (Block Formatting Context) 。
+1.使 BFC 内部浮动元素不会到处乱跑，外部元素成为BFC可以包裹住float,absolute,fixed元素
+2.和浮动元素产生边界，浮动元素会浮在普通元素上，需要浮动特性，又希望它紧跟在普通元素后面，可以让普通元素成为BFC，这样BFC就会阻挡浮动元素侵入内部，就像一道无法逾越的高墙，任何浮动都进不去（对 absolute 不管用）
+3.BFC里子元素的margin靠在父元素的边上时，会发生泄漏，比如BFC里面的一个子元素的上下margin刚好在最外边（左右没有影响），跟父元素的border靠在一起，这时这个子元素的magin会跑到父元素的外边（跑到墙外去了），看起来就像和父元素的magin合并到一起了一样，解决办法是将父元素变成BFC（建墙），这样一来子元素的magin就出不去了
+总结一句话，BFC元素就像自带高墙的元素，里面出不去，外面进不来（ absolute 除外）
+
+chrome可以查看颜色对比度，点击其中一个颜色会给出评分（下拉）
+
+实现div宽高自适应
+在div内部文字的后面追加空内容（相当于加了个<span>），并将该div变成弹性盒，这样里面的所有元素都会并排排列，给这个空<span>内部的上面加上padding-top，值为100%，该百分比是以该div的宽度为参考的，所以当该div宽度变化时，该<span>的padding-top也会跟着变化
+```css
+.test {
+    width: 100px;
+    display: flex;
+}
+.test:after {
+    content: '';
+    padding-top: 100%;
+}
+```
+
+简单居中方法
+父元素有高度，并设置为flex，子元素可以靠margin居中
+```css
+.out {
+    display: flex;
+    height: 500px;
+}
+.in {
+    margin: auto;
+}
+```
+
+CSS动画可以通过:hover暂停的
+
+鼠标禁用状态
+```css
+.aaa {
+    cursor: not-allowed;
+}
+```
+
+背景虚化
+```css
+.aaa {
+    filter: blur(2px);
+}
+```
+
+设置宽度为 min-content 和 max-content ，前者让内容尽可能地收缩，后者让内容尽可能地展开
+比如一个自动宽度的div里有一大一小两个元素，width设置成min-content会以最小元素宽度设置div宽，反之亦然
+```css
+.aaa {
+    width: min-content;
+    width: max-content;
+}
+```
+面包屑导航
+```html
+<ul>
+    <li><a>首页</a></li>
+    <li><a>活动</a></li>
+    <li><a>查看</a></li>
+</ul>
+```
+```css
+ul  {
+    display: flex; /*把列表横过来*/
+}
+li:before {
+    content: '\25a7'; /*加入icon*/
+}
+li:first-child {  /*去掉第一个icon*/
+    content: '';
+}
+```

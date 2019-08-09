@@ -1,0 +1,16 @@
+要使用tomcat需要有java环境，所以需要先安装java
+
+下载JDK，安装，配置环境变量（百度）
+
+下载tomcat
+官网选择符合自己电脑的版本（tomcat8,64-bit Windows zip）
+
+解压apache-tomcat-8.5.40-windows-x64.zip文件，放到C盘
+
+将应用文件夹放到tomcat--webapps文件夹下
+
+运行bin文件夹下的startup.bat文件
+
+此时tomcat就被被运行起来了
+
+访问应用时，浏览器输入：localhost:8080/dist/index.html
