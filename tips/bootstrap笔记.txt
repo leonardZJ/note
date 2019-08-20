@@ -1,3 +1,12 @@
+1.引入核心css文件：bootstrap.css
+2.引入jQuery
+3.引入核心js文件：bootstrap.js
+
+bootstrap对移动设备优先友好，在头部写入
+<meta name="viewport" content="width=device-width, initial-scale=1">
+user-scalable=no 可以禁用缩放（zooming）功能，视情况需不需要禁用
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
 布局容器，栅格系统必须基于布局容器，即在容器内部才会有响应式效果
 .container 类用于固定宽度并支持响应式布局的容器。
 .container-fluid 类用于 100% 宽度，占据全部视口（viewport）的容器。
