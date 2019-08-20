@@ -20,7 +20,12 @@ localStorage
 
 注：三者都不适合储存敏感数据，只要打开控制台，就可以随意修改它们的值，存在 XSS 注入的风险
 
+session
+	1.基于cookie的服务端缓存，虽然关闭浏览器会清除cookie中的sessionid，但对服务器来说只是找不到，而不是清除
+	2.大小无限制
+	3.经常用于保存用户信息
 
+session的机制是cookie保存一个sessionid，然后每次发请求都会把cookie里的sessionid带上，服务器再根据这个id查询用户信息
 
 
 webStorage存储机制的历史（essionStorage，localStorage，globalStorage）
@@ -36,3 +41,8 @@ webStorage存储机制的历史（essionStorage，localStorage，globalStorage�
 说明：Storage类型的一个实例，这个对象的目的是跨域会话存储，它有一个限制，就是在使用之前必须先指定哪些域可以访问，通过方括号标记属性来实现，存储的数据保留到使用removeItem()或者delete删除或清除缓存后才会被清除，后来被H5新规范中的localStorage对象取代
 
 注：三个对象身上都有clear()，getItem(key)，setItem(key,value)，removeItem(key)等常用方法
+
+基于Token登录
+1.用户在浏览器中输入用户和密码，后台服务器通过加密或者其他逻辑，生成一个Token。
+2.前端获取到Token，存储到cookie或者localStorage中，在接下来的请求中，将token通过url参数或者HTTP Header头部传入到服务器
+3.服务器获取token值，通过查找数据库判断当前token是否有效

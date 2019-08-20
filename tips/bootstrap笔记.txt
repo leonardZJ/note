@@ -1,0 +1,32 @@
+布局容器，栅格系统必须基于布局容器，即在容器内部才会有响应式效果
+.container 类用于固定宽度并支持响应式布局的容器。
+.container-fluid 类用于 100% 宽度，占据全部视口（viewport）的容器。
+注意这两个系统不能互相嵌套
+<div class="container">
+	...
+</div>
+<div class="container-fluid">
+	...
+</div>
+栅格系统
+说明：一个.row 最多12个 md，如果超过会另起一行
+在 .row 内使用.col-md-* 等栅格类，*改为数字代表该div在十二格里占几份，就可以创建一个基本的栅格系统
+
+.col-xs-*：超小屏幕 手机 (<768px)
+.col-sm-*：小屏幕 平板 (≥768px)
+.col-md-*：中等屏幕 PC (≥992px)
+.col-lg-*：大屏幕 大桌面显示器 (≥1200px)
+<div class="row">
+	<div class="col-md-1">.col-md-1</div>
+	<div class="col-md-1">.col-md-1</div>
+	<div class="col-md-1">.col-md-1</div>
+	<div class="col-md-1">.col-md-1</div>
+	<div class="col-md-1">.col-md-1</div>
+	<div class="col-md-1">.col-md-1</div>
+	<div class="col-md-1">.col-md-1</div>
+	<div class="col-md-1">.col-md-1</div>
+	<div class="col-md-1">.col-md-1</div>
+	<div class="col-md-1">.col-md-1</div>
+	<div class="col-md-1">.col-md-1</div>
+	<div class="col-md-1">.col-md-1</div>
+</div>
